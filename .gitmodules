@@ -1,0 +1,3 @@
+[submodule "camera_calibration_ws/aditof_sdk_custom/aditof_sdk"]
+	path = camera_calibration_ws/aditof_sdk_custom/aditof_sdk
+	url = https://github.com/Funderburger/aditof_sdk.git
