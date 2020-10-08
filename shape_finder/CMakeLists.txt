@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   topic_tools
   visualization_msgs
+  nodelet
 )
 
 ## System dependencies are found with CMake's conventions
@@ -171,5 +172,3 @@ target_link_libraries (gravity_nodelet ${PCL_LIBRARIES} ${Boost_LIBRARIES} ${cat
 add_dependencies(shape_finder_nodelet ${PROJECT_NAME}_gencfg)
 add_dependencies(voxel_filter_nodelet ${PROJECT_NAME}_gencfg)
 add_dependencies(gravity_nodelet ${PROJECT_NAME}_gencfg)
-
-
