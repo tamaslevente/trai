@@ -1,0 +1,8 @@
+
+<library path="lib/libtransform_pointcloud">
+  <class name="shape_finder/shape_finder_nodelet"
+         type="shape_finder::shape_finder_nodelet"
+         base_class_type="nodelet::Nodelet">
+    <description>Shape finder nodelet.</description>
+  </class>
+</library>

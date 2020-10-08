@@ -1,0 +1,34 @@
+
+<launch>
+
+<arg name="nodelet_manager" default="nodelet_manager"/>
+<arg name="launch_manager"  default="true"/>
+<!-- Start a nodelet manager if needed -->
+  <node if="$(arg launch_manager)" pkg="nodelet" type="nodelet"
+        name="$(arg nodelet_manager)" args="manager"/>
+
+ <node pkg="nodelet" type="nodelet" name="shape_finder_nodelet" output="screen"
+        args="load shape_finder/shape_finder_nodelet $(arg nodelet_manager)">
+<remap from="point_cloud_in" to="voxel_cloud"/>
+<remap from="gravity_in" to="/gravity_nodelet/gravity_point"/>
+</node>
+
+<node pkg="nodelet" type="nodelet" name="voxel_filter_nodelet" output="screen"
+        args="load shape_finder/voxel_filter_nodelet $(arg nodelet_manager)">
+<remap from="point_cloud_in" to="/pico_zense/depth/points"/>
+</node>
+
+<node pkg="nodelet" type="nodelet" name="gravity_nodelet" output="screen"
+        args="load shape_finder/gravity_nodelet $(arg nodelet_manager)">
+<remap from="imu_data" to="filtered_imu"/>
+</node>
+
+ <node pkg="rviz" type="rviz" name="rviz" output="screen" args="-d $(find shape_finder)/cfg/rviz.rviz"/>
+
+ <node pkg="rqt_reconfigure" type="rqt_reconfigure" name="rqt_reconfigure" output="screen" />
+
+<node pkg="shape_finder" name="kalman" type="kalman.py" output="screen">
+</node>
+
+</launch>
+
