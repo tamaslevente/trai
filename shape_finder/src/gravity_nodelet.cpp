@@ -16,6 +16,8 @@ namespace shape_finder
     Eigen::Vector3f gravity, gravity0;
     bool g_init;
     double lean_tolerance;
+    geometry_msgs::Point gravity_vector;
+
     void
     dynReconfCallback(shape_finder::gravity_nodeletConfig &config, uint32_t level)
     {
@@ -37,7 +39,7 @@ namespace shape_finder
       gravity[1] = msg->linear_acceleration.y;
       gravity[2] = msg->linear_acceleration.z;
       gravity.normalize();
-      geometry_msgs::Point gravity_vector;
+
       gravity_vector.x = gravity[0];
       gravity_vector.y = gravity[1];
       gravity_vector.z = gravity[2];
@@ -98,7 +100,7 @@ namespace shape_finder
     }
 
   public:
-    void
+    virtual void
     onInit()
     {
       //private_nh("~");
