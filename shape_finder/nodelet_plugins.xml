@@ -1,8 +1,18 @@
 
-<library path="lib/libtransform_pointcloud">
-  <class name="shape_finder/shape_finder_nodelet"
-         type="shape_finder::shape_finder_nodelet"
+<library path="lib/libshape_finder_lib">
+  <class name="shape_finder/ShapeFinderNodelet"
+         type="shape_finder::ShapeFinderNodelet"
          base_class_type="nodelet::Nodelet">
     <description>Shape finder nodelet.</description>
+  </class>
+  <class name="shape_finder/VoxelFilterNodelet"
+         type="shape_finder::VoxelFilterNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description>Voxel filter nodelet.</description>
+  </class>
+  <class name="shape_finder/GravityNodelet"
+         type="shape_finder::GravityNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description>Gravity nodelet.</description>
   </class>
 </library>
