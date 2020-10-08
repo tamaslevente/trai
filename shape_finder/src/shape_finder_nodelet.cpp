@@ -461,7 +461,7 @@ namespace shape_finder
         }
 
     public:
-        void onInit()
+        virtual void onInit()
         {
             pub_.advertise(nh_, "objects", 1);
             normal_marker_pub = nh_.advertise<visualization_msgs::Marker>("normal_out", 1);
