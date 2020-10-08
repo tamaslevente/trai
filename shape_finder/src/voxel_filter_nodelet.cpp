@@ -39,7 +39,7 @@ namespace shape_finder
     }
 
   public:
-    void onInit()
+    virtual void onInit()
     {
       //pub_.advertise(nh_, "voxel_cloud", 1);
       pub_.advertise(nh_, "voxel_cloud", 1);
