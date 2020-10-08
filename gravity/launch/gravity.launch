@@ -1,0 +1,12 @@
+
+<launch>
+ <node pkg="gravity" type="gravity_node" name="gravity_node" output="screen" >
+<remap from="imu_data" to="/pico_zense/imu"/>
+</node>
+
+ <node pkg="rviz" type="rviz" name="rviz" output="screen" args="-d $(find gravity)/cfg/rviz.rviz"/>
+
+ <node pkg="rqt_reconfigure" type="rqt_reconfigure" name="rqt_reconfigure" output="screen" />
+
+</launch>
+
