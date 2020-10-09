@@ -4,23 +4,29 @@ namespace shape_finder
 {
   class GravityNodelet : public nodelet::Nodelet
   {
+
+  public:
+    GravityNodelet() {}
+    ~GravityNodelet() {}
+
   private:
-    double PI = 3.14159265;
-    ros::NodeHandle nh_;
-    ros::NodeHandle private_nh;
-    std::string tf_frame = "pico_zense_depth_frame";
-    ros::Subscriber sub_imu;
-    ros::Publisher gravity_marker_pub;
-    ros::Publisher g_pub;
-    dynamic_reconfigure::Server<shape_finder::gravity_nodeletConfig> config_server_;
-    Eigen::Vector3f gravity, gravity0;
-    bool g_init;
-    double lean_tolerance;
-    geometry_msgs::Point gravity_vector;
+    virtual void
+    onInit()
+    {
+      //private_nh("~");
+      g_init = false;
+      gravity_marker_pub = nh_.advertise<visualization_msgs::Marker>("imu_out", 1);
+      config_server_.setCallback(boost::bind(&GravityNodelet::dynReconfCallback, this, _1, _2));
+      sub_imu = nh_.subscribe("imu_data", 1, &GravityNodelet::imuCallback, this);
+      g_pub = private_nh.advertise<geometry_msgs::Point>("gravity_point", 1);
+      ros::NodeHandle private_nh("~");
+      private_nh.param("frame_id", tf_frame, std::string("pico_zense_depth_frame"));
+    }
 
     void
-    dynReconfCallback(shape_finder::gravity_nodeletConfig &config, uint32_t level)
+    dynReconfCallback(shape_finder::shape_finderConfig &config, uint32_t level)
     {
+      std::cout << "GRAVITY" << std::endl;
       lean_tolerance = config.lean_tolerance * PI / 180;
     }
 
@@ -99,19 +105,18 @@ namespace shape_finder
       gravity_marker_pub.publish(gravity_marker);
     }
 
-  public:
-    virtual void
-    onInit()
-    {
-      //private_nh("~");
-      g_init = false;
-      gravity_marker_pub = nh_.advertise<visualization_msgs::Marker>("imu_out", 1);
-      config_server_.setCallback(boost::bind(&GravityNodelet::dynReconfCallback, this, _1, _2));
-      sub_imu = nh_.subscribe("imu_data", 1, &GravityNodelet::imuCallback, this);
-      g_pub = private_nh.advertise<geometry_msgs::Point>("gravity_point", 1);
-      ros::NodeHandle private_nh("~");
-      private_nh.param("frame_id", tf_frame, std::string("pico_zense_depth_frame"));
-    }
+    double PI = 3.14159265;
+    ros::NodeHandle nh_;
+    ros::NodeHandle private_nh;
+    std::string tf_frame = "pico_zense_depth_frame";
+    ros::Subscriber sub_imu;
+    ros::Publisher gravity_marker_pub;
+    ros::Publisher g_pub;
+    dynamic_reconfigure::Server<shape_finder::shape_finderConfig> config_server_;
+    Eigen::Vector3f gravity, gravity0;
+    bool g_init;
+    double lean_tolerance = 5;
+    geometry_msgs::Point gravity_vector;
   };
 
 } // namespace shape_finder
