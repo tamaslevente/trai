@@ -4,34 +4,21 @@ namespace shape_finder
 {
     class ShapeFinderNodelet : public nodelet::Nodelet
     {
+    public:
+        ShapeFinderNodelet() {}
+        ~ShapeFinderNodelet() {}
 
     private:
-        double PI = 3.14159265;
-        ros::NodeHandle nh_;
-        ros::NodeHandle private_nh;
-        std::string tf_frame = "pico_zense_depth_frame";
-        float leaf_size = 0.02f;
-        float th = 0.6;
-        size_t big_plane_size = 1000;
-        size_t min_cloud_size = 100;
-        ros::Subscriber sub_;
-        ros::Subscriber sub_g;
-        ros::Publisher normal_marker_pub;
-        pcl_ros::Publisher<sensor_msgs::PointCloud2> pub_;
-        dynamic_reconfigure::Server<shape_finder::shape_finder_nodeletConfig> config_server_;
-        Eigen::Vector3f gravity;
-        double hv_tolerance;
-        double NormalDistanceWeightP;
-        int MaxIterationsP;
-        double DistanceThresholdP;
-        double DistanceThresholdP0;
-        double NormalDistanceWeightC;
-        int MaxIterationsC;
-        double DistanceThresholdC;
-        double RadiusLimitsMinC;
-        double RadiusLimitsMaxC;
-        double StddevMulThresh;
-        int MeanK;
+        virtual void onInit()
+        {
+            pub_.advertise(nh_, "objects", 1);
+            normal_marker_pub = nh_.advertise<visualization_msgs::Marker>("normal_out", 1);
+            sub_ = nh_.subscribe("point_cloud_in", 1, &ShapeFinderNodelet::cloudCallback, this);
+            config_server_.setCallback(boost::bind(&ShapeFinderNodelet::dynReconfCallback, this, _1, _2));
+            sub_g = nh_.subscribe("gravity_in", 1, &ShapeFinderNodelet::gCallback, this);
+            ros::NodeHandle private_nh("~");
+            private_nh.param("frame_id", tf_frame, std::string("pico_zense_depth_frame"));
+        }
 
         pcl::PointCloud<pcl::PointXYZ>::Ptr
         ret_sphere(pcl::PointCloud<pcl::PointXYZ>::ConstPtr cloud)
@@ -432,8 +419,9 @@ namespace shape_finder
         }
 
         void
-        dynReconfCallback(shape_finder::shape_finder_nodeletConfig &config, uint32_t level)
+        dynReconfCallback(shape_finder::shape_finderConfig &config, uint32_t level)
         {
+            std::cout << "SHAPE" << std::endl;
             th = config.overlap_threshold;
             big_plane_size = config.big_plane_size;
             min_cloud_size = config.min_cloud_size;
@@ -460,17 +448,32 @@ namespace shape_finder
             gravity.normalize();
         }
 
-    public:
-        virtual void onInit()
-        {
-            pub_.advertise(nh_, "objects", 1);
-            normal_marker_pub = nh_.advertise<visualization_msgs::Marker>("normal_out", 1);
-            sub_ = nh_.subscribe("point_cloud_in", 1, &ShapeFinderNodelet::cloudCallback, this);
-            config_server_.setCallback(boost::bind(&ShapeFinderNodelet::dynReconfCallback, this, _1, _2));
-            sub_g = nh_.subscribe("gravity_in", 1, &ShapeFinderNodelet::gCallback, this);
-            ros::NodeHandle private_nh("~");
-            private_nh.param("frame_id", tf_frame, std::string("pico_zense_depth_frame"));
-        }
+        double PI = 3.14159265;
+        ros::NodeHandle nh_;
+        ros::NodeHandle private_nh;
+        std::string tf_frame = "pico_zense_depth_frame";
+        float leaf_size = 0.02f;
+        float th = 0.6;
+        size_t big_plane_size = 1000;
+        size_t min_cloud_size = 100;
+        ros::Subscriber sub_;
+        ros::Subscriber sub_g;
+        ros::Publisher normal_marker_pub;
+        pcl_ros::Publisher<sensor_msgs::PointCloud2> pub_;
+        dynamic_reconfigure::Server<shape_finder::shape_finderConfig> config_server_;
+        Eigen::Vector3f gravity;
+        double hv_tolerance = 15.0;
+        double NormalDistanceWeightP;
+        int MaxIterationsP;
+        double DistanceThresholdP;
+        double DistanceThresholdP0;
+        double NormalDistanceWeightC;
+        int MaxIterationsC;
+        double DistanceThresholdC;
+        double RadiusLimitsMinC;
+        double RadiusLimitsMaxC;
+        double StddevMulThresh;
+        int MeanK;
     };
 } // namespace shape_finder
 PLUGINLIB_EXPORT_CLASS(shape_finder::ShapeFinderNodelet, nodelet::Nodelet);
