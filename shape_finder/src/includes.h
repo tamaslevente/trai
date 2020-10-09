@@ -40,10 +40,10 @@
 #include <pcl_ros/publisher.h>
 #include <ros/publisher.h>
 #include <string>
-#include <shape_finder/shape_finder_nodeConfig.h>
-#include <shape_finder/shape_finder_nodeletConfig.h>
-#include <shape_finder/voxel_filter_nodeletConfig.h>
-#include <shape_finder/gravity_nodeletConfig.h>
+#include <shape_finder/shape_finderConfig.h>
+//#include <shape_finder/ShapeFinderNodeletConfig.h>
+//#include <shape_finder/VoxelFilterNodeletConfig.h>
+//#include <shape_finder/GravityNodeletConfig.h>
 #include "sensor_msgs/Imu.h"
 #include <math.h>
 #include <visualization_msgs/Marker.h>
