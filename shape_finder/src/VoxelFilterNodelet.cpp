@@ -4,15 +4,20 @@ namespace shape_finder
 {
   class VoxelFilterNodelet : public nodelet::Nodelet
   {
+  public:
+    VoxelFilterNodelet(){};
+    ~VoxelFilterNodelet(){};
 
   private:
-    ros::NodeHandle nh_;
-    ros::NodeHandle private_nh;
-    std::string tf_frame = "pico_zense_depth_frame";
-    float leaf_size;
-    ros::Subscriber sub_;
-    pcl_ros::Publisher<sensor_msgs::PointCloud2> pub_;
-    dynamic_reconfigure::Server<shape_finder::voxel_filter_nodeletConfig> config_server_;
+    virtual void onInit()
+    {
+      //pub_.advertise(nh_, "voxel_cloud", 1);
+      pub_.advertise(nh_, "voxel_cloud", 1);
+      sub_ = nh_.subscribe("point_cloud_in", 1, &VoxelFilterNodelet::cloudCallback, this);
+      config_server_.setCallback(boost::bind(&VoxelFilterNodelet::dynReconfCallback, this, _1, _2));
+      ros::NodeHandle private_nh("~");
+      private_nh.param("frame_id", tf_frame, std::string("pico_zense_depth_frame"));
+    }
 
     void
     cloudCallback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &cloud_in)
@@ -34,23 +39,19 @@ namespace shape_finder
     }
 
     void
-    dynReconfCallback(shape_finder::voxel_filter_nodeletConfig &config, uint32_t level)
+    dynReconfCallback(shape_finder::shape_finderConfig &config, uint32_t level)
     {
+      if(leaf_size!=config.leafsize) std::cout << "VOXEL "<< leaf_size << ", " << config.leafsize << std::endl;
       leaf_size = config.leafsize;
     }
 
-  public:
-    virtual void onInit()
-    {
-      //pub_.advertise(nh_, "voxel_cloud", 1);
-      pub_.advertise(nh_, "voxel_cloud", 1);
-      sub_ = nh_.subscribe("point_cloud_in", 1, &VoxelFilterNodelet::cloudCallback, this);
-      config_server_.setCallback(boost::bind(&VoxelFilterNodelet::dynReconfCallback, this, _1, _2));
-      ros::NodeHandle private_nh("~");
-      private_nh.param("frame_id", tf_frame, std::string("pico_zense_depth_frame"));
-    }
-    VoxelFilterNodelet(){};
-    ~VoxelFilterNodelet(){};
+    ros::NodeHandle nh_;
+    ros::NodeHandle private_nh;
+    std::string tf_frame = "pico_zense_depth_frame";
+    float leaf_size;
+    ros::Subscriber sub_;
+    pcl_ros::Publisher<sensor_msgs::PointCloud2> pub_;
+    dynamic_reconfigure::Server<shape_finder::shape_finderConfig> config_server_;
   };
 
 } // namespace shape_finder
