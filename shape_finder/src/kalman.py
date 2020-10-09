@@ -46,7 +46,7 @@ class Subscriber(object):
 		#self.kalman.P *= 0.1
 		self.kalman.R *= 1.0
 
-		self.pub_accel = rospy.Publisher('filtered_imu', Imu)
+		self.pub_accel = rospy.Publisher('filtered_imu', Imu, queue_size=1)
 
 		rospy.Subscriber('/pico_zense/imu', Imu, self.callback_accel)
 		rospy.spin()
@@ -73,5 +73,4 @@ class Subscriber(object):
 
 if __name__ == '__main__':
 	subscriber = Subscriber()
-
 
