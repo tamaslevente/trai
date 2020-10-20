@@ -57,13 +57,13 @@ def callback(image_msg):
     # min_range = min(img2_vec[0], img2_vec[len(img2)-1])
     # min_range = np.min(img2)
     # print(img2)
-    min_range = np.min(img2) #0
-    max_range = np.max(img2) #65535 
+    min_range = 0 #np.min(img2) #0
+    max_range = 4500 #np.max(img2) #65535 
     delta = max_range - min_range
     print("after conversion (np.float32)----------")
     print('min_range: ', min_range,'max_range: ', max_range,'delta: ', delta)
     print("######################################")
-    img2 = (img2 - min_range)/delta 
+    img2 = img2/1000 #(img2 - min_range)/delta * 4.5
     # img2_not_ready_yet = (img2 - min_range)/delta 
     # img2 = img2_not_ready_yet * 65535 + (1.0 - img2_not_ready_yet) * 0
     # print(img2) 
