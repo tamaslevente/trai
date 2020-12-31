@@ -1,0 +1,12 @@
+\subsubsection parameters ROS parameters
+
+Reads and maintains the following parameters on the ROS server
+
+- \b "~distanceThreshold" : \b [double] Distance_between_points_for_clusterization min: 0.0, default: 0.03, max: 10.0
+- \b "~max_planes" : \b [int] How many planes to detect in an image min: 0, default: 10, max: 100
+- \b "~planesDelay" : \b [double] Delay between showing the planes in an image. min: 0.0, default: 1.0, max: 10.0
+- \b "~StddevMulThresh" : \b [double] Set the standard deviation multiplier for the distance threshold calculation. min: 0.0, default: 1.0, max: 100.0
+- \b "~MeanK" : \b [double] The number of points to use for mean distance estimation. min: 0.0, default: 50.0, max: 1000.0
+- \b "~maxIterations" : \b [int] The number of iterations over the pcd in order to find the ground plane. min: 0, default: 1000, max: 5000
+- \b "~angle" : \b [double] The maximum difference between the model NORMAL and the specified axis. min: 0.0, default: 10.0, max: 180.0
+

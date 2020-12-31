@@ -1,0 +1,8 @@
+prefix=/home/funderburger/work_ws/cloud2depth_ws/install
+
+Name: pcl_nodes
+Description: Description of pcl_nodes
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
