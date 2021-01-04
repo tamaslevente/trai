@@ -1,1 +1,0 @@
-set(ORDERED_PATHS "/home/funderburger/cvbridge_build_ws/install/lib;/opt/ros/melodic/lib")

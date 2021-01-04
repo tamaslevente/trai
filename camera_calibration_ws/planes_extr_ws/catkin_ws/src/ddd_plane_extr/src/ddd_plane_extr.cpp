@@ -57,7 +57,8 @@ public:
     {
         pub_ = nh_.advertise<PointCloud>("/ddd_extracted_planes", 1);
         pub2_ = nh_.advertise<PointCloud>("/ddd_extracted_planes_all_Points", 1);
-        pub3_ = nh_.advertise<PointCloud>("/ddd_extracted_plane_gt", 1);
+        pub3_ = nh_.advertise<PointCloud>("/ddd_extracted_gt", 1);
+        pub4_ = nh_.advertise<PointCloud>("/ddd_extracted_plane_gt", 1);
 
         sub_ = nh_.subscribe("/aditof_roscpp/aditof_pcloud", 1, &Planes2Depth::cloudCallback, this);
 
@@ -83,6 +84,81 @@ public:
         _angle = config.angle;
     }
 
+    PointCloud::Ptr * extractPlanes(PointCloud::Ptr inputCloud, pcl::PointIndices::Ptr inliers, pcl::ModelCoefficients::Ptr coefficients, float distanceThreshold, float angle, int maxIterations)
+    {
+        static PointCloud::Ptr pointClouds[2];
+
+        // Create the segmentation object
+        pcl::SACSegmentation<pcl::PointXYZ> seg;
+        // Optional
+        seg.setOptimizeCoefficients(true);
+        // Mandatory
+        seg.setModelType(pcl::SACMODEL_PERPENDICULAR_PLANE);
+        seg.setMaxIterations(maxIterations);
+        seg.setMethodType(pcl::SAC_RANSAC);
+        seg.setDistanceThreshold(distanceThreshold);
+
+        //because we want a specific plane (X-Z Plane) (In camera coordinates the ground plane is perpendicular to the y axis)
+        Eigen::Vector3f axis = Eigen::Vector3f(0.0, 1.0, 0.0); //y axis
+        seg.setAxis(axis);
+        seg.setEpsAngle(10.0 * (M_PI / 180.0f)); // plane can be within 10.0 degrees of X-Z plane
+
+        // Create pointcloud to publish inliers
+        pcl::ExtractIndices<pcl::PointXYZ> extract;
+
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane(new pcl::PointCloud<pcl::PointXYZ>());
+        pcl::PointCloud<pcl::PointXYZ>::Ptr inversed_cloud_plane(new pcl::PointCloud<pcl::PointXYZ>());
+
+        // Fit a plane
+        seg.setInputCloud(inputCloud);
+        seg.segment(*inliers, *coefficients);
+
+        // Check result
+        if (inliers->indices.size() == 0)
+        {
+            std::cout << "Could not estimate a planar model for the given dataset." << std::endl;
+            // break;
+        }
+
+        // Extract inliers
+        extract.setInputCloud(inputCloud);
+        extract.setIndices(inliers);
+        extract.setNegative(false);
+        // Get the points associated with the planar surface
+        extract.filter(*cloud_plane);
+        // Let only the points that are not in the planar surface
+        extract.setNegative(true);
+        extract.filter(*inversed_cloud_plane);
+
+        pointClouds[0] = cloud_plane;
+        pointClouds[1] = inversed_cloud_plane;
+
+        return pointClouds;
+    }
+
+    // PointCloud::Ptr voxelFilter(){
+    //     // std::cout << std::endl;
+    //     // std::cout << "PointCloud before filtering has: " << cloud1->size() << " data points." << std::endl; //*
+    //     // // Create the filtering object: downsample the dataset using a leaf size of 1cm
+    //     // pcl::VoxelGrid<pcl::PointXYZ> vg1;
+    //     // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered_voxel1(new pcl::PointCloud<pcl::PointXYZ>);
+
+    //     // vg1.setInputCloud(cloud1);
+    //     // float leaf_size = 0.01f;
+    //     // vg1.setLeafSize(leaf_size, leaf_size, leaf_size);
+    //     // vg1.filter(*cloud_filtered_voxel1);
+
+    //     // std::cout << "PointCloud after filtering has: " << cloud_filtered_voxel1->size() << " data points." << std::endl; //*
+    //     // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered1(new pcl::PointCloud<pcl::PointXYZ>);
+    //     // pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor1;
+
+    //     // sor1.setInputCloud(cloud_filtered_voxel1);
+    //     // sor1.setMeanK(_MeanK);
+    //     // sor1.setStddevMulThresh(_StddevMulThresh);
+    //     // sor1.setNegative(false);
+    //     // sor1.filter(*cloud_filtered1);
+    // }
+
     void cloudCallback(const PointCloud::ConstPtr &cloud_in_msg)
     {
         if (!cloud_in_msg || cloud_in_msg->size() <= 0)
@@ -93,86 +169,22 @@ public:
 
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1(new pcl::PointCloud<pcl::PointXYZ>);
         pcl::copyPointCloud(*cloud_in_msg, *cloud1);
-        // std::cout << std::endl;
-        // std::cout << "PointCloud before filtering has: " << cloud1->size() << " data points." << std::endl; //*
-        // // Create the filtering object: downsample the dataset using a leaf size of 1cm
-        // pcl::VoxelGrid<pcl::PointXYZ> vg1;
-        // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered_voxel1(new pcl::PointCloud<pcl::PointXYZ>);
 
-        // vg1.setInputCloud(cloud1);
-        // float leaf_size = 0.01f;
-        // vg1.setLeafSize(leaf_size, leaf_size, leaf_size);
-        // vg1.filter(*cloud_filtered_voxel1);
-
-        // std::cout << "PointCloud after filtering has: " << cloud_filtered_voxel1->size() << " data points." << std::endl; //*
-        // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered1(new pcl::PointCloud<pcl::PointXYZ>);
-        // pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor1;
-
-        // sor1.setInputCloud(cloud_filtered_voxel1);
-        // sor1.setMeanK(_MeanK);
-        // sor1.setStddevMulThresh(_StddevMulThresh);
-        // sor1.setNegative(false);
-        // sor1.filter(*cloud_filtered1);
 
         // ##########################################################
         // #Take only the non-distorted points from the ground floor#
         // ##########################################################
         pcl::ModelCoefficients::Ptr okCoefficients(new pcl::ModelCoefficients);
         pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
-        // Create the segmentation object
-        pcl::SACSegmentation<pcl::PointXYZ> seg;
-        // Optional
-        seg.setOptimizeCoefficients(true);
-        // Mandatory
-        seg.setModelType(pcl::SACMODEL_PERPENDICULAR_PLANE);
-        seg.setMaxIterations(_maxIterations);
-        seg.setMethodType(pcl::SAC_RANSAC);
-        // seg.setDistanceThreshold(_distanceThreshold);
-        seg.setDistanceThreshold(0.01);
 
-        //because we want a specific plane (X-Z Plane) (In camera coordinates the ground plane is perpendicular to the y axis)
-        Eigen::Vector3f axis1 = Eigen::Vector3f(0.0, 1.0, 0.0); //y axis
-        seg.setAxis(axis1);
-        seg.setEpsAngle(10.0 * (M_PI / 180.0f)); // plane can be within 10.0 degrees of X-Z plane
+        // Extract the base point for floor, here we are interested in getting the coefficients of these points
+        PointCloud::Ptr * pointClouds = extractPlanes(cloud1, inliers, okCoefficients, 0.03, 10.0, _maxIterations);
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane1(*pointClouds);
 
-        // Create pointcloud to publish inliers
-        pcl::ExtractIndices<pcl::PointXYZ> extract1;
-
-        // int original_size(cloud_filtered->size());
-        int n_planes(0);
-        pcl::PointCloud<pcl::PointXYZ> cloudF1;
-
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane1(new pcl::PointCloud<pcl::PointXYZ>());
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_f1(new pcl::PointCloud<pcl::PointXYZ>());
-
-        // Fit a plane
-        seg.setInputCloud(cloud1);
-        seg.segment(*inliers, *okCoefficients);
-
-        // Check result
-        if (inliers->indices.size() == 0)
-        {
-            std::cout << "Could not estimate a planar model for the given dataset." << std::endl;
-            // break;
-        }
-
-        // Extract inliers
-        extract1.setInputCloud(cloud1);
-        extract1.setIndices(inliers);
-        extract1.setNegative(false);
-        // Get the points associated with the planar surface
-        extract1.filter(*cloud_plane1);
-        std::cerr << "PointCloud representing the planar component: " << cloud_plane1->width * cloud_plane1->height << " data points." << std::endl;
-
-        // Remove the planar inliers, extract the rest
-        extract1.setNegative(true);
-        extract1.filter(*cloud_f1);
-        // cloud_filtered.swap(cloud_f);
-
-        // Next iteration
+        // Publish pointcloud with tese points
         PointCloud::Ptr final_cloud1(new PointCloud);
         std::cerr << "------------------------------------" << std::endl;
-        std::cerr << "Nr_planes: " << n_planes << std::endl;
+        // std::cerr << "Nr_planes: " << n_planes << std::endl;
         final_cloud1->header.frame_id = "base_link";
         final_cloud1->header.stamp = cloud_in_msg->header.stamp;
         final_cloud1->points = cloud_plane1->points;
@@ -183,92 +195,25 @@ public:
         // ###########################################
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
         pcl::copyPointCloud(*cloud_in_msg, *cloud);
-        // std::cout << std::endl;
-        // std::cout << "PointCloud before filtering has: " << cloud->size() << " data points." << std::endl; //*
-        // // Create the filtering object: downsample the dataset using a leaf size of 1cm
-        // pcl::VoxelGrid<pcl::PointXYZ> vg;
-        // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered_voxel(new pcl::PointCloud<pcl::PointXYZ>);
-
-        // vg.setInputCloud(cloud);
-        // // float leaf_size = 0.01f;
-        // vg.setLeafSize(leaf_size, leaf_size, leaf_size);
-        // vg.filter(*cloud_filtered_voxel);
-
-        // std::cout << "PointCloud after filtering has: " << cloud_filtered_voxel->size() << " data points." << std::endl; //*
-        // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZ>);
-        // pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
-
-        // sor.setInputCloud(cloud_filtered_voxel);
-        // sor.setMeanK(_MeanK);
-        // sor.setStddevMulThresh(_StddevMulThresh);
-        // sor.setNegative(false);
-        // sor.filter(*cloud_filtered);
 
         pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
         pcl::PointIndices::Ptr okInliers(new pcl::PointIndices);
-        // Create the segmentation object
-        pcl::SACSegmentation<pcl::PointXYZ> seg2;
-        // Optional
-        seg2.setOptimizeCoefficients(true);
-        // Mandatory
-        seg2.setModelType(pcl::SACMODEL_PERPENDICULAR_PLANE);
-        seg2.setMaxIterations(_maxIterations);
-        seg2.setMethodType(pcl::SAC_RANSAC);
-        seg2.setDistanceThreshold(_distanceThreshold);
 
-        //because we want a specific plane (X-Z Plane) (In camera coordinates the ground plane is perpendicular to the y axis)
-        Eigen::Vector3f axis = Eigen::Vector3f(0.0, 1.0, 0.0); //y axis
-        seg2.setAxis(axis);
-        seg2.setEpsAngle(_angle * (M_PI / 180.0f)); // plane can be within 30 degrees of X-Z plane
+        // Extract as many points as you can from the ground floor (that is why we'll use larger numbers:
+        //         _distanceThreshold: 0.07 (meters)
+        //         _angle: 15.0 (degree))
+        pointClouds = extractPlanes(cloud, okInliers, coefficients, _distanceThreshold, _angle, _maxIterations);
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane(*pointClouds);
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_no_plane(*(pointClouds+1));
 
-        // Create pointcloud to publish inliers
-        pcl::ExtractIndices<pcl::PointXYZ> extract;
 
-        // int original_size(cloud_filtered->size());
-        // int n_planes(0);
-        pcl::PointCloud<pcl::PointXYZ> cloudF;
-
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane(new pcl::PointCloud<pcl::PointXYZ>());
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_f(new pcl::PointCloud<pcl::PointXYZ>());
-
-        // Fit a plane
-        seg2.setInputCloud(cloud);
-        seg2.segment(*okInliers, *coefficients);
-
-        // Check result
-        if (okInliers->indices.size() == 0)
-        {
-            std::cout << "Could not estimate a planar model for the given dataset." << std::endl;
-            // break;
-        }
-
-        // Extract inliers
-        extract.setInputCloud(cloud);
-        extract.setIndices(okInliers);
-        extract.setNegative(false);
-        // Get the points associated with the planar surface
-        extract.filter(*cloud_plane);
-        std::cerr << "PointCloud representing the planar component: " << cloud_plane->width * cloud_plane->height << " data points." << std::endl;
-
-        // Remove the planar inliers, extract the rest
-        extract.setNegative(true);
-        extract.filter(*cloud_f);
-        // cloud_filtered.swap(cloud_f);
-
-        // Next iteration
+        // Publish this point cloud
         PointCloud::Ptr final_cloud(new PointCloud);
         std::cerr << "------------------------------------" << std::endl;
-        std::cerr << "Nr_planes: " << n_planes << std::endl;
         final_cloud->header.frame_id = "base_link";
         final_cloud->header.stamp = cloud_in_msg->header.stamp;
-        final_cloud->points = cloud_f->points;
+        final_cloud->points = cloud_plane->points;
         pub2_.publish(final_cloud);
-        n_planes++;
-
-        // for (int i = 0; i < cloud_plane->points.size(); i++)
-        // {
-        //     cloud_plane->points[i].y = -1;
-        // }
 
         // Project all the points to a plane
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_projected(new pcl::PointCloud<pcl::PointXYZ>);
@@ -277,24 +222,30 @@ public:
         proj.setInputCloud(cloud_plane);
         proj.setModelCoefficients(okCoefficients);
         proj.filter(*cloud_projected);
+        
+        // Publish the point cloud
+        PointCloud::Ptr gt_plane(new PointCloud);
+        std::cerr << "------------------------------------" << std::endl;
+        gt_plane->header.frame_id = "base_link";
+        gt_plane->header.stamp = cloud_in_msg->header.stamp;
+        gt_plane->points = cloud_projected->points;
+        pub4_.publish(gt_plane);
 
         // Create the final image
         pcl::PointCloud<pcl::PointXYZ> cloud_a, cloud_b;
-        // cloud_a = &cloud_f;
-        // pcl::copyPointCloud(cloud_f,cloud_a);
-        cloud_a.points = cloud_f->points;
+        cloud_a.points = cloud_no_plane->points;
         cloud_b.points = cloud_projected->points;
         cloud_b += cloud_a;
 
         PointCloud::Ptr gt_cloud(new PointCloud);
         std::cerr << "------------------------------------" << std::endl;
-        std::cerr << "Nr_planes: " << n_planes << std::endl;
         gt_cloud->header.frame_id = "base_link";
         gt_cloud->header.stamp = cloud_in_msg->header.stamp;
         gt_cloud->points = cloud_b.points;
         pub3_.publish(gt_cloud);
 
         ros::Duration(_planesDelay).sleep();
+
         // ***********************
         // **CONVERSION TO DEPTH**
         // ***********************
@@ -359,6 +310,8 @@ private:
     ros::Publisher pub_;
     ros::Publisher pub2_;
     ros::Publisher pub3_;
+    ros::Publisher pub4_;
+
     // image_transport::Publisher pub2_;
     // calibration parameters
     // double K[9] = {385.8655956930966, 0.0, 342.3593021849471,

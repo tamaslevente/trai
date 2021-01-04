@@ -43,10 +43,10 @@ public:
    */
     Cloud2Depth() : it_(nh_)
     {
-        pub_ = it_.advertise("/aditof_roscpp/aditof_cloud_2_depth_static", 1);
+        pub_ = it_.advertise("/aditof_roscpp/aditof_cloud_2_depth", 1);
 
 
-        sub_ = nh_.subscribe("ddd_extracted_plane_gt", 1, &Cloud2Depth::cloudCallback, this);
+        sub_ = nh_.subscribe("ddd_extracted_gt", 1, &Cloud2Depth::cloudCallback, this);
 
         double dist_thr;
         int max_its;

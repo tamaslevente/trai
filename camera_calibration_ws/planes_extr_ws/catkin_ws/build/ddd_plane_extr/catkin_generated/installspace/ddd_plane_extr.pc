@@ -1,8 +1,0 @@
-prefix=/home/funderburger/work_ws/calibration_ws/planes_extr_ws/catkin_ws/install
-
-Name: ddd_plane_extr
-Description: Description of ddd_plane_extr
-Version: 0.0.0
-Cflags: -I${prefix}/include
-Libs: -L${prefix}/lib 
-Requires: 

@@ -1,2 +1,0 @@
-ddd_plane_extr
--DCMAKE_BUILD_TYPE=Debug -DCATKIN_DEVEL_PREFIX=/home/funderburger/work_ws/calibration_ws/planes_extr_ws/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/funderburger/work_ws/calibration_ws/planes_extr_ws/catkin_ws/install -G Unix Makefiles

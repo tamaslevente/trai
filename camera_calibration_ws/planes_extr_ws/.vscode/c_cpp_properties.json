@@ -8,9 +8,10 @@
             "includePath": [
                 // "/home/funderburger/cvbridge_build_ws/install/include/**",
                 "/opt/ros/melodic/include/**",
-                "/home/funderburger/work_ws/calibration_ws/planes_extr_ws/catkin_ws/src/ddd_plane_extr/include/**",
+                // "/home/funderburger/work_ws/calibration_ws/planes_extr_ws/catkin_ws/src/ddd_plane_extr/include/**",
                 // "/home/funderburger/work_ws/cloud2depth_ws/src/pcl_nodes/include/**",
-                "/home/funderburger/work_ws/calibration_ws/planes_extr_ws/catkin_ws/**",
+                // "/home/funderburger/work_ws/calibration_ws/planes_extr_ws/catkin_ws/**",
+                "/home/funderburger/work_ws/repo/trai/camera_calibration_ws/planes_extr_ws/catkin_ws/**",
                 "/usr/include/**"
             ],
             "name": "ROS",

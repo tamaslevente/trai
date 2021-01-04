@@ -1,2 +1,0 @@
-pcl_nodes
--DCMAKE_BUILD_TYPE=Debug -DCATKIN_DEVEL_PREFIX=/home/funderburger/work_ws/cloud2depth_ws/devel -DCMAKE_INSTALL_PREFIX=/home/funderburger/work_ws/cloud2depth_ws/install -G Unix Makefiles
