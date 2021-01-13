@@ -226,9 +226,16 @@ include_directories(
 # catkin_add_nosetests(test)
 
 add_executable(ddd_plane_extr src/ddd_plane_extr.cpp)
+add_executable(ddd_plane_extr_from_pcd src/ddd_plane_extr_from_pcd.cpp)
+add_executable(save_frames src/save_frames.cpp)
 add_dependencies(ddd_plane_extr ${PROJECT_NAME}_gencfg)
+# add_dependencies(ddd_plane_extr_from_pcd ${PROJECT_NAME}_gencfg)
 
 target_include_directories(ddd_plane_extr PRIVATE ${Python3_INCLUDE_DIRS})
+target_include_directories(ddd_plane_extr_from_pcd PRIVATE ${Python3_INCLUDE_DIRS})
+target_include_directories(save_frames PRIVATE ${Python3_INCLUDE_DIRS})
 
 target_link_libraries(ddd_plane_extr ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_INCLUDE_DIRS} ${OpenCV_LIBS} ${PYTHON3_LIBRARIES})
+target_link_libraries(ddd_plane_extr_from_pcd ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_INCLUDE_DIRS} ${OpenCV_LIBS} ${PYTHON3_LIBRARIES})
+target_link_libraries(save_frames ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_INCLUDE_DIRS} ${OpenCV_LIBS} ${PYTHON3_LIBRARIES})
 

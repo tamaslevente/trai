@@ -60,7 +60,7 @@ public:
         pub3_ = nh_.advertise<PointCloud>("/ddd_extracted_gt", 1);
         pub4_ = nh_.advertise<PointCloud>("/ddd_extracted_plane_gt", 1);
 
-        sub_ = nh_.subscribe("/aditof_roscpp/aditof_pcloud", 1, &Planes2Depth::cloudCallback, this);
+        sub_ = nh_.subscribe("/pico_pcloud_rect", 1, &Planes2Depth::cloudCallback, this);
 
         // double dist_thr;
         // int max_its;
