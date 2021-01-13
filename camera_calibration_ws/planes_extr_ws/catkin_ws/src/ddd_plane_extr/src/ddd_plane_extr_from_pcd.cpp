@@ -71,8 +71,8 @@ public:
 
         // "~" means, that the node hand is opened within the private namespace (to get the "own" paraemters)
         ros::NodeHandle private_nh("~");
-        string saveDirPcd = "/home/funderburger/work_ws/calibration_ws/planes_extr_ws/training_data/depth_gt/"; // BEWARE of that last / !!! You don't want to forget that, trust me!
-        string saveDirDepth = "/home/funderburger/work_ws/calibration_ws/planes_extr_ws/training_data/depth_gt/"; // BEWARE of that last / !!! You don't want to forget that, trust me!
+        string saveDirPcd = "/home/funderburger/work_ws/calibration_ws/planes_extr_ws/training_data/pcd_gt/"; // BEWARE of that last / !!! You don't want to forget that, trust me!
+        string saveDirDepth = "/home/funderburger/work_ws/calibration_ws/planes_extr_ws/training_data/depth_gt_debug/"; // BEWARE of that last / !!! You don't want to forget that, trust me!
 
         if (private_nh.getParam("pcd_folder", _param))
         {
@@ -132,7 +132,7 @@ public:
         //because we want a specific plane (X-Z Plane) (In camera coordinates the ground plane is perpendicular to the y axis)
         Eigen::Vector3f axis = Eigen::Vector3f(0.0, 1.0, 0.0); //y axis
         seg.setAxis(axis);
-        seg.setEpsAngle(10.0 * (M_PI / 180.0f)); // plane can be within 10.0 degrees of X-Z plane
+        seg.setEpsAngle(angle * (M_PI / 180.0f)); // plane can be within 10.0 degrees of X-Z plane
 
         // Create pointcloud to publish inliers
         pcl::ExtractIndices<pcl::PointXYZ> extract;
@@ -208,7 +208,7 @@ public:
         pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
 
         // Extract the base point for floor, here we are interested in getting the coefficients of these points
-        PointCloud::Ptr *pointClouds = extractPlanes(cloud1, inliers, okCoefficients, 0.03, 10.0, 1000);
+        PointCloud::Ptr *pointClouds = extractPlanes(cloud1, inliers, okCoefficients, 0.03, 23.0, 1000);
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane1(*pointClouds);
 
         // Publish pointcloud with tese points
@@ -230,9 +230,8 @@ public:
         pcl::PointIndices::Ptr okInliers(new pcl::PointIndices);
 
         // Extract as many points as you can from the ground floor (that is why we'll use larger numbers:
-        //         _distanceThreshold: 0.17 (meters) (pretty huge, I know!)
-        //         _angle: 15.0 (degree))
-        pointClouds = extractPlanes(cloud, okInliers, coefficients, 0.17, 15.0, 1000);
+        //         _distanceThreshold: 0.13 (meters) (pretty huge, I know!)
+        pointClouds = extractPlanes(cloud, okInliers, coefficients, 0.13, 20.0, 1000);
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane(*pointClouds);
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_no_plane(*(pointClouds + 1));
 
@@ -278,8 +277,8 @@ public:
         // pub3_.publish(gt_cloud);
 
         // save the pcd if you want
-        // pcl::io::savePCDFileASCII (pcd_file_name, *gt_cloud);
-        // std::cerr << "Saved " << gt_cloud->size() << " data points to"<< pcd_file_name << std::endl;
+        pcl::io::savePCDFileASCII (pcd_file_name, *gt_cloud);
+        std::cerr << "Saved " << gt_cloud->size() << " data points to"<< pcd_file_name << std::endl;
 
         // ***********************
         // **CONVERSION TO DEPTH**
@@ -329,15 +328,9 @@ public:
         }
 
         cv_image.convertTo(cv_image, CV_16UC1);
-
         cv::imwrite(depth_file_name, cv_image);
         std::cerr << "Saved " << gt_cloud->size() << " data points to"<< depth_file_name << std::endl;
-        // imshow("Display depth from point cloud", cv_image);
-        // waitKey(3);
 
-        // imwrite("depth_from_pcd.png",cv_image);
-        sensor_msgs::ImagePtr output_image = cv_bridge::CvImage(std_msgs::Header(), "16UC1", cv_image).toImageMsg();
-        // pub_.publish(output_image);
     }
 
 private:

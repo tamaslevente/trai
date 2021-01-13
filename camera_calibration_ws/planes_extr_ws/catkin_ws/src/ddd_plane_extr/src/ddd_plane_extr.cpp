@@ -60,7 +60,7 @@ public:
         pub3_ = nh_.advertise<PointCloud>("/ddd_extracted_gt", 1);
         pub4_ = nh_.advertise<PointCloud>("/ddd_extracted_plane_gt", 1);
 
-        sub_ = nh_.subscribe("/pico_pcloud_rect", 1, &Planes2Depth::cloudCallback, this);
+        sub_ = nh_.subscribe("/pico_pcloud", 1, &Planes2Depth::cloudCallback, this);
 
         // double dist_thr;
         // int max_its;
@@ -81,7 +81,8 @@ public:
         _MeanK = config.MeanK;
         _StddevMulThresh = config.StddevMulThresh;
         _maxIterations = config.maxIterations;
-        _angle = config.angle;
+        _angleCoeff = config.angleCoeff;
+        _anglePoints = config.anglePoints;
     }
 
     PointCloud::Ptr * extractPlanes(PointCloud::Ptr inputCloud, pcl::PointIndices::Ptr inliers, pcl::ModelCoefficients::Ptr coefficients, float distanceThreshold, float angle, int maxIterations)
@@ -101,7 +102,7 @@ public:
         //because we want a specific plane (X-Z Plane) (In camera coordinates the ground plane is perpendicular to the y axis)
         Eigen::Vector3f axis = Eigen::Vector3f(0.0, 1.0, 0.0); //y axis
         seg.setAxis(axis);
-        seg.setEpsAngle(10.0 * (M_PI / 180.0f)); // plane can be within 10.0 degrees of X-Z plane
+        seg.setEpsAngle(angle * (M_PI / 180.0f)); // plane can be within 10.0 degrees of X-Z plane
 
         // Create pointcloud to publish inliers
         pcl::ExtractIndices<pcl::PointXYZ> extract;
@@ -178,7 +179,7 @@ public:
         pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
 
         // Extract the base point for floor, here we are interested in getting the coefficients of these points
-        PointCloud::Ptr * pointClouds = extractPlanes(cloud1, inliers, okCoefficients, 0.03, 10.0, _maxIterations);
+        PointCloud::Ptr * pointClouds = extractPlanes(cloud1, inliers, okCoefficients, 0.03, _angleCoeff, _maxIterations);
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane1(*pointClouds);
 
         // Publish pointcloud with tese points
@@ -201,8 +202,8 @@ public:
 
         // Extract as many points as you can from the ground floor (that is why we'll use larger numbers:
         //         _distanceThreshold: 0.07 (meters)
-        //         _angle: 15.0 (degree))
-        pointClouds = extractPlanes(cloud, okInliers, coefficients, _distanceThreshold, _angle, _maxIterations);
+        //         _anglePoints: 15.0 (degree))
+        pointClouds = extractPlanes(cloud, okInliers, coefficients, _distanceThreshold, _anglePoints, _maxIterations);
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane(*pointClouds);
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_no_plane(*(pointClouds+1));
 
@@ -339,7 +340,8 @@ private:
     float _planesDelay;
     int _MeanK;
     double _StddevMulThresh;
-    float _angle;
+    float _angleCoeff;
+    float _anglePoints;
     int _maxIterations;
 };
 

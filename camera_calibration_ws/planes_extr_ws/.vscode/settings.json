@@ -68,7 +68,9 @@
         "random": "cpp",
         "set": "cpp",
         "string": "cpp",
-        "string_view": "cpp"
+        "string_view": "cpp",
+        "condition_variable": "cpp",
+        "mutex": "cpp"
     },
     "cmake.sourceDirectory": "${workspaceFolder}/src",
     "C_Cpp.intelliSenseEngineFallback": "Enabled"
