@@ -5,7 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) Launch",
+            "name": "ROS: Launch",
+            "type": "ros",
+            "request": "launch",
+            "target": "/home/funderburger/work_ws/repo/trai/camera_calibration_ws/planes_extr_ws/catkin_ws/launch/save_frames.launch"
+        },
+        {
+            "name": "ddd_plane_extr",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/catkin_ws/devel/lib/ddd_plane_extr/ddd_plane_extr",
@@ -22,6 +28,26 @@
                     "ignoreFailures": true
                 }
             ]
+        },
+        {
+            "name": "ddd_plane_extr_from_pcd",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/catkin_ws/devel/lib/ddd_plane_extr/ddd_plane_extr_from_pcd",
+            "args": ["_pcd_folder:=/home/funderburger/work_ws/calibration_ws/planes_extr_ws/training_data/pcd_small"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
         }
+        
     ]
 }
