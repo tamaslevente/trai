@@ -30,3 +30,8 @@
 *.exe
 *.out
 *.app
+
+#Folders
+dataset/
+saved_models/
+.venv_mono_depth/

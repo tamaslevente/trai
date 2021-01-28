@@ -1,0 +1,24 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "main_fpn.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/MonoDepth-FPN-PyTorch/main_fpn.py",
+            "args": ["--cuda", "--bs", "1"],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "combine_ir_depth.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/catkin_ws/src/ddd_plane_extr/scripts/combine_ir_depth.py",
+            // "args": ["--cuda", "--bs", "1"],
+            "console": "integratedTerminal"
+        }
+    ]
+}
