@@ -123,4 +123,4 @@ class I2D(nn.Module):
         # return self.predict2( self.up4(self.predict1(vol)) )
         pred1 = self.predict1(vol)
         pred2 = F.interpolate(self.predict2(pred1), size=(H*4,W*4), mode='bilinear')
-        return pred2     # img : depth = 4 : 1 
+        return pred2     # img : depth = 1 : 1 

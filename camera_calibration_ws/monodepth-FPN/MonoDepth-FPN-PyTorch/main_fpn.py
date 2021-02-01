@@ -159,8 +159,13 @@ class NormalLoss(nn.Module):
                 grad_real[:, :, :, None]).squeeze(-1).squeeze(-1)
         fake_norm = torch.sqrt(torch.sum(grad_fake**2, dim=-1))
         real_norm = torch.sqrt(torch.sum(grad_real**2, dim=-1))
+        eps=1e-7
+        real_norm2 = real_norm.clone()
+        fake_norm2 = fake_norm.clone()
+        real_norm2[real_norm2==0] = eps
+        fake_norm2[fake_norm2==0] = eps
 
-        return 1 - torch.mean(prod/(fake_norm*real_norm))
+        return 1 - torch.mean(prod/(fake_norm2*real_norm2))
 
 # def get_acc(output, target):
 #     # takes in two tensors to compute accuracy
@@ -504,12 +509,42 @@ if __name__ == '__main__':
             z.resize_(data[1].size()).copy_(data[1])
 
             optimizer.zero_grad()
-            z_fake = i2d(img)
+            z_fake = i2d(img) * 65536
             
             if show_image:
-                save_image(img[0], save_dir +'depthir_'+str(epoch)+'.png')
-                save_image(z[0], save_dir+'gt_'+str(epoch)+'.png')
-                save_image(z_fake[0], save_dir+'pred_'+str(epoch)+'.png')
+                # for i in range(img.shape[0]):
+                # plt.imshow(np.transpose(imgs[i], (1, 2, 0)))
+                # plt.show()
+                plt.imshow(img[0].cpu().numpy().transpose((1,2,0)))
+                plt.savefig(save_dir +'depthir_'+str(epoch)+'.png',bbox_inches='tight')
+                plt.close()
+
+                # vmin, vmax = 0, 10000/65536.
+                plt.imshow(z[0].cpu().numpy().transpose((1,2,0)))#, vmin=vmin, vmax=vmax)
+                plt.colorbar()
+                plt.savefig(save_dir +'gt_'+str(epoch)+'.png',bbox_inches='tight')
+                plt.close()
+                # plt.show()
+                
+                plt.imshow(z_fake[0].cpu().detach().numpy().transpose((1,2,0)))#, vmin=vmin, vmax=vmax)
+                plt.colorbar()
+                plt.savefig(save_dir +'pred_'+str(epoch)+'.png',bbox_inches='tight')
+                plt.close()
+                # plt.imshow(gt[i][0], vmin=vmin, vmax=vmax)
+                # plt.colorbar()
+                # plt.show()
+                # save_image(img[0], save_dir +'depthir_'+str(epoch)+'.png')
+                # save_image(z[0], save_dir+'gt_'+str(epoch)+'.png')
+                img_file = open(save_dir+'gt_'+str(epoch)+'.txt',"w")
+                for row in z[0].cpu().numpy():
+                    np.savetxt(img_file,row)
+                img_file.close()
+                
+                save_image(z_fake[0], save_dir+'predPIL_'+str(epoch)+'.png')
+                img_file = open(save_dir+'pred_'+str(epoch)+'.txt',"w")
+                for row in z_fake[0].cpu().detach().numpy():
+                    np.savetxt(img_file,row)
+                img_file.close()
                 # ird_img= img[0].cpu().numpy()
                 # cv2.imshow('depthir_'+str(epoch)+'.png',ird_img)
                 # img_path = str(save_dir+'depthir_'+str(epoch)+'.png')
@@ -522,10 +557,10 @@ if __name__ == '__main__':
 
             grad_real, grad_fake = imgrad_yx(z), imgrad_yx(z_fake)
             grad_loss = grad_criterion(grad_fake, grad_real) * grad_factor * (epoch > 3)
-            normal_loss = normal_criterion(grad_fake, grad_real) * normal_factor * (epoch > 7)
+            # normal_loss = normal_criterion(grad_fake, grad_real) * normal_factor * (epoch > 7)
 
-            loss = depth_loss + grad_loss + normal_loss
-            loss *= 10
+            loss = depth_loss #+ grad_loss #+ normal_loss
+            # loss *= 10
             loss.backward()
             optimizer.step()
 
@@ -534,23 +569,24 @@ if __name__ == '__main__':
             # info
             if step % args.disp_interval == 0:
                 file_object = open("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/results.txt", 'a')
-                print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f grad_loss: %.4f normal_loss: %.4f"
-                      % (epoch, step, loss, depth_loss, grad_loss, normal_loss))
+                print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f"# grad_loss: %.4f"# normal_loss: %.4f"
+                      % (epoch, step, loss, depth_loss))#, grad_loss))#, normal_loss))
                 # print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f"
                 #       % (epoch, step, loss, depth_loss))
-                file_object.write("\n[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f grad_loss: %.4f normal_loss: %.4f"
-                      % (epoch, step, loss, depth_loss, grad_loss, normal_loss))
+                file_object.write("\n[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f" #grad_loss: %.4f" # normal_loss: %.4f" 
+                      % (epoch, step, loss, depth_loss))#, grad_loss))#, normal_loss))
                 file_object.close()
 #                 print("[epoch %2d][iter %4d] loss: %.4f iRMSE: %.4f" \
 #                                 % (epoch, step, loss, metric))
         # save model
-        save_name = os.path.join(args.output_dir, 'i2d_{}_{}.pth'.format(args.session, epoch))
-        
-        torch.save({'epoch': epoch+1,
-                    'model': i2d.state_dict(),
-                    #                     'optimizer': optimizer.state_dict(),
-                    },
-                save_name)
+        if epoch%4 == 0:
+            save_name = os.path.join(args.output_dir, 'i2d_{}_{}.pth'.format(args.session, epoch))
+            
+            torch.save({'epoch': epoch+1,
+                        'model': i2d.state_dict(),
+                        #                     'optimizer': optimizer.state_dict(),
+                        },
+                    save_name)
             
 
 
@@ -586,10 +622,9 @@ if __name__ == '__main__':
 
                 z_fake = i2d(img)
                 loss_eval = depth_criterion(z_fake,z)*10
-                print("Loss on test_data: ",loss_eval)
-                # loss.backward()
-                # optimizer.step()
-                save_image(z_fake[0],'/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/vis_images/depth_pred_'+str(epoch)+'_'+'.png')
+                # print("Loss on test_data: ",loss_eval)
+
+                # save_image(z_fake[0],'/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/vis_images/depth_pred_'+str(epoch)+'_'+'.png')
                 # depth_loss = float(img.size(0)) * rmse(z_fake, z)**2
                 # eval_loss += depth_loss
                 # rmse_accum += float(img.size(0)) * eval_metric(z_fake, z)**2
