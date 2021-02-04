@@ -31,7 +31,7 @@
 *.out
 *.app
 
-#Folders
-dataset/
+# Folders
+training_data/
 saved_models/
 .venv_mono_depth/
