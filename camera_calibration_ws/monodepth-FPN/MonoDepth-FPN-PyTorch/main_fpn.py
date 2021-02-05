@@ -381,41 +381,6 @@ if __name__ == '__main__':
     eval_dataloader = torch.utils.data.DataLoader(eval_dataset, batch_size=args.bs,
                                                   shuffle=True, num_workers=args.num_workers) #maybe trying with False for shuffle, here?
 
-
-#     # dataset
-#     if args.dataset == 'kitti':
-#         train_dataset = DepthDataset(root='/disk2/depth_data/kitti/train') # KittiDataset(train=True)
-#         eval_dataset = DepthDataset(root='/disk2/depth_data/kitti/train') # KittiDataset(train=False)
-# #         train_dataset = DepthDataset(root='../data/kitti/train') # KittiDataset(train=True)
-# #         eval_dataset = DepthDataset(root='../data/kitti/train') # KittiDataset(train=False)
-#         train_size = len(train_dataset)
-#         eval_size = len(eval_dataset)
-#         print(train_size, eval_size)
-
-#         train_batch_sampler = sampler(train_size, args.bs)
-#         eval_batch_sampler = sampler(eval_size, args.bs)
-
-#         train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=args.bs,
-#                                 shuffle=True, collate_fn=collate_fn, num_workers=args.num_workers)
-
-#         eval_dataloader = torch.utils.data.DataLoader(eval_dataset, batch_size=args.bs,
-#                                 shuffle=True, collate_fn=collate_fn, num_workers=args.num_workers)
-
-#     elif args.dataset == 'nyuv2':
-#         train_dataset = NYUv2Dataset()
-#         train_size = len(train_dataset)
-#         eval_dataset = NYUv2Dataset(train=False)
-#         eval_size = len(eval_dataset)
-#         print(train_size)
-
-#         train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=args.bs,
-#                                 shuffle=True, num_workers=args.num_workers)
-#         eval_dataloader = torch.utils.data.DataLoader(eval_dataset, batch_size=args.bs,
-#                                 shuffle=True, num_workers=args.num_workers)
-
-#     elif args.dataset == 'scannet':
-#         pass
-
     # network initialization
     print('Initializing model...')
     i2d = I2D(fixed_feature_weights=False)
@@ -483,6 +448,8 @@ if __name__ == '__main__':
 
     for epoch in range(args.start_epoch, args.max_epochs):
 
+        train_loss = 0 
+        val_loss = 0
         # setting to train mode
         i2d.train()
         start = time.time()
@@ -509,16 +476,20 @@ if __name__ == '__main__':
             z.resize_(data[1].size()).copy_(data[1])
 
             optimizer.zero_grad()
-            z_fake = i2d(img) * 65536
+            z_fake = i2d.forward(img) * z.max()
             
             if show_image:
                 # for i in range(img.shape[0]):
                 # plt.imshow(np.transpose(imgs[i], (1, 2, 0)))
                 # plt.show()
-                plt.imshow(img[0].cpu().numpy().transpose((1,2,0)))
-                plt.savefig(save_dir +'depthir_'+str(epoch)+'.png',bbox_inches='tight')
-                plt.close()
-
+                # save_image(img[0], save_dir+'depthirPIL_'+str(epoch)+'.png')
+                # plt.imshow(img[0].cpu().numpy().transpose((1,2,0)))
+                # plt.savefig(save_dir +'depthir_'+str(epoch)+'.png',bbox_inches='tight')
+                # plt.close()
+                # rgbArray = np.zeros((len(img[0][1]),len(img[0][1][1]),3), 'uint16')
+                rgbArray = np.array(img[0].cpu(),np.uint16).transpose((1,2,0))
+                cv2.imwrite(save_dir+'depthirCV_'+str(epoch)+'.png',rgbArray)
+                # a = cv2.imread(save_dir+'depthirCV_'+str(epoch)+'.png', cv2.IMREAD_UNCHANGED)
                 # vmin, vmax = 0, 10000/65536.
                 plt.imshow(z[0].cpu().numpy().transpose((1,2,0)))#, vmin=vmin, vmax=vmax)
                 plt.colorbar()
@@ -559,23 +530,24 @@ if __name__ == '__main__':
             grad_loss = grad_criterion(grad_fake, grad_real) * grad_factor * (epoch > 3)
             # normal_loss = normal_criterion(grad_fake, grad_real) * normal_factor * (epoch > 7)
 
-            loss = depth_loss #+ grad_loss #+ normal_loss
+            loss = 10*depth_loss #+ grad_loss #+ normal_loss
             # loss *= 10
             loss.backward()
             optimizer.step()
 
+            train_loss += loss.item()
             end = time.time()
 
             # info
             if step % args.disp_interval == 0:
-                file_object = open("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/results.txt", 'a')
+                # file_object = open("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/results.txt", 'a')
                 print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f"# grad_loss: %.4f"# normal_loss: %.4f"
                       % (epoch, step, loss, depth_loss))#, grad_loss))#, normal_loss))
                 # print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f"
                 #       % (epoch, step, loss, depth_loss))
-                file_object.write("\n[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f" #grad_loss: %.4f" # normal_loss: %.4f" 
-                      % (epoch, step, loss, depth_loss))#, grad_loss))#, normal_loss))
-                file_object.close()
+                # file_object.write("\n[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f" #grad_loss: %.4f" # normal_loss: %.4f" 
+                #       % (epoch, step, loss, depth_loss))#, grad_loss))#, normal_loss))
+                # file_object.close()
 #                 print("[epoch %2d][iter %4d] loss: %.4f iRMSE: %.4f" \
 #                                 % (epoch, step, loss, metric))
         # save model
@@ -610,7 +582,6 @@ if __name__ == '__main__':
 
             print('evaluating...')
 
-            eval_loss = 0
             rmse_accum = 0
             count = 0
             eval_data_iter = iter(eval_dataloader)
@@ -621,7 +592,10 @@ if __name__ == '__main__':
                 z.resize_(data[1].size()).copy_(data[1])
 
                 z_fake = i2d(img)
-                loss_eval = depth_criterion(z_fake,z)*10
+
+                depth_loss_eval = depth_criterion(z_fake,z)*10
+                loss_val = depth_loss_eval * 10
+                val_loss += loss_val.item()
                 # print("Loss on test_data: ",loss_eval)
 
                 # save_image(z_fake[0],'/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/vis_images/depth_pred_'+str(epoch)+'_'+'.png')
@@ -630,6 +604,19 @@ if __name__ == '__main__':
                 # rmse_accum += float(img.size(0)) * eval_metric(z_fake, z)**2
                 # count += float(img.size(0))
 
+            train_loss = train_loss/iters_per_epoch #len(train_dataloader)
+            val_loss = val_loss/iters_per_epoch #len(eval_dataloader)
+
+            print('Epoch: {} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}'.format(epoch, train_loss, val_loss))
+
+            file_object = open("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/results.md", 'a')
+            # print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f"# grad_loss: %.4f"# normal_loss: %.4f"
+            #         % (epoch, step, loss, depth_loss))#, grad_loss))#, normal_loss))
+            # print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f"
+            #       % (epoch, step, loss, depth_loss))
+            file_object.write('\nEpoch: {} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}'.format(epoch, train_loss, val_loss)) #grad_loss: %.4f" # normal_loss: %.4f" 
+                    # % (epoch, step, loss, depth_loss))#, grad_loss))#, normal_loss))
+            file_object.close()
             # print("[epoch %2d] RMSE_log: %.4f RMSE: %.4f"
             #       % (epoch, torch.sqrt(eval_loss/count), torch.sqrt(rmse_accum/count)))
             # with open('val.txt', 'a') as f:

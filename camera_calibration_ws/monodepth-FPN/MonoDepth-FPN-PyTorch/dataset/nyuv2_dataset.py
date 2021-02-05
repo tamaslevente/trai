@@ -12,7 +12,7 @@ import torch.nn.functional as F
 import random
 import scipy.ndimage as ndimage
 from scipy import misc
-
+import cv2
 
 class RandomCrop(object):
     """Crop randomly the image in a sample.
@@ -146,8 +146,8 @@ class MyCustomDataset(data.Dataset):
 
         self.augmentation = Compose([RandomHorizontalFlip()])  # , RandomCropRotate(10)
         # ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
-        self.rgb_transform = Compose([ToPILImage(), Resize((480, 640)), ToTensor()])
-        self.depth_transform = Compose([ToPILImage(), Resize((480, 640)), ToTensor()])
+        self.rgb_transform = Compose([ToPILImage(mode='RGB'), Resize((480, 640)), ToTensor()])
+        self.depth_transform = Compose([ToPILImage(mode='I'), Resize((480, 640)), ToTensor()])
 
         # if self.train:
         #     self.length = 50000  # len(self.rgb_paths)
@@ -156,18 +156,34 @@ class MyCustomDataset(data.Dataset):
 
     def __getitem__(self, index):
         path = self.rgb_paths[index]
-        rgb = Image.open(path)
-        depth = Image.open(path.replace('combined_ir_d_d', 'depth_gt'))
+        rgb = cv2.imread(path,-1) # or rgb = cv2.imread(path,cv2.IMREAD_UNCHANGED)
+        # rgb = cv2.cvtColor(rgb,cv2.COLOR_BGR2RGB)
+        depth = cv2.imread(path.replace('combined_ir_d_d', 'depth_gt'),-1)
+        # rgb = np.array(rgb,np.float32)
+        # depth = np.array(depth,np.float32)
+        rgb = cv2.resize(rgb,(640,480))
+        depth = cv2.resize(depth,(640,480))
+        
+        rgb = np.array(rgb,np.float32,copy=True).transpose((2,0,1)) 
+        depth = np.array(depth,np.float32,copy=True)[:, :, None].transpose((2,0,1))
 
-        if self.train:
-            rgb, depth = np.array(rgb,np.uint8,copy=True), np.array(depth,copy=True)[:, :, None]
-            rgb, depth = self.augmentation((rgb, depth))
-            return self.rgb_transform(np.array(rgb)), self.depth_transform(np.array(depth)).squeeze(-1) #what's the squeeze job in here?
+        rgbTensor = torch.from_numpy(rgb).long()
+        depthTensor = torch.from_numpy(depth).long()
+        # rgbPIL = Image.fromarray(np.flipud(rgb))
+        # depthPIL = Image.fromarray(np.array(depth))
+        # cv2.imwrite('rgb.png',rgb)
+
+        # if self.train:
+        #     rgb, depth = np.array(rgb,np.uint8,copy=True), np.array(depth,copy=True)[:, :, None]
+        #     rgb, depth = self.augmentation((rgb, depth))
+        #     return self.rgb_transform(np.array(rgb)), self.depth_transform(np.array(depth)).squeeze(-1) #what's the squeeze job in here?
 
         # return Compose([Resize((240, 320)), ToTensor()])(rgb), ToTensor()(depth)
-        return Compose([Resize((480,640)), ToTensor()])(rgb), Compose([Resize((480,640)), ToTensor()])(depth)
+        # rgbComp = Compose([Resize((480,640))])(rgbTensor)
+        # depthComp = Compose([Resize((480,640))])(depthTensor).unsqueeze(1)
+        return  rgbTensor, depthTensor
 
-        return rgb, depth
+        return rgbComp, depthComp
 
     def __len__(self):
         return self.length

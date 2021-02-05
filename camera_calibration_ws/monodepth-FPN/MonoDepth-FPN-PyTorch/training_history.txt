@@ -1,0 +1,103 @@
+%%%%%%%%
+%Rules:%
+%%%%%%%%
+    ~ I will only add things that I changed with respect to the previous training session.
+    ~ A "+" means a new configuration added.
+    ~ A "-" means a removed configuration.
+#############
+###Default###
+#############
+Loss: RMSE_log; 
+Optimizer: SGD, momentum=0.9, lr=1e-3, lr_decay_step=5, lr_decay_gamma=0.1;
+Training parameters: epochs=10, bs=1 (batch_size), num_workers=1;
+Other training parameters: gamma_sup=1. (factor of supervised loss), gamma_unsup=1. (factor of unsupervised learning), gamma_reg=10. (factor of regularization loss);
+#########     #
+    #       # #
+    #         #
+    #       # # # 
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results: After 6 epochs no major improvements
+[epoch  6][iter  590] loss: 4.9486 RMSElog: 4.9486
+#########   ###
+    #      #   #
+    #         #
+    #       # # # 
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: Changed the mode of scaling the network output (multiplying by 65535)
+Results: Again, as expected, not much of a difference
+[epoch  6][iter  590] loss: 5.3301 RMSElog: 5.3301
+#########     # # #
+    #         ###
+    #            #
+    #       # # # 
+Loss:
+Optimizer:
+Training parameters: epochs=15;
+Other training parameters:
+Others: Multiplying loss with 10
+Results: Much faster drop in loss, so... we'll keep this change, but there is still a problem in scaling the image as it is identifying some very distant points
+#########     #
+    #       # #
+    #      #####
+    #         # 
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: I'll try scaling the output with he max value from gt depth image
+Results: As expected the scaling goes well. 
+[epoch 14][iter  580] loss: 37.7501 RMSElog: 3.7750
+[epoch 14][iter  590] loss: 43.2417 RMSElog: 4.3242
+#########     #####
+    #        #### 
+    #            #
+    #       # ##  
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: new loss format (making the mean over an epoch)
+Results:  not a good loss, because I made a wrong mean
+#########     ###
+    #        ### 
+    #       #   #
+    #        ###  
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: changed from using PIL to OpenCV for reading images (also now is no normalization)
+#########     #
+    #       # #
+    #         #
+    #       # # # 
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others:
+#########     #
+    #       # #
+    #         #
+    #       # # # 
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others:
+#########     #
+    #       # #
+    #         #
+    #       # # # 
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others:

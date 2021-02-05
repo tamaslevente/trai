@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/MonoDepth-FPN-PyTorch/main_fpn.py",
-            "args": ["--cuda", "--bs", "1"],
+            "args": ["--cuda", "--bs", "1", "--epochs", "15"],
             "console": "integratedTerminal"
         },
         {

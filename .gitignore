@@ -35,3 +35,5 @@
 training_data/
 saved_models/
 .venv_mono_depth/
+build/
+devel/
