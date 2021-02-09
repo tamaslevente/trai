@@ -74,30 +74,248 @@ Optimizer:
 Training parameters:
 Other training parameters:
 Others: changed from using PIL to OpenCV for reading images (also now is no normalization)
-#########     #
-    #       # #
+Results: Ok, I would say.
+Epoch: 14 	Training Loss: 41.911617 	Validation Loss: 562.930368
+#########   ####  
     #         #
-    #       # # # 
+    #        #
+    #       # 
 Loss:
 Optimizer:
 Training parameters:
 Other training parameters:
-Others:
-#########     #
-    #       # #
-    #         #
-    #       # # # 
+Others: 6000 is the max depth for output after scaling, plus only some error corrections for OpenCV when saving images
+Results: 
+Epoch: 14 	Training Loss: 41.909513 	Validation Loss: 561.895508
+#########   / \
+    #       \ / 
+    #       / \
+    #       \_/ 
 Loss:
 Optimizer:
 Training parameters:
 Other training parameters:
-Others:
-#########     #
-    #       # #
+Others: -applied normalization on inputs (basically dividing images with the max depth value (6571) from the dataset, and also restoring the predicted image by multiplying the output with the same value)   
+Results: not much of an improvement
+Epoch: 14 	Training Loss: 41.883721 	Validation Loss: 284.111349
+#########   ###
+    #       ###
     #         #
-    #       # # # 
+    #       ###  
+Loss: Change RMSE_log with L1 
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: fixed some errors when calculating the validation loss
+Results: bad ideea :))
+Epoch: 4 	Training Loss: 349168.011146 	Validation Loss: 196926.170417
+#########     #    ####
+    #       # #    #  #
+    #         #    #  #
+    #       # # #  ####
+Loss: RMSElog + Gradient loss
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: loss = 10*depth_loss + 0.01*grad_loss
+Results: Some changes, in the fact that the range has dropped from 0~6000 to 0~1400 (not ok)
+Epoch: 14 	Training Loss: 201.239118 	Validation Loss: 118.499354
+#########     #       #
+    #       # #     # #
+    #         #       #
+    #       # # #   # # #
+Loss: 
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: loss = 10*depth_loss + 0.001*grad_loss
+Results: Now range is from 0~2000
+Epoch: 14 	Training Loss: 58.986532 	Validation Loss: 121.968695
+#########     #     ###
+    #       # #    #  #
+    #         #      #
+    #       # # #   #### 
 Loss:
 Optimizer:
 Training parameters:
 Other training parameters:
-Others:
+Others: loss = 10*(depth_loss + 0.001*grad_loss) with gradient loss from epoch zero
+Results: Not ok.
+Epoch: 14 	Training Loss: 201.117745 	Validation Loss: 118.385841
+#########     #    ###
+    #       # #     __#
+    #         #       #
+    #       # # #  ###
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: loss = 10*(depth_loss + 0.001*grad_loss) from epoch five
+Results: 
+Epoch: 12 	Training Loss: 202.250685 	Validation Loss: 118.536363
+#########     #      #
+    #       # #    # #
+    #         #   ######
+    #       # # #    #
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: loss = 10*(depth_loss + 0.0001*grad_loss) from epoch five
+Results: Again, not good.
+Epoch: 14 	Training Loss: 58.996475 	Validation Loss: 38.082026
+#########     #       ####
+    #       # #      ###
+    #         #         #
+    #       # # #   ###
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: loss = 10*(depth_loss + 0.0001*grad_loss) from epoch 9
+Results: Still, not good.
+Epoch: 14 	Training Loss: 59.500130 	Validation Loss: 38.195396
+#########     #         ###
+    #       # #        ##
+    #         #       #  #
+    #       # # #     ### 
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: loss = 10*(depth_loss + 0.00001*grad_loss) from epoch 6
+Results: Seems like no matter how small I make the gradient, it'll still downscale the maximum depth. (Pretty strange)
+Epoch: 14 	Training Loss: 43.861073 	Validation Loss: 29.600205
+#########     #    #####
+    #       # #       #
+    #         #      #
+    #       # # #   #
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others:  loss = 10*(depth_loss + 0.001*grad_loss) from epoch 6. I'm rescaling images only for representation. 
+Results: So, by not calculaing loss on rescaled images, there seems to be some small improvement in this configuration, especially because now gradient loss has values much smaller (~5)
+Epoch: 14 	Training Loss: 26.806246 	Validation Loss: 213.137326
+#########     #    ####
+    #       # #    #__#
+    #         #    #  # 
+    #       # # #  ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: loss = 10*(depth_loss + 1*grad_loss) from fourth epoch
+Results: We need a smaller impact from gradient loss.
+Epoch: 10 	Training Loss: 52.656817 	Validation Loss: 88086.864388
+#########     #    ####
+    #       # #    #__#
+    #         #       # 
+    #       # # #  ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: loss = 10*(depth_loss + 0.1*grad_loss) from fourth epoch
+Results: Doesn't seem very good, we'll try smaller. It's still making a small rescaling (from max 6000 to max 5000)
+Epoch: 14 	Training Loss: 29.714553 	Validation Loss: 19.944820
+#########   ###     ####
+    #      #   #    #  #
+    #         #     #  #  
+    #       # # #   ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: loss = 10*(depth_loss + 0.01*grad_loss) from fourth epoch
+Results: Results ar interesting. I will say that for the moment it is ok like this, in future tests I might try to raise it, maybe just a little bit.
+#########   ###       #
+    #      #   #    # #
+    #         #       #
+    #       # # #   # # #
+Loss: + Normal loss
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results: 
+#########   ###      ###
+    #      #   #    #   #
+    #         #        #
+    #       # # #    # # #
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results: 
+#########   ###      ###
+    #      #   #     ___# 
+    #         #         #
+    #       # # #    ### 
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results: 
+#########   ###         #
+    #      #   #      # #
+    #         #      #####
+    #       # # #      #
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results: 
+#########   ###       ####
+    #      #   #     #__
+    #         #         #
+    #       # # #   ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results: 
+#########   ###      ###
+    #      #   #    #__
+    #         #     #  #
+    #       # # #   #### 
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results: 
+#########   ###     #####
+    #      #   #       #
+    #         #       #
+    #       # # #    #
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results: 
+#########   ###     ####
+    #      #   #    #__#
+    #         #     #  #
+    #       # # #   ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results: 
+#########   ###      ####
+    #      #   #     #__#
+    #         #         #
+    #       # # #     ###
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results: 

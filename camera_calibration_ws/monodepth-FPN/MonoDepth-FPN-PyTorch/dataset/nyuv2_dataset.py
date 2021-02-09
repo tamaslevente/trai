@@ -167,8 +167,11 @@ class MyCustomDataset(data.Dataset):
         rgb = np.array(rgb,np.float32,copy=True).transpose((2,0,1)) 
         depth = np.array(depth,np.float32,copy=True)[:, :, None].transpose((2,0,1))
 
-        rgbTensor = torch.from_numpy(rgb).long()
-        depthTensor = torch.from_numpy(depth).long()
+        max_depth = 6571
+        min_depth = 0
+        max_ir = 3840
+        rgbTensor = torch.from_numpy(rgb).long()/max_depth
+        depthTensor = torch.from_numpy(depth).long()/max_depth
         # rgbPIL = Image.fromarray(np.flipud(rgb))
         # depthPIL = Image.fromarray(np.array(depth))
         # cv2.imwrite('rgb.png',rgb)

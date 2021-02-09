@@ -31,14 +31,15 @@ class DepthDiff(nn.Module):
         if not fake.shape == real.shape:
             _, _, H, W = real.shape
             fake = F.interpolate(fake, size=(H, W), mode='bilinear')
-        
-        eps=1e-7
-        real2 = real.clone()
-        fake2 = fake.clone()
-        real2[real2==0] = eps
-        fake2[fake2==0] = eps
-        loss = torch.sqrt(torch.mean(
-            torch.abs(torch.log(real2)-torch.log(fake2)) ** 2))
+        real = self.point_cloud(z)
+        print(real)
+        # eps=1e-7
+        # real2 = real.clone()
+        # fake2 = fake.clone()
+        # real2[real2==0] = eps
+        # fake2[fake2==0] = eps
+        # loss = torch.sqrt(torch.mean(
+        #     torch.abs(torch.log(real2)-torch.log(fake2)) ** 2))
         return loss
         
     def point_cloud(self, depth):
@@ -52,13 +53,17 @@ class DepthDiff(nn.Module):
         NaN for the z-coordinate in the result.
 
         """
-        # rows, cols = depth.shape
-        # c, r = np.meshgrid(np.arange(cols), np.arange(rows), sparse=True)
-        # valid = (depth > 0) & (depth < 255)
-        # z = np.where(valid, depth / 256.0, np.nan)
-        # x = np.where(valid, z * (c - self.cx) / self.fx, 0)
-        # y = np.where(valid, z * (r - self.cy) / self.fy, 0)
-        # return np.dstack((x, y, z))
+        cx = 
+        cy = 
+        fx = 
+        fy = 
+        rows, cols = depth.shape
+        c, r = np.meshgrid(np.arange(cols), np.arange(rows), sparse=True)
+        valid = (depth > 0) & (depth < 65535)
+        z = np.where(valid, depth / 1000.0, np.nan)
+        x = np.where(valid, z * (c - self.cx) / self.fx, 0)
+        y = np.where(valid, z * (r - self.cy) / self.fy, 0)
+        return np.dstack((x, y, z))
 
     
 
@@ -378,9 +383,71 @@ if __name__ == '__main__':
 
     train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=args.bs,
                                                    shuffle=True, num_workers=args.num_workers)
+    # nr_of_pixels = len(train_dataset)*640*480*3
+    # finding max depth and ir values
+    # max_ir_value = 0
+    # max_d_value = 0
+    # min_ir_value = 100000
+    # min_d_value = 100000
+    # for batch in train_dataloader:
+    #     # batch[0][0][0][batch[0][0][0]!=0].min() 
+        
+    #     # max depth value
+    #     if batch[0][0][1].max() > max_d_value:
+    #         max_d_value = batch[0][0][1].max()
+    #     # max ir value
+    #     if batch[0][0][0].max() > max_ir_value:
+    #         max_ir_value = batch[0][0][0].max()
+
+    #     # min depth value
+    #     if batch[0][0][1][batch[0][0][1] != 0].min() < min_d_value:
+    #         min_d_value = batch[0][0][1][batch[0][0][1] != 0].min()
+    #     # min ir value
+    #     if batch[0][0][0][batch[0][0][0] != 0].min() < min_ir_value:
+    #         min_ir_value = batch[0][0][0][batch[0][0][0] != 0].min()
+
+    # print("max_d_value: ", max_d_value, "min_d_value",min_d_value)
+    # print("max_ir_value: ", max_ir_value, "min_ir_value",min_ir_value)
+    
+    # depth_test = cv2.imread("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/combined_ir_d_d_debug/train/image.png",-1)
+    # min_d_value = 100000
+    # max_d_value = 0
+
+    # mean = total_sum / nr_of_pixels
+
+    # sum_of_squared_error = 0
+    # for batch in train_dataloader: 
+    #     sum_of_squared_error += ((batch[0] - mean).pow(2)).sum()
+    # std = torch.sqrt(sum_of_squared_error / nr_of_pixels)
+    
     eval_dataloader = torch.utils.data.DataLoader(eval_dataset, batch_size=args.bs,
                                                   shuffle=True, num_workers=args.num_workers) #maybe trying with False for shuffle, here?
+    # same as above but on validation set
+    # max_ir_value = 0
+    # max_d_value = 0
+    # min_ir_value = 100000
+    # min_d_value = 100000
+    # for batch in eval_dataloader:
+    #     # batch[0][0][0][batch[0][0][0]!=0].min() 
+        
+    #     # max depth value
+    #     if batch[0][0][1].max() > max_d_value:
+    #         max_d_value = batch[0][0][1].max()
+    #     # max ir value
+    #     if batch[0][0][0].max() > max_ir_value:
+    #         max_ir_value = batch[0][0][0].max()
 
+    #     # min depth value
+    #     if batch[0][0][1][batch[0][0][1] != 0].min() < min_d_value:
+    #         min_d_value = batch[0][0][1][batch[0][0][1] != 0].min()
+    #     # min ir value
+    #     if batch[0][0][0][batch[0][0][0] != 0].min() < min_ir_value:
+    #         min_ir_value = batch[0][0][0][batch[0][0][0] != 0].min()
+
+    # print("evaluation dataset")
+    # print("max_d_value: ", max_d_value, "min_d_value",min_d_value)
+    # print("max_ir_value: ", max_ir_value, "min_ir_value",min_ir_value)
+    
     # network initialization
     print('Initializing model...')
     i2d = I2D(fixed_feature_weights=False)
@@ -415,6 +482,7 @@ if __name__ == '__main__':
 
     rmse = RMSE()
     depth_criterion = RMSE_log()
+    l1_crit = L1()
     depth_diff = DepthDiff()
     grad_criterion = GradLoss()
     normal_criterion = NormalLoss()
@@ -445,6 +513,7 @@ if __name__ == '__main__':
 
     grad_factor = 10.
     normal_factor = 1.
+    max_depth = 6571
 
     for epoch in range(args.start_epoch, args.max_epochs):
 
@@ -472,11 +541,11 @@ if __name__ == '__main__':
             start = time.time()
             data = train_data_iter.next()
 
-            img.resize_(data[0].size()).copy_(data[0])
-            z.resize_(data[1].size()).copy_(data[1])
+            img.resize_(data[0].size()).copy_(data[0])#*max_depth)
+            z.resize_(data[1].size()).copy_(data[1])#*max_depth)
 
             optimizer.zero_grad()
-            z_fake = i2d.forward(img) * z.max()
+            z_fake = i2d(img)#*max_depth # * 6000 #z.max()
             
             if show_image:
                 # for i in range(img.shape[0]):
@@ -487,31 +556,39 @@ if __name__ == '__main__':
                 # plt.savefig(save_dir +'depthir_'+str(epoch)+'.png',bbox_inches='tight')
                 # plt.close()
                 # rgbArray = np.zeros((len(img[0][1]),len(img[0][1][1]),3), 'uint16')
-                rgbArray = np.array(img[0].cpu(),np.uint16).transpose((1,2,0))
+                rgbArray = np.array(img[0].cpu()*max_depth,np.uint16).transpose((1,2,0))
                 cv2.imwrite(save_dir+'depthirCV_'+str(epoch)+'.png',rgbArray)
                 # a = cv2.imread(save_dir+'depthirCV_'+str(epoch)+'.png', cv2.IMREAD_UNCHANGED)
                 # vmin, vmax = 0, 10000/65536.
-                plt.imshow(z[0].cpu().numpy().transpose((1,2,0)))#, vmin=vmin, vmax=vmax)
+
+                ####################
+                #depth ground truth#
+                plt.imshow(z[0].cpu().numpy().transpose((1,2,0))*max_depth)#, vmin=vmin, vmax=vmax)
                 plt.colorbar()
                 plt.savefig(save_dir +'gt_'+str(epoch)+'.png',bbox_inches='tight')
                 plt.close()
-                # plt.show()
+                plt.imshow(z[0].cpu().numpy().transpose((1,2,0)))#, vmin=vmin, vmax=vmax)
+                plt.colorbar()
+                plt.savefig(save_dir +'unscaled_gt_'+str(epoch)+'.png',bbox_inches='tight')
+                plt.close()
                 
-                plt.imshow(z_fake[0].cpu().detach().numpy().transpose((1,2,0)))#, vmin=vmin, vmax=vmax)
+                ##################
+                #depth prediction#
+                plt.imshow(z_fake[0].cpu().detach().numpy().transpose((1,2,0))*max_depth)#, vmin=vmin, vmax=vmax)
                 plt.colorbar()
                 plt.savefig(save_dir +'pred_'+str(epoch)+'.png',bbox_inches='tight')
                 plt.close()
-                # plt.imshow(gt[i][0], vmin=vmin, vmax=vmax)
-                # plt.colorbar()
-                # plt.show()
-                # save_image(img[0], save_dir +'depthir_'+str(epoch)+'.png')
-                # save_image(z[0], save_dir+'gt_'+str(epoch)+'.png')
+                plt.imshow(z_fake[0].cpu().detach().numpy().transpose((1,2,0)))#, vmin=vmin, vmax=vmax)
+                plt.colorbar()
+                plt.savefig(save_dir +'unscaled_pred_'+str(epoch)+'.png',bbox_inches='tight')
+                plt.close()
+                
                 img_file = open(save_dir+'gt_'+str(epoch)+'.txt',"w")
                 for row in z[0].cpu().numpy():
                     np.savetxt(img_file,row)
                 img_file.close()
                 
-                save_image(z_fake[0], save_dir+'predPIL_'+str(epoch)+'.png')
+                # save_image(z_fake[0], save_dir+'predPIL_'+str(epoch)+'.png')
                 img_file = open(save_dir+'pred_'+str(epoch)+'.txt',"w")
                 for row in z_fake[0].cpu().detach().numpy():
                     np.savetxt(img_file,row)
@@ -526,11 +603,13 @@ if __name__ == '__main__':
 
             depth_loss = depth_criterion(z_fake, z)
 
+            diff_loss = depth_diff(z_fake,z)
+
             grad_real, grad_fake = imgrad_yx(z), imgrad_yx(z_fake)
             grad_loss = grad_criterion(grad_fake, grad_real) * grad_factor * (epoch > 3)
             # normal_loss = normal_criterion(grad_fake, grad_real) * normal_factor * (epoch > 7)
 
-            loss = 10*depth_loss #+ grad_loss #+ normal_loss
+            loss = 10*(depth_loss + 0.01*grad_loss) #+ normal_loss
             # loss *= 10
             loss.backward()
             optimizer.step()
@@ -541,8 +620,8 @@ if __name__ == '__main__':
             # info
             if step % args.disp_interval == 0:
                 # file_object = open("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/results.txt", 'a')
-                print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f"# grad_loss: %.4f"# normal_loss: %.4f"
-                      % (epoch, step, loss, depth_loss))#, grad_loss))#, normal_loss))
+                print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f Grad: %.4f"# grad_loss: %.4f"# normal_loss: %.4f"
+                      % (epoch, step, loss, depth_loss, grad_loss))#, grad_loss))#, normal_loss))
                 # print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f"
                 #       % (epoch, step, loss, depth_loss))
                 # file_object.write("\n[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f" #grad_loss: %.4f" # normal_loss: %.4f" 
@@ -593,10 +672,24 @@ if __name__ == '__main__':
 
                 z_fake = i2d(img)
 
-                depth_loss_eval = depth_criterion(z_fake,z)*10
-                loss_val = depth_loss_eval * 10
+                depth_loss_eval = depth_criterion(z_fake,z)
+                
+                grad_real, grad_fake = imgrad_yx(z), imgrad_yx(z_fake)
+                grad_loss_eval = grad_criterion(grad_fake, grad_real) * grad_factor  * (epoch > 3)
+                
+                loss_val = 10*(depth_loss_eval + 0.01*grad_loss_eval)
                 val_loss += loss_val.item()
                 # print("Loss on test_data: ",loss_eval)
+                if i==337:
+                    plt.imshow(z[0].cpu().numpy().transpose((1,2,0))*max_depth)#, vmin=vmin, vmax=vmax)
+                    plt.colorbar()
+                    plt.savefig('/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/vis_images/gt_'+str(epoch)+'.png',bbox_inches='tight')
+                    plt.close()
+
+                    plt.imshow(z_fake[0].cpu().detach().numpy().transpose((1,2,0))*max_depth)#, vmin=vmin, vmax=vmax)
+                    plt.colorbar()
+                    plt.savefig('/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/vis_images/pred_'+str(epoch)+'.png',bbox_inches='tight')
+                    plt.close()
 
                 # save_image(z_fake[0],'/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/vis_images/depth_pred_'+str(epoch)+'_'+'.png')
                 # depth_loss = float(img.size(0)) * rmse(z_fake, z)**2
@@ -609,7 +702,7 @@ if __name__ == '__main__':
 
             print('Epoch: {} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}'.format(epoch, train_loss, val_loss))
 
-            file_object = open("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/results.md", 'a')
+            file_object = open("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/results.txt", 'a')
             # print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f"# grad_loss: %.4f"# normal_loss: %.4f"
             #         % (epoch, step, loss, depth_loss))#, grad_loss))#, normal_loss))
             # print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f"
