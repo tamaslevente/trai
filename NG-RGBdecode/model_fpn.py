@@ -44,6 +44,11 @@ class I2D(nn.Module):
                 p.requires_grad = False
 
         self.layer0 = nn.Sequential(resnet.conv1, resnet.bn1, resnet.relu, resnet.maxpool)
+        # print(resnet.conv1)
+        # self.layer0_0 = nn.Sequential(nn.Conv2d(3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False))
+        # self.layer0_1 = nn.Sequential(resnet.bn1)
+        # self.layer0_2 = nn.Sequential(resnet.relu)
+        # self.layer0_3 = nn.Sequential(resnet.maxpool)
         self.layer1 = nn.Sequential(resnet.layer1)
         self.layer2 = nn.Sequential(resnet.layer2)
         self.layer3 = nn.Sequential(resnet.layer3)
@@ -101,11 +106,27 @@ class I2D(nn.Module):
         _,_,H,W = x.size()
         
         # Bottom-up
+        if torch.isnan(x).any() or torch.isinf(x).any():
+                print("X IS NAN OR INF")
+        # c1_0=self.layer0_0(x)    
+        # c1_1=self.layer0_1(c1_0) 
+        # c1_2=self.layer0_2(c1_1) 
+        # c1=self.layer0_3(c1_2) 
         c1 = self.layer0(x)
+        if torch.isnan(c1).any() or torch.isinf(c1).any():
+                print("X IS NAN OR INF")
         c2 = self.layer1(c1)
+        if torch.isnan(c2).any() or torch.isinf(c2).any():
+                print("X IS NAN OR INF")
         c3 = self.layer2(c2)
+        if torch.isnan(c3).any() or torch.isinf(c3).any():
+                print("X IS NAN OR INF")
         c4 = self.layer3(c3)
+        if torch.isnan(c4).any() or torch.isinf(c4).any():
+                print("X IS NAN OR INF")
         c5 = self.layer4(c4)
+        if torch.isnan(c5).any() or torch.isinf(c5).any():
+                print("X IS NAN OR INF")
 
         # Top-down
         p5 = self.toplayer(c5)
