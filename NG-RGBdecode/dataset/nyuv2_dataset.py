@@ -2,6 +2,7 @@ import torch.utils.data as data
 import numpy as np
 from PIL import Image
 from imageio import imread
+import png
 from pathlib import Path
 from constants import *
 from torchvision.transforms import Resize, Compose, ToPILImage, ToTensor, RandomHorizontalFlip, CenterCrop, ColorJitter
@@ -10,6 +11,7 @@ import torch.nn.functional as F
 import random
 import scipy.ndimage as ndimage
 from scipy import misc
+import cv2
 
 class RandomCrop(object):
     """Crop randomly the image in a sample.
@@ -121,12 +123,12 @@ class NYUv2Dataset(data.Dataset):
         self.root = Path(root)
         self.train = train
         if train:
-            self.rgb_paths = [root+'depthir/train/'+d for d in os.listdir(root+'depthir/train/')]
+            self.rgb_paths = [root+'depth2ir/train/'+d for d in os.listdir(root+'depth2ir/train/')]
             # Randomly choose 50k images without replacement
-            self.rgb_paths = np.random.choice(self.rgb_paths, 400, False)
+            self.rgb_paths = np.random.choice(self.rgb_paths, 1150, False)
         else:
-            self.rgb_paths = [root+'depthir/test/'+d for d in os.listdir(root+'depthir/test/')]
-            self.rgb_paths = np.random.choice(self.rgb_paths, 4, False)
+            self.rgb_paths = [root+'depth2ir/test/'+d for d in os.listdir(root+'depth2ir/test/')]
+            self.rgb_paths = np.random.choice(self.rgb_paths, 10, False)
         
         if train!=train: # vis
             self.train = True
@@ -140,16 +142,21 @@ class NYUv2Dataset(data.Dataset):
             
     def __getitem__(self, index):
         path = self.rgb_paths[index]
-        rgb = Image.open(path)
-        depth = Image.open(path.replace('depthir', 'normalimages'))
+        # print("Opening image: " + path)
+        # # rgb = Image.open(path)
+        # reader = png.Reader( path)
+        rgb = cv2.imread(path,cv2.IMREAD_UNCHANGED )
+        # depth = Image.open(path.replace('depth2ir', 'normalimages'))
+        depth = cv2.imread(path.replace('depth2ir', 'normalimages'),cv2.IMREAD_UNCHANGED )
+        # reader = png.Reader( path.replace('depth2ir', 'normalimages') )
+        # depth= cv2.imread(path.replace('depth2ir', 'normalimages'),cv2.IMREAD_UNCHANGED )
         
-        if self.train:
-            rgb, depth = np.array(rgb), np.array(depth)
-            rgb, depth = self.augmentation((rgb, depth))
-            return self.rgb_transform(rgb), self.depth_transform(depth)
+        # if self.train:
+        #     rgb, depth = np.array(rgb), np.array(depth)
+        #     # rgb, depth = self.augmentation((rgb, depth))
+        #     return self.rgb_transform(rgb), self.depth_transform(depth)
         
-        return Compose([Resize((480,640)), ToTensor()])(rgb), Compose([Resize((480,640)), ToTensor()])(depth)
-        
+        return np.moveaxis(cv2.resize(rgb,(640,480)).astype(np.float32),-1,0), np.moveaxis(cv2.resize(depth,(640,480)).astype(np.float16),-1,0)
         return rgb, depth
 
     def __len__(self):
