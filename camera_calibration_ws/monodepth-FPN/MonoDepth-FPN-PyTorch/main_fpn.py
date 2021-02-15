@@ -20,28 +20,51 @@ from torch.utils.data.sampler import Sampler
 from collections import Counter
 import matplotlib
 import cv2
-from open3d import *
+import open3d as o3d
 matplotlib.use('Agg')
 
-class DepthDiff(nn.Module):
+class DDDDepthDiff(nn.Module):
     def __init__(self):
-        super(DepthDiff, self).__init__()
+        super(DDDDepthDiff, self).__init__()
 
     def forward(self, fake, real):
         if not fake.shape == real.shape:
             _, _, H, W = real.shape
             fake = F.interpolate(fake, size=(H, W), mode='bilinear')
-        real = self.point_cloud(z)
-        print(real)
-        # eps=1e-7
-        # real2 = real.clone()
-        # fake2 = fake.clone()
-        # real2[real2==0] = eps
-        # fake2[fake2==0] = eps
+        eps = 1e-7
+        real = real[0].cpu().detach().numpy()
+        fake = fake[0].cpu().detach().numpy()
+        real[real==0] = eps
+        fake[fake==0] = eps
+
+
+        real_pcd = np.array(self.point_cloud(real).points)
+        fake_pcd = np.array(self.point_cloud(fake).points)
+        
+        # # pcd = o3d.geometry.PointCloud()
+        # # pcd.points = o3d.utility.Vector3dVector(real_pcd)
+        # # o3d.io.write_point_cloud("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_debug/python_cloud_no_norm.pcd", pcd)
+        # min_interval = 0 #-0.5
+        # max_interval = 1 #0.5
+        # real_pcd2 = (max_interval-min_interval)*((real_pcd-real_pcd.min())/(real_pcd.max()-real_pcd.min())) + min_interval
+        # fake_pcd2 = (max_interval-min_interval)*((fake_pcd-real_pcd.min())/(real_pcd.max()-real_pcd.min())) + min_interval
+        # # pcd.points = o3d.utility.Vector3dVector(real_pcd2)
+        # # o3d.io.write_point_cloud("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_debug/python_cloud_norm.pcd", pcd)
+
+
+        sum_sq = np.sum(np.square(real_pcd-fake_pcd),axis=1)
+        
+        loss = np.mean(np.sqrt(sum_sq))
         # loss = torch.sqrt(torch.mean(
         #     torch.abs(torch.log(real2)-torch.log(fake2)) ** 2))
         return loss
-        
+    
+    def l2_norm(self,v):
+        norm_v = np.sqrt(np.sum(np.square(v), axis=1))
+        return norm_v
+
+    # def theta(v, w): return arccos(v.dot(w)/(norm(v)*norm(w)))
+
     def point_cloud(self, depth):
         """Transform a depth image into a point cloud with one point for each
         pixel in the image, using the camera transform for a camera
@@ -53,17 +76,117 @@ class DepthDiff(nn.Module):
         NaN for the z-coordinate in the result.
 
         """
-        cx = 
-        cy = 
-        fx = 
-        fy = 
-        rows, cols = depth.shape
-        c, r = np.meshgrid(np.arange(cols), np.arange(rows), sparse=True)
-        valid = (depth > 0) & (depth < 65535)
-        z = np.where(valid, depth / 1000.0, np.nan)
-        x = np.where(valid, z * (c - self.cx) / self.fx, 0)
-        y = np.where(valid, z * (r - self.cy) / self.fy, 0)
-        return np.dstack((x, y, z))
+        # depth is of shape (1,480,640)
+        cx = 334.08
+        cy = 169.807
+        fx = 460.585
+        fy = 460.268
+
+        open3d_img = o3d.geometry.Image(depth[0])#/1000.0)
+        intrinsics = o3d.camera.PinholeCameraIntrinsic(640,360,fx,fy,cx,cy)
+        pcd = o3d.geometry.create_point_cloud_from_depth_image(open3d_img,intrinsic=intrinsics)
+        
+        # rows, cols = depth[0].shape
+        # c, r = np.meshgrid(np.arange(cols), np.arange(rows), sparse=True)
+        # valid = (depth[0] > 0) & (depth[0] < 65535)
+        # z = np.where(valid, depth[0] / 1000.0, np.nan)
+        # x = np.where(valid, z * (c - cx) / fx, 0)
+        # y = np.where(valid, z * (r - cy) / fy, 0)
+        return pcd #np.dstack((x, y, z))
+
+class NormalsDiff(nn.Module):
+    def __init__(self):
+        super(NormalsDiff, self).__init__()
+
+    def forward(self, fake, real):
+        if not fake.shape == real.shape:
+            _, _, H, W = real.shape
+            fake = F.interpolate(fake, size=(H, W), mode='bilinear')
+        eps = 1e-7
+        real = real[0].cpu().detach().numpy()
+        fake = fake[0].cpu().detach().numpy()
+        real[real==0] = eps
+        fake[fake==0] = eps
+
+
+        real_pcd = self.point_cloud(real)
+        fake_pcd = self.point_cloud(fake)
+        
+        o3d.geometry.estimate_normals(real_pcd,search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.03,max_nn=30))
+        o3d.geometry.estimate_normals(fake_pcd,search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.03,max_nn=30))
+
+        real_normals = np.array(real_pcd.normals)
+        fake_normals = np.array(fake_pcd.normals)
+        
+        
+        normal_gt_norm = self.l2_norm(real_normals)
+        normal_results_norm = self.l2_norm(fake_normals)
+
+        normals_results = np.divide(fake_normals, np.tile(np.expand_dims(normal_results_norm, axis=1), [1, 3]))
+        normals_gt = np.divide(real_normals, np.tile(np.expand_dims(normal_gt_norm, axis=1), [1, 3]))
+
+        # Not oriented rms
+        nn = np.sum(np.multiply(normals_gt, normals_results), axis=1)
+        nn[nn > 1] = 1
+        nn[nn < -1] = -1
+
+        angle = np.rad2deg(np.arccos(np.abs(nn))) 
+
+        # inner_product = (fake_normals * real_normals).sum(1)
+        # fake_norm = fake_normals.pow(2).sum(1).pow(0.5)
+        # real_norm = real_normals.pow(2).sum(1).pow(0.5)
+        # cos = inner_product / (2 * fake_norm * real_norm)
+        # angle = torch.acos(cos)
+        # eps=1e-7
+        # # gt2 = gt.clone()
+        # # pred2 = pred.clone()
+        # gt2[gt2==0] = eps
+        # pred2[pred2==0] = eps
+        # if method == 0:
+        # o3d.visualization.draw_geometries([real_pcd])
+        # o3d.io.write_point_cloud("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_debug/python_cloud_normals003.pcd", real_pcd)
+        # o3d.geometry.estimate_normals(real_pcd,search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=60,max_nn=30))
+        # o3d.io.write_point_cloud("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_debug/python_cloud_normals60.pcd", real_pcd)
+        # o3d.io.write_point_cloud("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_debug/python_cloud_pred.pcd", fake_pcd)
+        # print(real)
+        loss = np.mean(angle)
+        
+        return loss
+    
+    def l2_norm(self,v):
+        norm_v = np.sqrt(np.sum(np.square(v), axis=1))
+        return norm_v
+
+    # def theta(v, w): return arccos(v.dot(w)/(norm(v)*norm(w)))
+
+    def point_cloud(self, depth):
+        """Transform a depth image into a point cloud with one point for each
+        pixel in the image, using the camera transform for a camera
+        centred at cx, cy with field of view fx, fy.
+
+        depth is a 2-D ndarray with shape (rows, cols) containing
+        depths from 1 to 254 inclusive. The result is a 3-D array with
+        shape (rows, cols, 3). Pixels with invalid depth in the input have
+        NaN for the z-coordinate in the result.
+
+        """
+        # depth is of shape (1,480,640)
+        cx = 334.08
+        cy = 169.807
+        fx = 460.585
+        fy = 460.268
+
+        open3d_img = o3d.geometry.Image(depth[0]/1000.0)
+        intrinsics = o3d.camera.PinholeCameraIntrinsic(640,360,fx,fy,cx,cy)
+        pcd = o3d.geometry.create_point_cloud_from_depth_image(open3d_img,intrinsic=intrinsics)
+        
+        # rows, cols = depth[0].shape
+        # c, r = np.meshgrid(np.arange(cols), np.arange(rows), sparse=True)
+        # valid = (depth[0] > 0) & (depth[0] < 65535)
+        # z = np.where(valid, depth[0] / 1000.0, np.nan)
+        # x = np.where(valid, z * (c - cx) / fx, 0)
+        # y = np.where(valid, z * (r - cy) / fy, 0)
+        return pcd #np.dstack((x, y, z))
 
     
 
@@ -482,8 +605,9 @@ if __name__ == '__main__':
 
     rmse = RMSE()
     depth_criterion = RMSE_log()
+    dddDepth_criterion = DDDDepthDiff()
     l1_crit = L1()
-    depth_diff = DepthDiff()
+    normals_diff = NormalsDiff()
     grad_criterion = GradLoss()
     normal_criterion = NormalLoss()
     eval_metric = RMSE_log()
@@ -567,10 +691,12 @@ if __name__ == '__main__':
                 plt.colorbar()
                 plt.savefig(save_dir +'gt_'+str(epoch)+'.png',bbox_inches='tight')
                 plt.close()
-                plt.imshow(z[0].cpu().numpy().transpose((1,2,0)))#, vmin=vmin, vmax=vmax)
-                plt.colorbar()
-                plt.savefig(save_dir +'unscaled_gt_'+str(epoch)+'.png',bbox_inches='tight')
-                plt.close()
+                # plt.imshow(z[0].cpu().numpy().transpose((1,2,0)))#, vmin=vmin, vmax=vmax)
+                # plt.colorbar()
+                # plt.savefig(save_dir +'unscaled_gt_'+str(epoch)+'.png',bbox_inches='tight')
+                # plt.close()
+                z_pcd = normals_diff.point_cloud(z[0].cpu().detach().numpy()*max_depth)
+                o3d.io.write_point_cloud(save_dir+"gt_cloud"+str(epoch)+".pcd", z_pcd)
                 
                 ##################
                 #depth prediction#
@@ -578,11 +704,15 @@ if __name__ == '__main__':
                 plt.colorbar()
                 plt.savefig(save_dir +'pred_'+str(epoch)+'.png',bbox_inches='tight')
                 plt.close()
-                plt.imshow(z_fake[0].cpu().detach().numpy().transpose((1,2,0)))#, vmin=vmin, vmax=vmax)
-                plt.colorbar()
-                plt.savefig(save_dir +'unscaled_pred_'+str(epoch)+'.png',bbox_inches='tight')
-                plt.close()
+                # plt.imshow(z_fake[0].cpu().detach().numpy().transpose((1,2,0)))#, vmin=vmin, vmax=vmax)
+                # plt.colorbar()
+                # plt.savefig(save_dir +'unscaled_pred_'+str(epoch)+'.png',bbox_inches='tight')
+                # plt.close()
+                z_fake_pcd = normals_diff.point_cloud(z_fake[0].cpu().detach().numpy()*max_depth)
+                o3d.io.write_point_cloud(save_dir+"pred_cloud"+str(epoch)+".pcd", z_fake_pcd)
                 
+                ##############
+                # txt images #
                 img_file = open(save_dir+'gt_'+str(epoch)+'.txt',"w")
                 for row in z[0].cpu().numpy():
                     np.savetxt(img_file,row)
@@ -593,23 +723,32 @@ if __name__ == '__main__':
                 for row in z_fake[0].cpu().detach().numpy():
                     np.savetxt(img_file,row)
                 img_file.close()
-                # ird_img= img[0].cpu().numpy()
-                # cv2.imshow('depthir_'+str(epoch)+'.png',ird_img)
-                # img_path = str(save_dir+'depthir_'+str(epoch)+'.png')
-                # cv2.imwrite(img_path, ird_img,params=(cv2.IMWRITE_JPEG_QUALITY, 0))
-                # cv2.imwrite(save_dir+'gt_'+str(epoch)+'.png',z[0].cpu().numpy(), cv2.CV_16UC1)
-                # cv2.imwrite(save_dir+'pred_'+str(epoch)+'.png',z_fake[0].cpu().numpy(), cv2.CV_16UC1)
+                
                 show_image=False
 
             depth_loss = depth_criterion(z_fake, z)
+            
+            # dddDepth_loss = dddDepth_criterion(z_fake*max_depth,z*max_depth)
+            dddDepth_loss = dddDepth_criterion(z_fake,z)
 
-            diff_loss = depth_diff(z_fake,z)
-
-            grad_real, grad_fake = imgrad_yx(z), imgrad_yx(z_fake)
-            grad_loss = grad_criterion(grad_fake, grad_real) * grad_factor * (epoch > 3)
-            # normal_loss = normal_criterion(grad_fake, grad_real) * normal_factor * (epoch > 7)
-
-            loss = 10*(depth_loss + 0.01*grad_loss) #+ normal_loss
+            # grad_real, grad_fake = imgrad_yx(z), imgrad_yx(z_fake)
+            
+            # if epoch > 3:
+            #     grad_loss = grad_criterion(grad_fake, grad_real) * grad_factor * (epoch > 3)
+            # else: 
+            #     grad_loss = 0
+            
+            # if epoch > 7:
+            #     normals_diff_loss = normals_diff(z_fake*max_depth,z*max_depth) * (epoch > 7)
+            #     # normal_loss = normal_criterion(grad_fake, grad_real) * normal_factor * (epoch > 7)
+            # else:
+            #     normals_diff_loss = 0
+            #     # normal_loss = 0
+            
+ 
+            # loss = 10*(depth_loss + 0.01*grad_loss) + normals_diff_loss #+ normal_loss
+            # loss = depth_loss + grad_loss + normal_loss
+            loss = depth_loss + 100*dddDepth_loss - depth_loss #+ normal_loss
             # loss *= 10
             loss.backward()
             optimizer.step()
@@ -620,8 +759,11 @@ if __name__ == '__main__':
             # info
             if step % args.disp_interval == 0:
                 # file_object = open("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/results.txt", 'a')
-                print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f Grad: %.4f"# grad_loss: %.4f"# normal_loss: %.4f"
-                      % (epoch, step, loss, depth_loss, grad_loss))#, grad_loss))#, normal_loss))
+                print("[epoch %2d][iter %4d] loss: %.4f 3DDepthLoss: %.4f "#RMSElog: %.4f Grad: %.4f Normals diff: %.4f"
+                      % (epoch, step, loss, dddDepth_loss))#depth_loss, grad_loss, normals_diff_loss))
+                # print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f Grad: %.4f Normals loss: %.4f"
+                #       % (epoch, step, loss, depth_loss, grad_loss, normal_loss))
+
                 # print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f"
                 #       % (epoch, step, loss, depth_loss))
                 # file_object.write("\n[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f" #grad_loss: %.4f" # normal_loss: %.4f" 
@@ -664,20 +806,37 @@ if __name__ == '__main__':
             rmse_accum = 0
             count = 0
             eval_data_iter = iter(eval_dataloader)
-            for i, data in enumerate(eval_data_iter):
+            for i, data_eval in enumerate(eval_data_iter):
                 print(i, '/', len(eval_data_iter)-1)
 
-                img.resize_(data[0].size()).copy_(data[0])
-                z.resize_(data[1].size()).copy_(data[1])
+                img.resize_(data_eval[0].size()).copy_(data_eval[0])
+                z.resize_(data_eval[1].size()).copy_(data_eval[1])
 
                 z_fake = i2d(img)
 
                 depth_loss_eval = depth_criterion(z_fake,z)
                 
                 grad_real, grad_fake = imgrad_yx(z), imgrad_yx(z_fake)
-                grad_loss_eval = grad_criterion(grad_fake, grad_real) * grad_factor  * (epoch > 3)
                 
-                loss_val = 10*(depth_loss_eval + 0.01*grad_loss_eval)
+                # dddDepth_loss_eval = dddDepth_criterion(z_fake*max_depth,z*max_depth)
+                dddDepth_loss_eval = dddDepth_criterion(z_fake,z)
+                # if epoch > 3:
+                #     grad_loss_eval = grad_criterion(grad_fake, grad_real) * grad_factor  #* (epoch > 3)
+                # else:
+                #     grad_loss_eval = 0
+                
+                # if epoch > 7:
+                #     normals_diff_loss_eval = normals_diff(z_fake*max_depth,z*max_depth) #* (epoch > 7)
+                #     # normal_loss_eval = normal_criterion(grad_fake, grad_real) * normal_factor * (epoch > 7)
+
+                # else:
+                #     normals_diff_loss_eval = 0
+                #     normal_loss_eval = 0
+
+                # loss_val = 10*(depth_loss_eval + 0.01*grad_loss_eval) + normals_diff_loss_eval
+                # loss_val = depth_loss_eval + grad_loss_eval + normal_loss_eval
+                # loss_val *= 10
+                loss_val = depth_loss_eval + 100*dddDepth_loss_eval - depth_loss_eval
                 val_loss += loss_val.item()
                 # print("Loss on test_data: ",loss_eval)
                 if i==337:
@@ -698,7 +857,7 @@ if __name__ == '__main__':
                 # count += float(img.size(0))
 
             train_loss = train_loss/iters_per_epoch #len(train_dataloader)
-            val_loss = val_loss/iters_per_epoch #len(eval_dataloader)
+            val_loss = val_loss/len(eval_dataloader)
 
             print('Epoch: {} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}'.format(epoch, train_loss, val_loss))
 

@@ -131,13 +131,13 @@ class MyCustomDataset(data.Dataset):
         self.root = Path(root)
         self.train = train
         if train:
-            self.rgb_paths = [root+'combined_ir_d_d/train/' +
-                              d for d in os.listdir(root+'combined_ir_d_d/train/')]
+            self.rgb_paths = [root+'combined_ddd/train/' +
+                              d for d in os.listdir(root+'combined_ddd/train/')]
             # Randomly choose 50k images without replacement
             self.rgb_paths = np.random.choice(self.rgb_paths, 600, False)
         else:
-            self.rgb_paths = [root+'combined_ir_d_d/test/' +
-                              d for d in os.listdir(root+'combined_ir_d_d/test/')]
+            self.rgb_paths = [root+'combined_ddd/test/' +
+                              d for d in os.listdir(root+'combined_ddd/test/')]
 
         if train != train:  # vis
             self.train = True
@@ -158,11 +158,11 @@ class MyCustomDataset(data.Dataset):
         path = self.rgb_paths[index]
         rgb = cv2.imread(path,-1) # or rgb = cv2.imread(path,cv2.IMREAD_UNCHANGED)
         # rgb = cv2.cvtColor(rgb,cv2.COLOR_BGR2RGB)
-        depth = cv2.imread(path.replace('combined_ir_d_d', 'depth_gt'),-1)
+        depth = cv2.imread(path.replace('combined_ddd', 'depth_gt'),-1)
         # rgb = np.array(rgb,np.float32)
         # depth = np.array(depth,np.float32)
-        rgb = cv2.resize(rgb,(640,480))
-        depth = cv2.resize(depth,(640,480))
+        rgb = cv2.resize(rgb,(640,360))
+        depth = cv2.resize(depth,(640,360))
         
         rgb = np.array(rgb,np.float32,copy=True).transpose((2,0,1)) 
         depth = np.array(depth,np.float32,copy=True)[:, :, None].transpose((2,0,1))

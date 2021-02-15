@@ -233,12 +233,13 @@ Results: Results ar interesting. I will say that for the moment it is ok like th
     #      #   #    # #
     #         #       #
     #       # # #   # # #
-Loss: + Normal loss
+Loss: 
 Optimizer:
 Training parameters:
 Other training parameters:
-Others: 
-Results: 
+Others: Changed the training dataset with RGB images made only from depth
+Results: Mostly, not that much of an improvement.
+Epoch: 14 	Training Loss: 27.093058 	Validation Loss: 18.416263
 #########   ###      ###
     #      #   #    #   #
     #         #        #
@@ -247,8 +248,9 @@ Loss:
 Optimizer:
 Training parameters:
 Other training parameters:
-Others: 
-Results: 
+Others: resized images to 360x640 (this is the camera format) because otherwise I couldn't reconstruct the point cloud.
+Results: Yeah... Seems a little worse now. :/ 
+Epoch: 14 	Training Loss: 45.351826 	Validation Loss: 26.970308
 #########   ###      ###
     #      #   #     ___# 
     #         #         #
@@ -257,38 +259,43 @@ Loss:
 Optimizer:
 Training parameters:
 Other training parameters:
-Others: 
-Results: 
+Others: loss = 20*(depth_loss + 0.01*grad_loss) and on 30 epochs.
+Results: Not much of an improvement after epoch 7... :/
+Epoch: 7 	Training Loss: 89.957028 	Validation Loss: 53.369854
+Epoch: 29 	Training Loss: 89.056271 	Validation Loss: 53.559971
 #########   ###         #
     #      #   #      # #
     #         #      #####
     #       # # #      #
-Loss:
+Loss: + Normal Loss diff
 Optimizer:
 Training parameters:
 Other training parameters:
-Others: 
-Results: 
+Others: loss = 10*(depth_loss + 0.01*grad_loss) + normals_diff_loss on 15 epochs
+Results: Pretty bad, I mean, it's not much of an improvement from the last try, and honestly it's not that good since I changed sizes. :(
+Epoch: 14 	Training Loss: 102.961625 	Validation Loss: 59.245287
 #########   ###       ####
     #      #   #     #__
     #         #         #
     #       # # #   ####
-Loss:
+Loss: - Depth loss and grad_loss
 Optimizer:
 Training parameters:
 Other training parameters:
-Others: 
-Results: 
+Others: loss_val = depth_loss_eval + normals_diff_loss_eval - depth_loss_eval
+Results: Not even worth it, of course it does nothing.
+Epoch: 1 	Training Loss: 35.740943 	Validation Loss: 20.163141
 #########   ###      ###
     #      #   #    #__
     #         #     #  #
     #       # # #   #### 
-Loss:
-Optimizer:
+Loss: + Depth and grad loss
+Optimizer:  
 Training parameters:
 Other training parameters:
-Others: 
-Results: 
+Others: loss = 10*(depth_loss + 0.01*grad_loss) + normals_diff_loss, but normal only from the 8th epoch
+Results: Not great, not great at all
+Epoch: 14 	Training Loss: 102.577704 	Validation Loss: 59.296663
 #########   ###     #####
     #      #   #       #
     #         #       #
@@ -297,25 +304,128 @@ Loss:
 Optimizer:
 Training parameters:
 Other training parameters:
-Others: 
-Results: 
+Others: loss = depth_loss + grad_loss + normals_diff_loss
+Results: Just bad...
+Epoch: 14 	Training Loss: 68.308816 	Validation Loss: 38.464952
 #########   ###     ####
     #      #   #    #__#
     #         #     #  #
     #       # # #   ####
-Loss:
+Loss: - depth loss and gradient loss and normal loss + DDDDepthLoss
 Optimizer:
 Training parameters:
 Other training parameters:
-Others: 
-Results: 
+Others: loss = depth_loss + 10*dddDepth_loss - depth_loss + FINALLY FIXED THE VALIDATION LOSS, NOW IT IS BIGGER THAN TRAINING LOSS, AS IT SHOULD BE!!!
+Results: Of! Not very good results... And I mean, only a uniform distribution.:))
+Epoch: 14 	Training Loss: 565.429661 	Validation Loss: 568.003488
 #########   ###      ####
     #      #   #     #__#
     #         #         #
     #       # # #     ###
-Loss:
+Loss: depth_loss, grad_loss, normal_loss
 Optimizer:
 Training parameters:
 Other training parameters:
+Others: original three: loss = 10*(depth_loss + grad_loss + normal_loss)
+Results: It is somehow ok, but the scale is totally wrong.
+Epoch: 14 	Training Loss: 77.451734 	Validation Loss: 80.114268
+#########      # # #   #####
+    #         ____#   #   #
+    #            #   #   #
+    #       # # #   #####
+Loss:
+Optimizer:
+Training parameters: 
+Other training parameters:
 Others: 
-Results: 
+Results:
+#########     # # #
+    #         ____#
+    #            #
+    #       # # # 
+Loss:
+Optimizer:
+Training parameters: 
+Other training parameters:
+Others: 
+Results:
+#########     # # #
+    #         ____#
+    #            #
+    #       # # # 
+Loss:
+Optimizer:
+Training parameters: 
+Other training parameters:
+Others: 
+Results:
+#########     # # #
+    #         ____#
+    #            #
+    #       # # # 
+Loss:
+Optimizer:
+Training parameters: 
+Other training parameters:
+Others: 
+Results:
+#########     # # #
+    #         ____#
+    #            #
+    #       # # # 
+Loss:
+Optimizer:
+Training parameters: 
+Other training parameters:
+Others: 
+Results:
+#########     # # #
+    #         ____#
+    #            #
+    #       # # # 
+Loss:
+Optimizer:
+Training parameters: 
+Other training parameters:
+Others: 
+Results:
+#########     # # #
+    #         ____#
+    #            #
+    #       # # # 
+Loss:
+Optimizer:
+Training parameters: 
+Other training parameters:
+Others: 
+Results:
+#########     # # #
+    #         ____#
+    #            #
+    #       # # # 
+Loss:
+Optimizer:
+Training parameters: 
+Other training parameters:
+Others: 
+Results:
+#########     # # #
+    #         ____#
+    #            #
+    #       # # # 
+Loss:
+Optimizer:
+Training parameters: 
+Other training parameters:
+Others: 
+Results:
+#########     # # #
+    #         ____#
+    #            #
+    #       # # # 
+Loss:
+Optimizer:
+Training parameters: 
+Other training parameters:
+Others: 
+Results:
