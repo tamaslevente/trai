@@ -123,19 +123,58 @@ class VectorLoss(nn.Module):
     def forward(self, pred, gt):
         method=0
         eps=1e-7
-        gt2 = gt.clone()
-        pred2 = pred.clone()
-        gt2[gt2==0] = eps
-        pred2[pred2==0] = eps
+        # gt2 = gt.clone()
+        # pred2 = pred.clone()
+        # gt2[gt2==0] = eps
+        # pred2[pred2==0] = eps
+        
+        if torch.isnan(pred).any() or torch.isinf(pred).any() or torch.isnan(gt).any() or torch.isinf(gt).any():
+            print("NAN value")
         if method == 0:
-            inner_product = (pred2 * gt2).sum(dim=1)
-            pred_norm = pred2.pow(2).sum(dim=1).pow(0.5)
-            gt_norm = gt2.pow(2).sum(dim=1).pow(0.5)
+            pred=pred/127-1
+            gt=gt/127-1
+            inner_product = (pred * gt).sum(dim=1).unsqueeze(1)
+            # pred_norm = torch.norm(pred2, p='fro', dim=1, keepdim=True)
+            # gt_norm = torch.norm(gt2, p='fro', dim=1, keepdim=True)
+            pred_norm = pred.pow(2).sum(dim=1).pow(0.5).unsqueeze(1)
+            gt_norm = gt.pow(2).sum(dim=1).pow(0.5).unsqueeze(1)
             cos = inner_product / (2 * pred_norm * gt_norm)
             angle = torch.acos(cos)
         if method == 1:
-            cross=torch.cross(pred2, gt2, dim=1)
-            angle= 2 * torch.norm(cross, p='fro', dim=1, keepdim=True)
+            gt2 = gt.clone()
+            pred2 = pred.clone()
+            gt2[gt2==0] = eps
+            pred2[pred2==0] = eps          
+            pred_norm=torch.norm(pred2, p='fro', dim=1, keepdim=True)
+            gt_norm=torch.norm(gt2, p='fro', dim=1, keepdim=True)
+            cross=torch.cross((pred2/pred_norm-0.5)*2.0, (gt2/gt_norm-0.5)*2.0, dim=1)
+            angle_all= torch.acos(cross)
+            angle_all[torch.isnan(angle_all).any()] = 1.57
+            # angle_all[angle_all>1.58] = 3.15-angle_all[angle_all>1.58]
+            # angle_all[angle_all<-1.58] = -3.15-angle_all[angle_all<-1.58]
+            angle=torch.mean(angle_all)
+            if torch.isnan(angle) or torch.isinf(angle):
+                print("NAN value")
+                angle=1.0
+        if method == 2:
+            # gt2[gt2>1] = 1
+            # pred2[pred2>1] = 1
+            # gt2[gt2<-1] = -1
+            # pred2[pred2<-1] = -1
+            gt2 = gt.clone()
+            pred2 = pred.clone()
+            gt2[gt2==0] = eps
+            pred2[pred2==0] = eps
+            pred_norm=torch.norm(pred2, p='fro', dim=1, keepdim=True)
+            gt_norm=torch.norm(gt2, p='fro', dim=1, keepdim=True)
+            cross=torch.tensordot((pred2/pred_norm-0.5)*2.0, (gt2/gt_norm-0.5)*2.0, dims=([2,3],[2,3]))
+            angle_all= torch.acos(cross)
+            angle_all[angle_all>1.58] = 3.15-angle_all[angle_all>1.58]
+            angle_all[angle_all<-1.58] = -3.15-angle_all[angle_all<-1.58]
+            angle=torch.mean(angle_all)
+            if torch.isnan(angle) or torch.isinf(angle):
+                print("NAN value")
+                angle = torch.tesor(1.57)
         
         #print(angle.size())
         loss = torch.mean(angle)
@@ -159,14 +198,14 @@ def parse_args():
                       default='nyuv2', type=str)
     parser.add_argument('--epochs', dest='max_epochs',
                       help='number of epochs to train',
-                      default=10, type=int)
+                      default=200, type=int)
     parser.add_argument('--cuda', dest='cuda',
                       help='whether use CUDA',
                       default=True,
                       action='store_true')
     parser.add_argument('--bs', dest='bs',
                       help='batch_size',
-                      default=1, type=int)
+                      default=2, type=int)
     parser.add_argument('--num_workers', dest='num_workers',
                       help='num_workers',
                       default=1, type=int)
@@ -183,10 +222,10 @@ def parse_args():
                       default="sgd", type=str)
     parser.add_argument('--lr', dest='lr',
                       help='starting learning rate',
-                      default=1e-3, type=float)
+                      default=1e-4, type=float)
     parser.add_argument('--lr_decay_step', dest='lr_decay_step',
                       help='step to do learning rate decay, unit is epoch',
-                      default=5, type=int)
+                      default=10, type=int)
     parser.add_argument('--lr_decay_gamma', dest='lr_decay_gamma',
                       help='learning rate decay ratio',
                       default=0.1, type=float)
@@ -211,7 +250,7 @@ def parse_args():
                       default=1, type=int)
     parser.add_argument('--checkepoch', dest='checkepoch',
                       help='checkepoch to load model',
-                      default=1, type=int)
+                      default=149, type=int)
     parser.add_argument('--checkpoint', dest='checkpoint',
                       help='checkpoint to load model',
                       default=0, type=int)
@@ -436,9 +475,12 @@ if __name__ == '__main__':
     # constants
     iters_per_epoch = int(train_size / args.bs)
     
-    grad_factor = 10.
-    normal_factor = 10.
-    angle_factor = 80.
+    depth_factor = 0.5
+    grad_factor = 5.0
+    normal_factor = 10.0
+    angle_factor = 10.0
+    loss_factor = 10.0
+    maxloss=1.5*300000
     
     for epoch in range(args.start_epoch, args.max_epochs):
         
@@ -456,15 +498,27 @@ if __name__ == '__main__':
             z = z.cuda()
         
         train_data_iter = iter(train_dataloader)
-        show_image=True
+        show_image=False
         for step in range(iters_per_epoch):
-            start = time.time()
+            if args.resume:
+                delay_loss=args.checkepoch
+            else:
+                delay_loss = 0
             data = train_data_iter.next()
             
             img.resize_(data[0].size()).copy_(data[0])
             z.resize_(data[1].size()).copy_(data[1])
             optimizer.zero_grad()
+            # eps = 1e-7
+            # img[img==0] = eps
             z_fake = i2d(img)
+         
+            if torch.isnan(img).any() or torch.isinf(img).any():
+                print("DEPTHIR IS NAN OR INF")
+            if torch.isnan(z).any() or torch.isinf(z).any():
+                print("GT IS NAN OR INF")
+            if torch.isnan(z_fake).any() or torch.isinf(z_fake).any():
+                print("PRED IS NAN OR INF")
             
             if show_image:
                 save_image(img[0], 'depthir_'+str(epoch)+'.png')
@@ -472,19 +526,34 @@ if __name__ == '__main__':
                 save_image(z_fake[0], 'pred_'+str(epoch)+'.png')
                 show_image=False
 
-            vloss_train = vector_loss(z_fake,z)*angle_factor
+            zfv=z_fake/127.0-1
+            z_fake_norm=zfv.pow(2).sum(dim=1).pow(0.5).unsqueeze(1)
+            # z_fake_norm2=torch.norm(zfv, p='fro', dim=1, keepdim=True)
+            # z_fake_norm[z_fake_norm>1.7]=1.0
+            # z_fake_norm2[z_fake_norm2>1.7]=1.0         
+            zfv=zfv/z_fake_norm
+            z_fake2=(zfv+1)*127.0
+            # print("zfv:"+str(torch.min(zfv))+", "+str(torch.max(zfv)))
+            print("z_fake:"+str(torch.min(z_fake))+", "+str(torch.max(z_fake))+", "+str(torch.mean(z_fake)))
+            print("z_fake2:"+str(torch.min(z_fake2))+", "+str(torch.max(z_fake2))+", "+str(torch.mean(z_fake2)))
+            # print("z_fake_norm2:"+str(torch.min(z_fake_norm2))+", "+str(torch.max(z_fake_norm2))+", "+str(torch.mean(z_fake_norm2)))
 
-           
-
-            depth_loss = depth_criterion(z_fake, z)
+            vloss_train = vector_loss(z_fake2, z)
+            depth_loss = depth_criterion(z_fake2, z)            
+            grad_real, grad_fake = imgrad_yx(z), imgrad_yx(z_fake2)
+            grad_loss = grad_criterion(grad_fake, grad_real) * (epoch>delay_loss+3)
+            normal_loss = normal_criterion(grad_fake, grad_real) * (epoch>delay_loss+7)                  
             
-            grad_real, grad_fake = imgrad_yx(z), imgrad_yx(z_fake)
-            grad_loss = grad_criterion(grad_fake, grad_real)     * grad_factor * (epoch>3)
-            normal_loss = normal_criterion(grad_fake, grad_real) * normal_factor * (epoch>7)
-            
-            loss = depth_loss*0.5 + grad_loss*1 + normal_loss*0.5 + vloss_train
-            loss = loss*10
-            loss.backward()
+            notanumber = False
+            if torch.isnan(depth_loss) or torch.isinf(depth_loss) or torch.isnan(grad_loss) or torch.isinf(grad_loss) or torch.isnan(normal_loss) or torch.isinf(normal_loss) or torch.isnan(vloss_train) or torch.isinf(vloss_train):
+                notanumber = True
+            if not notanumber:
+                loss = depth_loss*depth_factor + grad_loss*grad_factor + normal_loss*normal_factor + vloss_train*angle_factor
+                # loss=vloss_train
+                loss =  loss*loss_factor
+                # print("losses before backward: " + str(depth_loss) +", " + str(grad_loss) + ", "+ str(normal_loss) + ", " + str(vloss_train))
+                loss.backward()
+                # print("losses after backward: " + str(depth_loss) +", " + str(grad_loss) + ", "+ str(normal_loss) + ", " + str(vloss_train))
             optimizer.step()
 
             end = time.time()
@@ -497,16 +566,17 @@ if __name__ == '__main__':
 #                 print("[epoch %2d][iter %4d] loss: %.4f iRMSE: %.4f" \
 #                                 % (epoch, step, loss, metric))
         # save model
-        save_name = os.path.join(args.output_dir, 'i2d_{}_{}.pth'.format(args.session, epoch))
+        
 
-        if epoch%3:
+        if epoch%10==0 or epoch==args.max_epochs-1:
+            save_name = os.path.join(args.output_dir, 'i2d_{}_{}.pth'.format(args.session, epoch))
             torch.save({'epoch': epoch+1,
                     'model': i2d.state_dict(), 
 #                     'optimizer': optimizer.state_dict(),
                    },
                    save_name)
 
-        print('save model: {}'.format(save_name))
+            print('save model: {}'.format(save_name))
         print('time elapsed: %fs' % (end - start))
             
         if epoch % 1 == 0:
@@ -533,7 +603,12 @@ if __name__ == '__main__':
                 z.resize_(data[1].size()).copy_(data[1])
 
                 z_fake = i2d(img)
-                vloss_eval = vector_loss(z_fake,z)*10
+                # if epoch%2:
+                zfv=z_fake/127.0-1
+                z_fake_norm=zfv.pow(2).sum(dim=1).pow(0.5).unsqueeze(1)
+                z_fake_norm[z_fake_norm>1.7]=1.0        
+                zfv=zfv/z_fake_norm
+                z_fake=(zfv+1)*127.0
                 save_image(z_fake[0], 'train_images/normalimage_'+str(epoch)+'_'+str(i)+'.png')
                 # depth_loss = float(img.size(0)) * rmse(z_fake, z)**2
                 # eval_loss += depth_loss
