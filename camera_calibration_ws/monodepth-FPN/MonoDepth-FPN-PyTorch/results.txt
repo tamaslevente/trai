@@ -11919,3 +11919,105 @@ Epoch: 16 	Training Loss: 28.474500 	Validation Loss: 28.638359
 Epoch: 17 	Training Loss: 28.474500 	Validation Loss: 28.637195
 Epoch: 18 	Training Loss: 28.474500 	Validation Loss: 28.636884
 Epoch: 19 	Training Loss: 28.474500 	Validation Loss: 28.637274
+#############################################################################################
+#T31 Normalized point clouds with log in DDDDepthLoss exactly like in the RMSE_log function# 
+#############################################################################################
+Epoch: 0 	Training Loss: nan 	Validation Loss: nan
+Epoch: 1 	Training Loss: nan 	Validation Loss: nan
+Epoch: 2 	Training Loss: nan 	Validation Loss: nan
+Epoch: 0 	Training Loss: 53.117368 	Validation Loss: 53.065679
+Epoch: 1 	Training Loss: 53.117521 	Validation Loss: 53.044386
+Epoch: 2 	Training Loss: 53.117658 	Validation Loss: 53.059125
+Epoch: 0 	Training Loss: 7.821933 	Validation Loss: 7.824649
+Epoch: 1 	Training Loss: 7.821932 	Validation Loss: 7.825006
+Epoch: 2 	Training Loss: 7.821931 	Validation Loss: 7.824903
+Epoch: 3 	Training Loss: 7.821931 	Validation Loss: 7.824816
+Epoch: 0 	Training Loss: 778.920586 	Validation Loss: 779.155667
+Epoch: 1 	Training Loss: 778.920618 	Validation Loss: 779.153068
+Epoch: 2 	Training Loss: 778.920654 	Validation Loss: 779.191546
+Epoch: 3 	Training Loss: 778.920689 	Validation Loss: 779.199056
+Epoch: 4 	Training Loss: 778.920723 	Validation Loss: 779.154531
+Epoch: 5 	Training Loss: 778.920758 	Validation Loss: 779.169771
+Epoch: 6 	Training Loss: 778.920775 	Validation Loss: 779.161289
+Epoch: 7 	Training Loss: 778.920775 	Validation Loss: 779.173272
+#############################################################################################
+#T32 Correct normalization + shift on x anf y axes of point clouds in DDDDepthLoss# 
+#############################################################################################
+Epoch: 0 	Training Loss: 126.719029 	Validation Loss: 126.659527
+Epoch: 1 	Training Loss: 126.719033 	Validation Loss: 126.668308
+Epoch: 2 	Training Loss: 126.719038 	Validation Loss: 126.667475
+Epoch: 3 	Training Loss: 126.719042 	Validation Loss: 126.666853
+Epoch: 4 	Training Loss: 126.719045 	Validation Loss: 126.667787
+Epoch: 5 	Training Loss: 126.719049 	Validation Loss: 126.663769
+Epoch: 6 	Training Loss: 126.719051 	Validation Loss: 126.667236
+Epoch: 0 	Training Loss: 12.726043 	Validation Loss: 12.745440
+Epoch: 1 	Training Loss: 12.726013 	Validation Loss: 12.745393
+Epoch: 2 	Training Loss: 12.725976 	Validation Loss: 12.745306
+Epoch: 3 	Training Loss: 12.725928 	Validation Loss: 12.745297
+Epoch: 0 	Training Loss: 48.950334 	Validation Loss: 49.011696
+Epoch: 1 	Training Loss: 48.950404 	Validation Loss: 49.013851
+Epoch: 2 	Training Loss: 48.950477 	Validation Loss: 49.021458
+Epoch: 3 	Training Loss: 48.950547 	Validation Loss: 49.005700
+Epoch: 0 	Training Loss: 97.206345 	Validation Loss: 97.052209
+Epoch: 1 	Training Loss: 97.206534 	Validation Loss: 97.086084
+Epoch: 2 	Training Loss: 97.206723 	Validation Loss: 97.148403
+Epoch: 3 	Training Loss: 97.206921 	Validation Loss: 97.086762
+Epoch: 0 	Training Loss: 92.329976 	Validation Loss: 92.580246
+Epoch: 1 	Training Loss: 92.330066 	Validation Loss: 92.591194
+Epoch: 2 	Training Loss: 92.330149 	Validation Loss: 92.606328
+Epoch: 0 	Training Loss: 12.646372 	Validation Loss: 12.667041
+Epoch: 1 	Training Loss: 12.646372 	Validation Loss: 12.666856
+Epoch: 2 	Training Loss: 12.646372 	Validation Loss: 12.667063
+Epoch: 0 	Training Loss: 759.118749 	Validation Loss: 760.005449
+Epoch: 1 	Training Loss: 759.118768 	Validation Loss: 760.012924
+Epoch: 2 	Training Loss: 759.118789 	Validation Loss: 760.018726
+Epoch: 0 	Training Loss: 60.212207 	Validation Loss: 51.798212
+Epoch: 1 	Training Loss: 49.182263 	Validation Loss: 49.333478
+Epoch: 0 	Training Loss: 110.557645 	Validation Loss: 100.831309
+Epoch: 1 	Training Loss: 99.088744 	Validation Loss: 99.030742
+Epoch: 2 	Training Loss: 97.552615 	Validation Loss: 99.353824
+Epoch: 3 	Training Loss: 96.703793 	Validation Loss: 98.818151
+############################################################################################################################################
+#T33 Removed point cloud normalization and kept only the shift on x anf y axes of point clouds in DDDDepthLoss (and now this is correct!!!!# 
+############################################################################################################################################
+Epoch: 0 	Training Loss: 78.709176 	Validation Loss: 123.712874
+Epoch: 1 	Training Loss: 78.709175 	Validation Loss: 123.713055
+Epoch: 2 	Training Loss: 78.709173 	Validation Loss: 123.712892
+Epoch: 3 	Training Loss: 78.709171 	Validation Loss: 123.712857
+Epoch: 4 	Training Loss: 78.709170 	Validation Loss: 123.712951
+Epoch: 5 	Training Loss: 78.709168 	Validation Loss: 123.713087
+Epoch: 0 	Training Loss: 78.725066 	Validation Loss: 123.605738
+Epoch: 1 	Training Loss: 78.725072 	Validation Loss: 123.606346
+Epoch: 2 	Training Loss: 78.725078 	Validation Loss: 123.606276
+Epoch: 3 	Training Loss: 78.725083 	Validation Loss: 123.605743
+Epoch: 4 	Training Loss: 78.725089 	Validation Loss: 123.605612
+Epoch: 5 	Training Loss: 78.725094 	Validation Loss: 123.606142
+Epoch: 6 	Training Loss: 78.725097 	Validation Loss: 123.606260
+Epoch: 7 	Training Loss: 78.725097 	Validation Loss: 123.605798
+Epoch: 8 	Training Loss: 78.725097 	Validation Loss: 123.606334
+Epoch: 9 	Training Loss: 78.725097 	Validation Loss: 123.605369
+Epoch: 10 	Training Loss: 78.725097 	Validation Loss: 123.606183
+Epoch: 11 	Training Loss: 78.725097 	Validation Loss: 123.606025
+Epoch: 12 	Training Loss: 78.725097 	Validation Loss: 123.605433
+##############################################################################################
+#T34 Not only that DDDDepthLoss is now correct but it is also taken in consideration by torch# 
+##############################################################################################
+Epoch: 0 	Training Loss: 60.391371 	Validation Loss: 89.814897
+Epoch: 1 	Training Loss: 49.161132 	Validation Loss: 85.352322
+Epoch: 2 	Training Loss: 47.726292 	Validation Loss: 85.829511
+Epoch: 3 	Training Loss: 46.962725 	Validation Loss: 82.273238
+Epoch: 4 	Training Loss: 46.389417 	Validation Loss: 84.748885
+Epoch: 5 	Training Loss: 46.049440 	Validation Loss: 83.831919
+Epoch: 6 	Training Loss: 45.567262 	Validation Loss: 82.701352
+Epoch: 7 	Training Loss: 45.436709 	Validation Loss: 82.991678
+Epoch: 8 	Training Loss: 45.356584 	Validation Loss: 82.748090
+Epoch: 9 	Training Loss: 45.295655 	Validation Loss: 82.782054
+Epoch: 10 	Training Loss: 45.240598 	Validation Loss: 82.648216
+Epoch: 11 	Training Loss: 45.191677 	Validation Loss: 83.141195
+Epoch: 12 	Training Loss: 45.144206 	Validation Loss: 82.641987
+Epoch: 13 	Training Loss: 45.137829 	Validation Loss: 82.583522
+Epoch: 14 	Training Loss: 45.133220 	Validation Loss: 83.153221
+#####################################################
+#T35 Depth between points with all three coordinates#
+#####################################################
+Epoch: 0 	Training Loss: 60.632705 	Validation Loss: 86.097275

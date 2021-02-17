@@ -32,32 +32,98 @@ class DDDDepthDiff(nn.Module):
             _, _, H, W = real.shape
             fake = F.interpolate(fake, size=(H, W), mode='bilinear')
         eps = 1e-7
-        real = real[0].cpu().detach().numpy()
-        fake = fake[0].cpu().detach().numpy()
-        real[real==0] = eps
-        fake[fake==0] = eps
-
-
-        real_pcd = np.array(self.point_cloud(real).points)
-        fake_pcd = np.array(self.point_cloud(fake).points)
         
-        # # pcd = o3d.geometry.PointCloud()
-        # # pcd.points = o3d.utility.Vector3dVector(real_pcd)
-        # # o3d.io.write_point_cloud("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_debug/python_cloud_no_norm.pcd", pcd)
+        real1 = real[0].clone() #real[0].cpu().detach().numpy()
+        fake1 = fake[0].clone() #fake[0].cpu().detach().numpy()
+        
+        # real2 = real1.cpu().numpy()
+        # fake2 = fake1.cpu().numpy()
+        real1[real1==0] = eps
+        fake1[fake1==0] = eps
+
+
+        # real_pcd = np.array(self.point_cloud(real1).points)
+        # fake_pcd = np.array(self.point_cloud(fake1).points)
+        
+        real_pcd = self.point_cloud(real1).clone()
+        fake_pcd = self.point_cloud(fake1).clone()
+
+        # pcd = o3d.geometry.PointCloud()
+
+        # pcd.points = o3d.utility.Vector3dVector(real_pcd)
+        # o3d.io.write_point_cloud("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_debug/real_cloud_3_unscaled.pcd", pcd)
+        
         # min_interval = 0 #-0.5
         # max_interval = 1 #0.5
-        # real_pcd2 = (max_interval-min_interval)*((real_pcd-real_pcd.min())/(real_pcd.max()-real_pcd.min())) + min_interval
-        # fake_pcd2 = (max_interval-min_interval)*((fake_pcd-real_pcd.min())/(real_pcd.max()-real_pcd.min())) + min_interval
-        # # pcd.points = o3d.utility.Vector3dVector(real_pcd2)
-        # # o3d.io.write_point_cloud("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_debug/python_cloud_norm.pcd", pcd)
+        # min_val = 0
+        # # max_val_real = 15
+        # # real_pcd2 = (max_interval-min_interval)*((real_pcd-real_pcd.min()/(real_pcd.max()-real_pcd.min())) + min_interval
+        # real_pcd2 = (max_interval-min_interval)*((real_pcd-min_val)/(real_pcd.max()-min_val)) + min_interval
+        # real_pcd2[:,0] -= real_pcd2[:,0].min()
+        # real_pcd2[:,1] -= real_pcd2[:,1].min()
+        # # real_pcd2[:,2] -= 0.5 #real_pcd2[:,2].min()
+        # # fake_pcd2 = (max_interval-min_interval)*((fake_pcd-fake_pcd.min())/(fake_pcd.max()-fake_pcd.min())) + min_interval
+        # fake_pcd2 = (max_interval-min_interval)*((fake_pcd-min_val)/(fake_pcd.max()-min_val)) + min_interval
+        # fake_pcd2[:,0] -= fake_pcd2[:,0].min()
+        # fake_pcd2[:,1] -= fake_pcd2[:,1].min()
+        # # fake_pcd2[:,2] -= 0.5 #fake_pcd2[:,2].min()
+        # real_pcd2[real_pcd2==0] = eps
+        # fake_pcd2[fake_pcd2==0] = eps
 
-
-        sum_sq = np.sum(np.square(real_pcd-fake_pcd),axis=1)
+        #### real_pcd[:,0] -= real_pcd[:,0].min()
+        #### real_pcd[:,1] -= real_pcd[:,1].min()
+        # pcd.points = o3d.utility.Vector3dVector(real_pcd)
+        # o3d.io.write_point_cloud("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_debug/real_cloud_3_unscaled.pcd", pcd)
         
-        loss = np.mean(np.sqrt(sum_sq))
+        #### fake_pcd[:,0] -= fake_pcd[:,0].min()
+        #### fake_pcd[:,1] -= fake_pcd[:,1].min()
+        # pcd.points = o3d.utility.Vector3dVector(real_pcd2)
+        # o3d.io.write_point_cloud("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_debug/real_cloud_norm_1.pcd", pcd)
+        
+        # print("Real min:",real_pcd2.min())
+        # print("Fake min:",fake_pcd2.min())
+        # sum_sq = np.sum(np.square(real_pcd-fake_pcd),axis=1)
+        # loss3 = np.mean(np.sqrt(sum_sq))
+
+        # ################################# #
+        # depth depending on all three axes #
+        # ################################# #        
+        # real_depth = np.sqrt(np.sum(np.square(real_pcd2),axis=1))
+        # fake_depth = np.sqrt(np.sum(np.square(fake_pcd2),axis=1))
+        # loss = np.sqrt(np.mean(np.square(np.log(real_depth)-np.log(fake_depth))))
+        # ############################## #
+        # depth depending only on z axes #
+        # ############################## #
+        # z_real_torch = Variable(torch.FloatTensor(1))
+        # z_fake_torch = Variable(torch.FloatTensor(1))
+
+        # z_real_torch.cuda()
+        # z_fake_torch.cuda()
+        
+        z_real = real_pcd[:,2].clone()
+        z_fake = fake_pcd[:,2].clone()
+
+        # z_real_tensor = torch.from_numpy(z_real)
+        # z_real_tensor.requires_grad_()
+        # z_fake_tensor = torch.from_numpy(z_fake)
+        # z_real_tensor.requires_grad_()
+        # z_real_torch.resize_(z_real_tensor.size()).copy_(z_real_tensor) #   z.resize_(data[1].size()).copy_(data[1])
+        # z_fake_torch.resize_(z_fake_tensor.size()).copy_(z_fake_tensor) 
+        # loss2 = np.sqrt(np.mean(np.square(z_real-z_fake)))
+        
+        
+        # loss = np.sqrt(np.mean(np.abs(np.log(z_real)-np.log(z_fake))**2))
+        dist_real = torch.sqrt(torch.sum(real_pcd**2,dim=1))
+        dist_fake = torch.sqrt(torch.sum(fake_pcd**2,dim=1))
+
+        loss2 = torch.sqrt(torch.mean(torch.abs(torch.log(dist_real)-torch.log(dist_fake)) ** 2))
+
+        # # simple loss function on z 
+        # loss = torch.sqrt(torch.mean(torch.abs(torch.log(z_real)-torch.log(z_fake)) ** 2))
+        
         # loss = torch.sqrt(torch.mean(
         #     torch.abs(torch.log(real2)-torch.log(fake2)) ** 2))
-        return loss
+        return loss2
     
     def l2_norm(self,v):
         norm_v = np.sqrt(np.sum(np.square(v), axis=1))
@@ -65,7 +131,7 @@ class DDDDepthDiff(nn.Module):
 
     # def theta(v, w): return arccos(v.dot(w)/(norm(v)*norm(w)))
 
-    def point_cloud(self, depth):
+    def point_cloud(self, depth1):
         """Transform a depth image into a point cloud with one point for each
         pixel in the image, using the camera transform for a camera
         centred at cx, cy with field of view fx, fy.
@@ -82,17 +148,37 @@ class DDDDepthDiff(nn.Module):
         fx = 460.585
         fy = 460.268
 
-        open3d_img = o3d.geometry.Image(depth[0])#/1000.0)
-        intrinsics = o3d.camera.PinholeCameraIntrinsic(640,360,fx,fy,cx,cy)
-        pcd = o3d.geometry.create_point_cloud_from_depth_image(open3d_img,intrinsic=intrinsics)
+        depth = depth1.clone()
+        # open3d_img = o3d.t.geometry.Image(depth[0])#/1000.0)
+        # intrinsics = o3d.camera.PinholeCameraIntrinsic(640,360,fx,fy,cx,cy)
+        # pcd = o3d.geometry.create_point_cloud_from_depth_image(open3d_img,intrinsic=intrinsics)
         
+        rows, cols = depth[0].shape
+        c, _ = torch.meshgrid(torch.arange(cols), torch.arange(cols))
+        c = torch.meshgrid(torch.arange(cols))
+        new_c = c[0].reshape([1,cols]).to('cuda')
+        r = torch.meshgrid(torch.arange(rows))
+        new_r = r[0].unsqueeze(-1).to('cuda')
+        valid = (depth[0] > 0) & (depth[0] < 65535)
+        nan_number = torch.tensor(np.nan).to('cuda')
+        zero_number = torch.tensor(0.).to('cuda')
+        z = torch.where(valid, depth[0] / 1000.0, nan_number)
+        x = torch.where(valid, z * (new_c - cx) / fx, zero_number)
+        y = torch.where(valid, z * (new_r - cy) / fy, zero_number)
+        
+        
+        dimension = rows * cols
+        z_ok = z.reshape(dimension)
+        x_ok = x.reshape(dimension)
+        y_ok = y.reshape(dimension)
+        # depth = depth.cpu().detach().numpy()
         # rows, cols = depth[0].shape
         # c, r = np.meshgrid(np.arange(cols), np.arange(rows), sparse=True)
         # valid = (depth[0] > 0) & (depth[0] < 65535)
         # z = np.where(valid, depth[0] / 1000.0, np.nan)
         # x = np.where(valid, z * (c - cx) / fx, 0)
         # y = np.where(valid, z * (r - cy) / fy, 0)
-        return pcd #np.dstack((x, y, z))
+        return torch.stack((x_ok,y_ok,z_ok),dim=1) #np.dstack((x, y, z)) #pcd 
 
 class NormalsDiff(nn.Module):
     def __init__(self):
@@ -638,7 +724,7 @@ if __name__ == '__main__':
     grad_factor = 10.
     normal_factor = 1.
     max_depth = 6571
-
+    # max_depth = 6000
     for epoch in range(args.start_epoch, args.max_epochs):
 
         train_loss = 0 
@@ -661,12 +747,17 @@ if __name__ == '__main__':
         # saving results in a txt file
         save_dir = '/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process/'
         
+        depth_loss_arr = []
+        dddDepth_loss_arr = []
+
         for step in range(iters_per_epoch):
             start = time.time()
             data = train_data_iter.next()
 
             img.resize_(data[0].size()).copy_(data[0])#*max_depth)
             z.resize_(data[1].size()).copy_(data[1])#*max_depth)
+
+            # max_depth = data[1].max()
 
             optimizer.zero_grad()
             z_fake = i2d(img)#*max_depth # * 6000 #z.max()
@@ -728,8 +819,8 @@ if __name__ == '__main__':
 
             depth_loss = depth_criterion(z_fake, z)
             
-            # dddDepth_loss = dddDepth_criterion(z_fake*max_depth,z*max_depth)
-            dddDepth_loss = dddDepth_criterion(z_fake,z)
+            dddDepth_loss = dddDepth_criterion(z_fake,z)#*max_depth,z*max_depth)
+            # dddDepth_loss = dddDepth_criterion(z_fake,z)
 
             # grad_real, grad_fake = imgrad_yx(z), imgrad_yx(z_fake)
             
@@ -748,7 +839,12 @@ if __name__ == '__main__':
  
             # loss = 10*(depth_loss + 0.01*grad_loss) + normals_diff_loss #+ normal_loss
             # loss = depth_loss + grad_loss + normal_loss
-            loss = depth_loss + 100*dddDepth_loss - depth_loss #+ normal_loss
+            depth_loss_arr.append(depth_loss)
+            dddDepth_loss_arr.append(dddDepth_loss)
+            
+            torch.autograd.set_detect_anomaly(True)
+
+            loss = 10*dddDepth_loss #depth_loss + 10*dddDepth_loss - depth_loss #+ normal_loss
             # loss *= 10
             loss.backward()
             optimizer.step()
@@ -772,6 +868,10 @@ if __name__ == '__main__':
 #                 print("[epoch %2d][iter %4d] loss: %.4f iRMSE: %.4f" \
 #                                 % (epoch, step, loss, metric))
         # save model
+        # plt.plot(depth_loss_arr,'g',dddDepth_loss_arr,'r')
+        # plt.savefig(save_dir +'train_loss_'+str(epoch)+'.png',bbox_inches='tight')
+        # plt.close()
+
         if epoch%4 == 0:
             save_name = os.path.join(args.output_dir, 'i2d_{}_{}.pth'.format(args.session, epoch))
             
@@ -818,8 +918,8 @@ if __name__ == '__main__':
                 
                 grad_real, grad_fake = imgrad_yx(z), imgrad_yx(z_fake)
                 
-                # dddDepth_loss_eval = dddDepth_criterion(z_fake*max_depth,z*max_depth)
-                dddDepth_loss_eval = dddDepth_criterion(z_fake,z)
+                dddDepth_loss_eval = dddDepth_criterion(z_fake*max_depth,z*max_depth)
+                # dddDepth_loss_eval = dddDepth_criterion(z_fake,z)
                 # if epoch > 3:
                 #     grad_loss_eval = grad_criterion(grad_fake, grad_real) * grad_factor  #* (epoch > 3)
                 # else:
@@ -836,7 +936,7 @@ if __name__ == '__main__':
                 # loss_val = 10*(depth_loss_eval + 0.01*grad_loss_eval) + normals_diff_loss_eval
                 # loss_val = depth_loss_eval + grad_loss_eval + normal_loss_eval
                 # loss_val *= 10
-                loss_val = depth_loss_eval + 100*dddDepth_loss_eval - depth_loss_eval
+                loss_val = 10*dddDepth_loss_eval #depth_loss_eval + 10*dddDepth_loss_eval - depth_loss_eval
                 val_loss += loss_val.item()
                 # print("Loss on test_data: ",loss_eval)
                 if i==337:
