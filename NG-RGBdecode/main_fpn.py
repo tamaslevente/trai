@@ -131,15 +131,17 @@ class VectorLoss(nn.Module):
         if torch.isnan(pred).any() or torch.isinf(pred).any() or torch.isnan(gt).any() or torch.isinf(gt).any():
             print("NAN value")
         if method == 0:
-            pred=pred/127-1
-            gt=gt/127-1
+            pred=pred*2-1
+            gt=gt*2-1
             inner_product = (pred * gt).sum(dim=1).unsqueeze(1)
             # pred_norm = torch.norm(pred2, p='fro', dim=1, keepdim=True)
             # gt_norm = torch.norm(gt2, p='fro', dim=1, keepdim=True)
-            pred_norm = pred.pow(2).sum(dim=1).pow(0.5).unsqueeze(1)
-            gt_norm = gt.pow(2).sum(dim=1).pow(0.5).unsqueeze(1)
-            cos = inner_product / (2 * pred_norm * gt_norm)
+            # pred_norm = pred.pow(2).sum(dim=1).pow(0.5).unsqueeze(1)
+            # gt_norm = gt.pow(2).sum(dim=1).pow(0.5).unsqueeze(1)
+            # cos = inner_product / (2 * pred_norm * gt_norm)
+            cos = inner_product / 2
             angle = torch.acos(cos)
+            angle[angle>1.57]=3.14-angle[angle>1.57]
         if method == 1:
             gt2 = gt.clone()
             pred2 = pred.clone()
@@ -198,14 +200,14 @@ def parse_args():
                       default='nyuv2', type=str)
     parser.add_argument('--epochs', dest='max_epochs',
                       help='number of epochs to train',
-                      default=200, type=int)
+                      default=100, type=int)
     parser.add_argument('--cuda', dest='cuda',
                       help='whether use CUDA',
                       default=True,
                       action='store_true')
     parser.add_argument('--bs', dest='bs',
                       help='batch_size',
-                      default=2, type=int)
+                      default=1, type=int)
     parser.add_argument('--num_workers', dest='num_workers',
                       help='num_workers',
                       default=1, type=int)
@@ -250,7 +252,7 @@ def parse_args():
                       default=1, type=int)
     parser.add_argument('--checkepoch', dest='checkepoch',
                       help='checkepoch to load model',
-                      default=149, type=int)
+                      default=50, type=int)
     parser.add_argument('--checkpoint', dest='checkpoint',
                       help='checkpoint to load model',
                       default=0, type=int)
@@ -475,9 +477,9 @@ if __name__ == '__main__':
     # constants
     iters_per_epoch = int(train_size / args.bs)
     
-    depth_factor = 0.5
-    grad_factor = 5.0
-    normal_factor = 10.0
+    depth_factor = 0.0
+    grad_factor = 10.0
+    normal_factor = 0.0
     angle_factor = 10.0
     loss_factor = 10.0
     maxloss=1.5*300000
@@ -526,21 +528,28 @@ if __name__ == '__main__':
                 save_image(z_fake[0], 'pred_'+str(epoch)+'.png')
                 show_image=False
 
-            zfv=z_fake/127.0-1
+            zfv=z_fake*2-1
             z_fake_norm=zfv.pow(2).sum(dim=1).pow(0.5).unsqueeze(1)
             # z_fake_norm2=torch.norm(zfv, p='fro', dim=1, keepdim=True)
             # z_fake_norm[z_fake_norm>1.7]=1.0
             # z_fake_norm2[z_fake_norm2>1.7]=1.0         
             zfv=zfv/z_fake_norm
-            z_fake2=(zfv+1)*127.0
-            # print("zfv:"+str(torch.min(zfv))+", "+str(torch.max(zfv)))
-            print("z_fake:"+str(torch.min(z_fake))+", "+str(torch.max(z_fake))+", "+str(torch.mean(z_fake)))
-            print("z_fake2:"+str(torch.min(z_fake2))+", "+str(torch.max(z_fake2))+", "+str(torch.mean(z_fake2)))
-            # print("z_fake_norm2:"+str(torch.min(z_fake_norm2))+", "+str(torch.max(z_fake_norm2))+", "+str(torch.mean(z_fake_norm2)))
+            z_fake=(zfv+1)/2
+            # zf=z_fake/255.0
+            # zz=z/255.0
 
-            vloss_train = vector_loss(z_fake2, z)
-            depth_loss = depth_criterion(z_fake2, z)            
-            grad_real, grad_fake = imgrad_yx(z), imgrad_yx(z_fake2)
+            zv=z*2-1
+            z_norm=zv.pow(2).sum(dim=1).pow(0.5).unsqueeze(1)
+            zv=zv/z_norm
+            z=(zv+1)/2
+            # print("zfv:"+str(torch.min(zfv))+", "+str(torch.max(zfv)))
+            # print("z_fake:"+str(torch.min(z_fake))+", "+str(torch.max(z_fake))+", "+str(torch.mean(z_fake)))
+            # print("z_fake2:"+str(torch.min(z_fake2))+", "+str(torch.max(z_fake2))+", "+str(torch.mean(z_fake2)))
+            # print("z_fake_norm:"+str(torch.min(z_fake_norm))+", "+str(torch.max(z_fake_norm))+", "+str(torch.mean(z_fake_norm)))
+
+            vloss_train = vector_loss(z_fake, z)
+            depth_loss = depth_criterion(z_fake, z)            
+            grad_real, grad_fake = imgrad_yx(z), imgrad_yx(z_fake)
             grad_loss = grad_criterion(grad_fake, grad_real) * (epoch>delay_loss+3)
             normal_loss = normal_criterion(grad_fake, grad_real) * (epoch>delay_loss+7)                  
             
@@ -604,12 +613,13 @@ if __name__ == '__main__':
 
                 z_fake = i2d(img)
                 # if epoch%2:
-                zfv=z_fake/127.0-1
+                zfv=z_fake*2-1
                 z_fake_norm=zfv.pow(2).sum(dim=1).pow(0.5).unsqueeze(1)
-                z_fake_norm[z_fake_norm>1.7]=1.0        
+                # z_fake_norm[z_fake_norm>1.7]=1.0        
                 zfv=zfv/z_fake_norm
-                z_fake=(zfv+1)*127.0
+                z_fake=(zfv+1)/2
                 save_image(z_fake[0], 'train_images/normalimage_'+str(epoch)+'_'+str(i)+'.png')
+                # cv2.imwrite('train_images/normalimage_'+str(epoch)+'_'+str(i)+'.png',z_fake[0])
                 # depth_loss = float(img.size(0)) * rmse(z_fake, z)**2
                 # eval_loss += depth_loss
                 # rmse_accum += float(img.size(0)) * eval_metric(z_fake, z)**2
