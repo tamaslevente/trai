@@ -117,37 +117,41 @@ class RandomHorizontalFlip(object):
         return image, landmarks
     
 class NYUv2Dataset(data.Dataset):
+    
     def __init__(self, root='/home/cuda/NAU-RGB/dataset/', seed=None, train=True):
-        
+        height=480
+        width=640
         np.random.seed(seed)
         self.root = Path(root)
         self.train = train
         if train:
             self.rgb_paths = [root+'depth2ir/train/'+d for d in os.listdir(root+'depth2ir/train/')]
             # Randomly choose 50k images without replacement
-            self.rgb_paths = np.random.choice(self.rgb_paths, 1150, False)
+            self.rgb_paths = np.random.choice(self.rgb_paths, 3470, False)
         else:
             self.rgb_paths = [root+'depth2ir/test/'+d for d in os.listdir(root+'depth2ir/test/')]
-            self.rgb_paths = np.random.choice(self.rgb_paths, 10, False)
+            self.rgb_paths = np.random.choice(self.rgb_paths, 4, False)
         
         if train!=train: # vis
             self.train = True
             self.rgb_paths = [root+'train_images/'+d for d in os.listdir(root+'train_images/')]
         
         self.augmentation = Compose([RandomHorizontalFlip()]) # , RandomCropRotate(10)
-        self.rgb_transform = Compose([ToPILImage(), Resize((480,640)), ToTensor()]) # ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1), 
-        self.depth_transform = Compose([ToPILImage(), Resize((480,640)), ToTensor()])
+        self.rgb_transform = Compose([ToPILImage(), Resize((height,width)), ToTensor()]) # ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1), 
+        self.depth_transform = Compose([ToPILImage(), Resize((height,width)), ToTensor()])
         
         self.length = len(self.rgb_paths)
             
     def __getitem__(self, index):
+        height=480
+        width=640
         path = self.rgb_paths[index]
         # print("Opening image: " + path)
         # # rgb = Image.open(path)
         # reader = png.Reader( path)
         rgb = cv2.imread(path,cv2.IMREAD_UNCHANGED )
-        # depth = Image.open(path.replace('depth2ir', 'normalimages'))
-        depth = cv2.imread(path.replace('depth2ir', 'normalimages'),cv2.IMREAD_UNCHANGED )
+        depth = Image.open(path.replace('depth2ir', 'normalimages'))
+        # depth = cv2.imread(path.replace('depth2ir', 'normalimages'),cv2.IMREAD_UNCHANGED )
         # reader = png.Reader( path.replace('depth2ir', 'normalimages') )
         # depth= cv2.imread(path.replace('depth2ir', 'normalimages'),cv2.IMREAD_UNCHANGED )
         
@@ -156,7 +160,7 @@ class NYUv2Dataset(data.Dataset):
         #     # rgb, depth = self.augmentation((rgb, depth))
         #     return self.rgb_transform(rgb), self.depth_transform(depth)
         
-        return np.moveaxis(cv2.resize(rgb,(640,480)).astype(np.float32),-1,0), np.moveaxis(cv2.resize(depth,(640,480)).astype(np.float16),-1,0)
+        return np.moveaxis(cv2.resize(rgb,(width,height)).astype(np.float32),-1,0), Compose([Resize((height,width)), ToTensor()])(depth)
         return rgb, depth
 
     def __len__(self):
