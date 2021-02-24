@@ -211,10 +211,12 @@ if __name__ == '__main__':
         save_path=args.input_image_path[:-4]
         save_image(z_fake[0], save_path +"_pred"+'.png')
     else:
-        start = timeit.default_timer()
+        
         dlist=os.listdir(args.input_image_path)
         dlist.sort()
         images=[]
+        time_sum = 0
+        counter = 0
         for filename in dlist:
             if filename.endswith(".jpg") or filename.endswith(".png"):
                 #print(os.path.join(directory, filename))
@@ -230,7 +232,11 @@ if __name__ == '__main__':
             rgb2 = np.moveaxis(cv2.resize(rgb,(width,height)).astype(np.float32),-1,0)
             # img = rgb2.unsqueeze(0)
             img = torch.from_numpy(rgb2).float().unsqueeze(0)
+            start = timeit.default_timer()
             z_fake = i2d(img.cuda())
+            stop = timeit.default_timer()
+            time_sum=time_sum+stop-start
+            counter=counter+1
             # print("z_fake:"+str(torch.min(z_fake))+", "+str(torch.max(z_fake))+", "+str(torch.mean(z_fake)))
             zfv=z_fake*2-1
             z_fake_norm=zfv.pow(2).sum(dim=1).pow(0.5).unsqueeze(1)
@@ -239,5 +245,5 @@ if __name__ == '__main__':
             save_path=path[:-4]
             save_image(z_fake[0], save_path +"_pred"+'.png')
             # cv2.imwrite(save_path +"_pred"+'.png',z_fake[0])
-        stop = timeit.default_timer()
-        print('Predicting '+str(len(images))+' images took ', stop - start)  
+        
+        print('Predicting '+str(len(images))+' images took ', time_sum/counter)  
