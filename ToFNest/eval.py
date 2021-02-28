@@ -21,18 +21,15 @@ def parse_args():
     parser.add_argument('--num_workers', dest='num_workers',
                       help='num_workers',
                       default=1, type=int)  
-    parser.add_argument('--model_dir', dest='model_dir',
-                      help='model directory',
-                      default='saved_models', type=str)  
     parser.add_argument('--input_image_path', dest='input_image_path',
                       help='path to a single input image for evaluation',
                       default='/home/user/dataset/depth_images/depth.png', type=str)
     parser.add_argument('--eval_folder', dest='eval_folder',
                       help='evaluate only one image or the whole folder',
                       default=False, type=bool)
-    parser.add_argument('--checkepoch', dest='checkepoch',
-                      help='checkepoch to load model',
-                      default=10, type=int)
+    parser.add_argument('--model_path', dest='moel_path',
+                      help='path to the model to use',
+                      default='saved_models/d2n_1_10.pth', type=str)
 
     args = parser.parse_args()
     return args
@@ -53,12 +50,10 @@ if __name__ == '__main__':
     print('Done!')
     
     
-    load_name = os.path.join(args.model_dir,
-        'd2n_1_{}.pth'.format(args.checkepoch))
+    load_name = os.path.join(args.model_path)
     print("loading checkpoint %s" % (load_name))
     state = d2n.state_dict()
     checkpoint = torch.load(load_name)
-    args.start_epoch = checkpoint['epoch']
     checkpoint = {k: v for k, v in checkpoint['model'].items() if k in state}
     state.update(checkpoint)
     d2n.load_state_dict(state)
