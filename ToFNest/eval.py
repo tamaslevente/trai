@@ -105,7 +105,7 @@ if __name__ == '__main__':
                 save_image(z_fake[0], save_path +"_pred"+'.png')
             else:
                 continue
-        print('Predicting '+str(len(images))+' images took ', time_sum/counter)  
+        print('Predicting '+str(counter)+' images took ', time_sum/counter)  
     else:
         depth = cv2.imread(args.input_image_path,cv2.IMREAD_UNCHANGED )
         if len(depth.shape) < 3:
