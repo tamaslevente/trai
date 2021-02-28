@@ -9,11 +9,11 @@ import cv2
 
 class DatasetLoader(data.Dataset):
     
-    def __init__(self, root='/media/cuda/ssd/datasets/naurgb/nyu_v2_augmented/dataset/', seed=None, train=True):
+    def __init__(self, root='/home/user/dataset/', seed=None, train=True):
         np.random.seed(seed)
         self.root = Path(root)
 
-        self.depth_input_paths = [root+'depth3/train/'+d for d in os.listdir(root+'depth3/train/')]
+        self.depth_input_paths = [root+'depth_input/train/'+d for d in os.listdir(root+'depth_input/train/')]
         self.depth_input_paths = np.random.choice(self.depth_input_paths, len(self.depth_input_paths), False)
         
         self.length = len(self.depth_input_paths)
@@ -28,7 +28,7 @@ class DatasetLoader(data.Dataset):
             combine_depth[:,:,1] = depth_input
             combine_depth[:,:,2] = depth_input
             depth_input = combine_depth
-        normalgt = Image.open(path.replace('depth3', 'normalimages'))
+        normalgt = Image.open(path.replace('depth_input', 'normalimages'))
         depth_input_mod = np.moveaxis(cv2.resize(depth_input,(depth_input.shape[1],depth_input.shape[0])).astype(np.float32),-1,0)
         normalgt_mod = Compose([Resize((depth_input.shape[0],depth_input.shape[1])), ToTensor()])(normalgt)
         return depth_input_mod, normalgt_mod
