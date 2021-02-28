@@ -1,4 +1,4 @@
-# ToFNest: Efficient  normal  estimation  for  ToF cameras
+# ToFNest: Efficient  normal  estimation  for  Time-Of-Flight Depth  cameras
 
 ## Abstract
 In this work we propose an efficient normal estimation method for  depth  images  acquired  by  Time-of-Flight  (ToF)  cameras based  on  feature  pyramid  networks.  We  do  the  our  normal estimation training starting from the 2D depth images, projecting  the  measured  data  into  the  3D  space  and  computing  theloss  function  for  the  pointcloud  normal.  Despite  the  simplicity of the methods it proves to be efficient in terms of robustness.Compared with the state of the art methods, our method proved to be faster with similar precision metrics from other methods on  public  datasets.  In order  to  validate  our  proposed  solution we  made  an  extensive  testing  using  both  public  datasets  and custom recorded indoor and ourdoor datasets as well.
@@ -8,8 +8,8 @@ In this work we propose an efficient normal estimation method for  depth  images
 ## Content
 - [Prerequisites](#prerequisites)
 - [Data Preparation](#data-preparation)
-- [Training](#training)
-- [Evaluation](#evaluation)
+- [Training & Evaluation](#training&evaluation)
+- [How to run](#howtorun)
 - [Demo](#demo)
 
 ## Prerequisites
@@ -24,6 +24,11 @@ The code was built using the following libraries ([requirements.txt](requirement
 
 ## Data Preparation
 
-### Training
+## Training & Evaluation
+![image](https://drive.google.com/uc?export=view&id=<1HpE7L4ArETnhUNIMLYu6Myxl6Ka1nDcc>)
 
 ## How to run
+
+## Demo
+
+
