@@ -27,7 +27,7 @@ def parse_args():
     parser.add_argument('--eval_folder', dest='eval_folder',
                       help='evaluate only one image or the whole folder',
                       default=False, type=bool)
-    parser.add_argument('--model_path', dest='moel_path',
+    parser.add_argument('--model_path', dest='model_path',
                       help='path to the model to use',
                       default='saved_models/d2n_1_10.pth', type=str)
 
