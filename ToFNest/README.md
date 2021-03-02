@@ -23,6 +23,9 @@ The code was built using the following libraries ([requirements.txt](requirement
 - [Constants](https://pypi.org/project/constants/)
 
 ## Data Preparation
+
+You may use this https://github.com/molnarszilard/ToFNest_data_processing repo to create training dataset, or to evaluate your model.
+
 You can use your own dataset, in this case you have to create your own normal ground truth using a preferred method for this.
 For training you will need the depth images with their corresponding image containing the normal vector coordinates decoded in rgb values.
 
@@ -45,6 +48,8 @@ Run python train.py [--options]
 Here you can create a prediction on a single image, then set the path to that image, or you can predict the normal images for an entire folder, by adding the --eval_folder=True flag in addition to the folder path.
 
 Run python eval.py [--options]
+
+At https://github.com/molnarszilard/ToFNest_data_processing, you can find a code that compares the GT pointcloud with normals to your generated normal images.
 ## Demo
 
 
