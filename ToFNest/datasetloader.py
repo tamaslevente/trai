@@ -13,7 +13,7 @@ class DatasetLoader(data.Dataset):
         np.random.seed(seed)
         self.root = Path(root)
 
-        self.depth_input_paths = [root+'depth_input/train/'+d for d in os.listdir(root+'depth_input/train/')]
+        self.depth_input_paths = [root+'depth_input/'+d for d in os.listdir(root+'depth_input/')]
         self.depth_input_paths = np.random.choice(self.depth_input_paths, len(self.depth_input_paths), False)
         
         self.length = len(self.depth_input_paths)
