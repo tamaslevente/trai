@@ -39,7 +39,8 @@ You can also download the NYU_V2 (https://cs.nyu.edu/~silberman/datasets/nyu_dep
 ### Training
 
 Modify in datasetloader.py the path to the folder containing your depth images (16bit 1 or 3 channel) and the images about the normla vector (8bit RGB). The depth images can be simple depth images, in order to increase the dataloading speed you might want to create 3 channel depth images (the same data from the depth image is copied), or you can also experiment with different combinations, like 2 channel containing depth information, and 1 channel containing a monochrome image (all of these should be on 16 bit).
-In train.py you can see the available options, and modify them, either from code, or using them as [--options] at running. You might want to set the code to save images from the training phase, so you can see the evolution of the training.
+In train.py you can see the available options, and modify them, either from code, or using them as [--options] at running. You might want to set the code to save images from the training phase, so you can see the evolution of the t
+raining.
 
 Run python train.py [--options]
 
@@ -50,6 +51,14 @@ Here you can create a prediction on a single image, then set the path to that im
 Run python eval.py [--options]
 
 At https://github.com/molnarszilard/ToFNest_data_processing, you can find a code that compares the GT pointcloud with normals to your generated normal images.
+
 ## Demo
+Full video are available at: TODO SZILARD -> YOUTUBE LINK
+
+
+![ezgif com-gif-maker](https://user-images.githubusercontent.com/22835687/109798142-0f75a580-7c23-11eb-9d65-3dff8d8f3439.gif)
+
+
+
 
 
