@@ -167,9 +167,30 @@ class MyCustomDataset(data.Dataset):
         rgb = np.array(rgb,np.float32,copy=True).transpose((2,0,1)) 
         depth = np.array(depth,np.float32,copy=True)[:, :, None].transpose((2,0,1))
 
-        max_depth = 6571
+        # a = rgb[0]
+        # # a[a!=0.0] = 10000
+        # b = depth[0]
+        # # b[b!=0.0] = 10000
+        # c = np.abs(a-b)
+        # save_dir = "/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_debug/"
+        # cv2.imwrite(save_dir+'input_test_'+'.png',np.uint16(a))
+        # cv2.imwrite(save_dir+'gt_test_'+'.png',np.uint16(b))
+        # cv2.imwrite(save_dir+'diff_in_gt_test_'+'.png',np.uint16(c))
+        # import matplotlib.pyplot as plt
+        # plt.imshow(a, vmin=0, vmax=7000)
+        # plt.colorbar()
+        # plt.savefig('real1_'+'.png',bbox_inches='tight')
+        # plt.close()
+
+        # max_depth = 6571
+        max_depth = depth.max()
         min_depth = 0
         max_ir = 3840
+        
+        # plt.plot(z.cpu(),'g')
+        # plt.savefig("z.png")
+        # plt.close()
+        
         rgbTensor = torch.from_numpy(rgb).long()/max_depth
         depthTensor = torch.from_numpy(depth).long()/max_depth
         # rgbPIL = Image.fromarray(np.flipud(rgb))

@@ -23,6 +23,7 @@ def predict(in_planes, out_planes):
     return nn.Sequential(
         nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=1, padding=1),
         nn.Sigmoid(),
+        # nn.ReLU()
     )
 
 def upshuffle(in_planes, out_planes, upscale_factor):
@@ -98,7 +99,7 @@ class I2D(nn.Module):
 
     def forward(self, x):
         _,_,H,W = x.size()
-        
+        torch.autograd.set_detect_anomaly(True)
         # Bottom-up
         c1 = self.layer0(x)
         c2 = self.layer1(c1)
@@ -123,4 +124,7 @@ class I2D(nn.Module):
         # return self.predict2( self.up4(self.predict1(vol)) )
         pred1 = self.predict1(vol)
         pred2 = F.interpolate(self.predict2(pred1), size=(H*4,W*4), mode='bilinear')
-        return pred2     # img : depth = 1 : 1 
+        valid = x[0][1]!=0.0
+        pred3 = pred2.clone()
+        pred3[0][0] = pred2[0][0] * valid
+        return pred3     # img : depth = 1 : 1 

@@ -358,6 +358,61 @@ public:
         cv::imwrite(depth_file_name, cv_image);
         std::cerr << "Saved " << gt_cloud->size() << " data points to"<< depth_file_name << std::endl;
 
+
+        // // ########################################
+        // // Just for testing#########################
+        // // ##########################################
+
+        // cv_image = Mat(height_, width_, CV_32FC1, 0.0); //Scalar(std::numeric_limits<float>::max()));
+        // // int minRange = 0; // this is the smallest distance at which the camera can measure depending on the mode (near, far, etc.)
+
+        // for (int i = 0; i < cloud1->points.size(); i++)
+        // {
+        //     if (cloud1->points[i].z == cloud1->points[i].z)
+        //     {
+        //         if (cloud1->points[i].z != 0.0)
+        //         {
+        //             z = cloud1->points[i].z * 1000.0;
+        //             u = (cloud1->points[i].x * 1000.0 * focalX_) / z;
+        //             v = (cloud1->points[i].y * 1000.0 * focalY_) / z;
+        //             pixel_pos_x = (int)(u + centerX_);
+        //             pixel_pos_y = (int)(v + centerY_);
+
+        //             if (pixel_pos_x > (width_ - 1))
+        //             {
+        //                 pixel_pos_x = width_ - 1;
+        //             }
+        //             else if (pixel_pos_x < 0)
+        //             {
+        //                 pixel_pos_x = -pixel_pos_x;
+        //             }
+        //             if (pixel_pos_y > (height_ - 1))
+        //             {
+        //                 pixel_pos_y = height_ - 1;
+        //             }
+        //             else if (pixel_pos_y < 0)
+        //             {
+        //                 pixel_pos_y = -pixel_pos_y;
+        //             }
+        //         }
+        //         else
+        //         {
+        //             pixel_pos_x = 0;
+        //             pixel_pos_y = 0;
+        //             z = 0.0;
+        //         }
+
+        //         cv_image.at<float>(pixel_pos_y, pixel_pos_x) = z - minRange;
+        //     }
+        // }
+
+        // //###########################//
+        // //  saving the depth images  //
+        // //###########################//
+        // cv_image.convertTo(cv_image, CV_16UC1);
+        // cv::imwrite(depth_file_name, cv_image);
+        // std::cerr << "Saved " << cloud1->size() << " data points to"<< depth_file_name << std::endl;
+
     }
 
 private:
@@ -380,9 +435,14 @@ private:
     //                0.0, 384, 238.973,
     //                0.0, 0.0, 1.0};
     
-    // Pico parameters
-    double K[9] = {460.585, 0.0, 334.080, 
-                    0.0, 460.268, 169.807, 
+    // // Pico parameters
+    // double K[9] = {460.585, 0.0, 334.080, 
+    //                 0.0, 460.268, 169.807, 
+    //                 0.0, 0.0, 1.0};
+
+    // Pico parameters OK!!!!!!!!!!!!!!
+    double K[9] = {460.585, 0.0, 334.081,
+                    0.0, 460.268,  169.808,
                     0.0, 0.0, 1.0};
 
     double centerX_ = K[2];

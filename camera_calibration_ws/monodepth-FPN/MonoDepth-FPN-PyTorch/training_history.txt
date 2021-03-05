@@ -392,7 +392,8 @@ Optimizer:
 Training parameters: 
 Other training parameters:
 Others: DDDDepthLoss is calculated not only between z axis, but on all three (x,y,z) (Even though it is no difference between the two, as numbers!)
-Results:
+Results: After epoch 34 there is no change in training loss even though val loss is fluctuating, probably because it is overfitting, and even so, there is not much of a difference.
+Epoch: 34 	Training Loss: 44.840309 	Validation Loss: 82.355320
 #########      # # #    ##
     #         ____#   #__ 
     #            #   #  #
@@ -401,8 +402,9 @@ Loss:
 Optimizer:
 Training parameters: 
 Other training parameters:
-Others: 
-Results:
+Others: RMSE  (without log) loss = 100000*dddDepth_loss
+Results: Very good results! Better than before.
+Epoch: 14 	Training Loss: 18.550324 	Validation Loss: 132009.109537
 #########      # # #  #####  
     #         ____#      #
     #            #     #
@@ -411,8 +413,9 @@ Loss:
 Optimizer:
 Training parameters: 
 Other training parameters:
-Others: 
-Results:
+Others: RMSEx + RMSEy + RMSEz loss = 100000*dddDepth_loss
+Results: Pretty much the same.
+Epoch: 29 	Training Loss: 26.936296 	Validation Loss: 192990.183131
 #########      # # #   #####
     #         ____#   #___#
     #            #   #   #
@@ -421,8 +424,9 @@ Loss:
 Optimizer:
 Training parameters: 
 Other training parameters:
-Others: 
-Results:
+Others:  back to 36, but images are normalized with gt.max(), and represented with a multiplication with 6000, loss = 100000*dddDepth_loss
+Results: Mmm, kind of the same, but also, I think that now it is a smaller difference between the gt scale and the predicted image scale.
+Epoch: 29 	Training Loss: 20.478912 	Validation Loss: 13471.554399
 #########      # # #  #####
     #         ____#  #___# 
     #            #      #
@@ -430,6 +434,521 @@ Results:
 Loss:
 Optimizer:
 Training parameters: 
+Other training parameters:
+Others: Loss is depending on delta, if the value of delta is greater than 0.1 the loss is squared: loss = (10*dddDepth_loss)**2
+Results: Not ok.
+Epoch: 19 	Training Loss: 2.322070 	Validation Loss: 2.210250
+#########     #     #####
+    #       # #     #   #
+    #      #####    #   #
+    #         #     #####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: Another type of formula for loss: loss3 = torch.sqrt(torch.mean(torch.abs(torch.exp(z_real)-torch.exp(z_fake)) ** 2))
+Results: Not better than before.
+Epoch: 14 	Training Loss: 27.357751 	Validation Loss: 30.282932
+#########     #      #
+    #       # #    # #
+    #      #####     #
+    #         #    # # #  
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: loss4 = torch.sqrt(torch.mean(torch.exp(torch.abs(z_real-z_fake))))
+Results: Eh...
+Epoch: 23 	Training Loss: 106.541215 	Validation Loss: 107.246890
+#########     #     # #
+    #       # #    #   #  
+    #      #####     #
+    #         #    # # # 
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: loss5 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2)) * torch.exp(delta-0.1)
+Results: Seems ok...
+Epoch: 29 	Training Loss: 2.390744 	Validation Loss: 2.970228
+#########     #     ####
+    #       # #     ___#
+    #      #####       #
+    #         #     ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: loss6 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2)) * torch.exp(10*(delta-0.005))
+Results: There seems to be some improvement. 
+Epoch: 29 	Training Loss: 5.593737 	Validation Loss: 7.137160
+#########     #      #
+    #       # #    # # 
+    #      #####  #####
+    #         #      #
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: loss7 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))*torch.abs(1-torch.exp(10*(delta-0.005)))
+Results: Cred că nu la fel de ok ca înainte...
+Epoch: 29 	Training Loss: 3.644250 	Validation Loss: 4.802766
+#########     #     ####
+    #       # #     #__
+    #      #####       #
+    #         #     ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: loss8 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))*torch.abs(1-torch.exp(10*(delta-0.05)))
+Results: One of the best until now.
+Epoch: 29 	Training Loss: 1.659156 	Validation Loss: 2.410602
+#########     #       ###
+    #       # #      #__
+    #      #####     #  #
+    #         #      ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: delta = torch.abs(torch.mean(z_real)-torch.mean(z_fake))
+        loss9 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2)) * torch.abs(1-torch.exp(10*(delta-0.005)))
+Results:It is not ok, as it seems to be searching for something else, some sort of area with dense points, or something.
+Epoch: 29 	Training Loss: 0.028554 	Validation Loss: 0.409753
+#########     #    ######
+    #       # #        #
+    #      #####      #
+    #         #      #
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: delta = torch.mean(torch.abs(z_real-z_fake))
+        loss10 = torch.abs(1-torch.exp(10*(delta-0.005)))
+Results: It's not learning anything.
+Epoch: 29 	Training Loss: 1211.007184 	Validation Loss: 1209.630250
+#########     #    #####
+    #       # #    #___#
+    #      #####   #   #
+    #         #    #####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: loss = 1*dddDepth_loss
+        loss11 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))*torch.abs(1-torch.exp(10*(lossX-0.01)))*torch.abs(1-torch.exp(10*(lossY-0.01)))*torch.abs(1-torch.exp(10*(lossZ-0.05)))
+Results:  Not ok, too blury.
+Epoch: 24 	Training Loss: 0.313251 	Validation Loss: 0.362532
+#########     #    #####
+    #       # #    #___#
+    #      #####       #
+    #         #    #####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: loss12 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))*torch.abs(10*(1-torch.exp(torch.exp(1*(lossX-0.01))+torch.exp(1*(lossY-0.01))+torch.exp(1*(lossZ-0.05)))))
+Results: It seems alright, except the floor. 
+Epoch: 22 	Training Loss: 39.483717 	Validation Loss: 44.397070
+#########     #####   #####
+    #        ####    #   # 
+    #            #  #   #  
+    #       # ##   #####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: loss13 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))*torch.abs(10*(torch.exp(1*(lossX-0.01))+torch.exp(1*(lossY-0.01))+torch.exp(1*(lossZ-0.05))))
+Results: I think it is the best until now.
+Epoch: 24 	Training Loss: 56.913668 	Validation Loss: 63.169822
+#########     #####      #
+    #        ####     # #
+    #            #     # 
+    #       # ##    # # #
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: loss14 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))*torch.abs(10*(torch.exp(1*(lossX-0.01))+torch.exp(1*(lossY-0.01))+torch.exp(1*(lossZ-0.05))))
+Results: Not ok.
+Epoch: 24 	Training Loss: 6.140145 	Validation Loss: 6.646121
+#########     #####     ## 
+    #        ####     #   # 
+    #            #      #
+    #       # ##     # # # 
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: First time with eps=2 (but before transforming the image in a point cloud)loss15 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))*torch.abs(10*(torch.exp(1*(lossX-0.05))+torch.exp(1*(lossY-0.01))+torch.exp(1*(lossZ-0.1))))
+Results: Not very good, at all!
+Epoch: 24 	Training Loss: 19.113659 	Validation Loss: 19.209638
+#########     #####    #### 
+    #        ####     ___# 
+    #            #      #
+    #       # ##    ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: exp on every pair of coordinates before doing a mean.
+        lossX = torch.mean(torch.exp(10*torch.abs(x_real-x_fake)))
+        lossY = torch.mean(torch.exp(10*torch.abs(y_real-y_fake)))
+        lossZ = torch.mean(torch.exp(10*torch.abs(z_real-z_fake)))
+        RMSE_term = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))
+        delta = [RMSE_term, lossX, lossY, lossZ]
+        loss16 = RMSE_term*torch.abs(3-lossX+lossY+lossZ)
+Results: Not too good, not too good...
+Epoch: 7 	Training Loss: 3.251603 	Validation Loss: 5.064030
+Epoch: 8 	Training Loss: 3.226424 	Validation Loss: 5.234912
+#########     #####       #
+    #        ####      # # 
+    #            #   ######
+    #       # ##       #
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: Eliminated all the nan points in the point cloud. 
+        lossX = torch.mean(torch.abs(x_real-x_fake))
+        lossY = torch.mean(torch.abs(y_real-y_fake))
+        lossZ = torch.mean(torch.abs(z_real-z_fake))
+        RMSE = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))
+        delta = [RMSE, lossX, lossY, lossZ]
+        loss17 = RMSE * torch.abs(10*(3-torch.exp(1*lossX)+torch.exp(1*lossY)+torch.exp(1*lossZ)))
+Results: Seems ok, I think, probably the best until now, but we still have a problem with edges.
+Epoch: 24 	Training Loss: 4.380020 	Validation Loss: 5.616103
+#########     #####     #####
+    #        ####      #___  
+    #            #         #
+    #       # ##      # ## 
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: Just like 54 but with a +.
+        loss18 = RMSE + torch.abs(10*(3-torch.exp(1*lossX)+torch.exp(1*lossY)+torch.exp(1*lossZ)))
+Results:  Too blury.
+Epoch: 18 	Training Loss: 40.174549 	Validation Loss: 40.249451
+#########     #####    ####
+    #        ####     #___
+    #            #   #    #
+    #       # ##     #####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: like 53 but with a ten.
+        loss19 = RMSE * torch.abs(10*(3-lossX+lossY+lossZ))
+Results: Not ok...
+Epoch: 21 	Training Loss: 0.605270 	Validation Loss: 0.783624
+#########     #####   ######
+    #        ####         #
+    #            #       #
+    #       # ##        #
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: lossX = torch.mean(torch.exp(torch.abs(x_real-x_fake))**2)
+        lossZ = torch.mean(torch.exp(torch.abs(z_real-z_fake))**2)
+        lossY = torch.mean(torch.exp(torch.abs(y_real-y_fake))**2)
+        RMSE = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))
+        delta = [RMSE, lossX, lossY, lossZ]
+        loss20 = RMSE * torch.abs(10*(3-lossX+lossY+lossZ)) 
+Results: It is not ok, there are too rounded edges.
+Epoch: 24 	Training Loss: 0.623730 	Validation Loss: 0.827915
+#########     #####    #####
+    #        ####     #___#
+    #            #   #   #
+    #       # ##    #####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others:  nans replaced with 10.0 and loss almost like 54.
+        lossX = torch.mean(torch.abs(x_real-x_fake))
+        lossY = torch.mean(torch.abs(y_real-y_fake))
+        lossZ = torch.mean(torch.abs(z_real-z_fake))
+        RMSE = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))
+        delta = [RMSE, lossX, lossY, lossZ]
+        loss21 = RMSE * torch.abs(1*(3-torch.exp(1*lossX)+torch.exp(1*lossY)+torch.exp(1*lossZ)))
+Results: Not working well.
+Epoch: 9 	Training Loss: 68.587593 	Validation Loss: 69.219108
+#########     #####    #####
+    #        ####     #___# 
+    #            #       #
+    #       # ##     #### 
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: Some replacing with zero instead of nans...
+        lossX = torch.mean(torch.abs(x_real-x_fake))
+        lossY = torch.mean(torch.abs(y_real-y_fake))
+        lossZ = torch.mean(torch.abs(z_real-z_fake))
+        RMSE = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))
+        delta = [RMSE, lossX, lossY, lossZ]
+        loss22 = RMSE * torch.abs(10*(3-torch.exp(1*lossX)+torch.exp(1*lossY)+torch.exp(1*lossZ)))
+Results: Not ok...
+Epoch: 8 	Training Loss: 0.658252 	Validation Loss: 0.775289
+#########     ###    #####
+    #        #__     #   #
+    #       #   #    #   #  
+    #        ###     #####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: Removed those points from prediction that where not present in input.
+Results: Ok, but not ok.
+Epoch: 24 	Training Loss: 4.178470 	Validation Loss: 5.695300
+#########     ###      #
+    #        #__     # # 
+    #       #   #      #
+    #        ###     # # # 
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: Fixed some mistakes: camera calibration parameters (K).
+Results: Not the expected results, still blury.
+Epoch: 24 	Training Loss: 4.176231 	Validation Loss: 5.576720
+#########     ###    ###
+    #        #__    #   #
+    #       #   #     # 
+    #        ###    # # #
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: Still loss17, but I changed the RMSE term with RMSE_log:
+        RMSE_log = torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(z_real))-torch.log(torch.abs(z_fake)))**2))
+Results: Probably the best until now. 
+Epoch: 24 	Training Loss: 6.740020 	Validation Loss: 8.891898
+#########     ###   #####
+    #        #__     ___#
+    #       #   #       #
+    #        ###    #####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: Not that ok, at least not as t62.
+Results: Not very good.
+Epoch: 19 	Training Loss: 1.861828 	Validation Loss: 2.669577
+#########     ###      #
+    #        #__     # #  
+    #       #   #   ######
+    #        ###       #
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: Just a few more logs around here and there.
+        lossX = torch.mean(torch.abs(torch.log(torch.abs(x_real))-torch.log(torch.abs(x_fake))))
+        lossY = torch.mean(torch.abs(torch.log(torch.abs(y_real))-torch.log(torch.abs(y_fake))))
+        lossZ = torch.mean(torch.abs(torch.log(torch.abs(z_real))-torch.log(torch.abs(z_fake))))
+        RMSE_log = torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(z_real))-torch.log(torch.abs(z_fake)))**2))
+        delta = [RMSE_log, lossX, lossY, lossZ]
+        loss17 = RMSE_log * torch.abs(10*(3-torch.exp(1*lossX)+torch.exp(1*lossY)+torch.exp(1*lossZ)))     
+Results: Even though it might seem pretty close to 62, it still not good.
+Epoch: 29 	Training Loss: 6.740300 	Validation Loss: 9.858029
+#########     ###     ####
+    #        #__      #__
+    #       #   #        #
+    #        ###      ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: Modified x,y,z losses amd also loss17 is now loss17p1.
+        lossX = torch.mean(torch.log(torch.abs(1-torch.abs(x_real-x_fake))))
+        lossY = torch.mean(torch.log(torch.abs(1-torch.abs(y_real-y_fake))))
+        lossZ = torch.mean(torch.log(torch.abs(1-torch.abs(z_real-z_fake))))
+        RMSE_log = torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(z_real))-torch.log(torch.abs(z_fake)))**2))
+        delta = [RMSE_log, lossX, lossY, lossZ]
+        loss17p1 = 10*RMSE_log * torch.abs(lossX+lossY+lossZ)
+Results: Just... AWFUL!
+Epoch: 29 	Training Loss: 0.070973 	Validation Loss: 0.123840
+#########     ###     ###
+    #        #__     #__
+    #       #   #   #   #
+    #        ###     ###
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others:  Some other variation...
+        lossX = 10 - torch.abs(torch.log(torch.mean(torch.abs(x_real-x_fake))))
+        lossY = 10 - torch.abs(torch.log(torch.mean(torch.abs(y_real-y_fake))))
+        lossZ = 10 - torch.abs(torch.log(torch.mean(torch.abs(z_real-z_fake))))
+        RMSE_log = torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(z_real))-torch.log(torch.abs(z_fake)))**2))
+        delta = [RMSE_log, lossX, lossY, lossZ]
+        loss17p1 = 10*RMSE_log * (lossX+lossY+lossZ)
+Results: Ok, but not great.
+Epoch: 29 	Training Loss: 2.130844 	Validation Loss: 3.351475
+#########     ###    #####
+    #        #__        #
+    #       #   #      #
+    #        ###      #
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: Sme small modifications
+        lossX = 10 - torch.abs(torch.log(torch.mean(torch.abs(x_real-x_fake))))
+        lossY = 10 - torch.abs(torch.log(torch.mean(torch.abs(y_real-y_fake))))
+        lossZ = 10 - torch.abs(torch.log(torch.mean(torch.abs(z_real-z_fake))))
+        RMSE_log = torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(z_real))-torch.log(torch.abs(z_fake)))**2))
+        delta = [RMSE_log, lossX, lossY, lossZ]
+        loss17p1 = RMSE_log * (lossX*lossY*lossZ)
+Results: Not OK!!!
+Epoch: 13 	Training Loss: 0.364285 	Validation Loss: 0.580304
+#########     ###    #####
+    #        #__     #___#
+    #       #   #    #   #
+    #        ###     #####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: lossX = torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(x_real))-torch.log(torch.abs(x_fake)))**2))
+        lossZ = torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(z_real))-torch.log(torch.abs(z_fake)))**2))
+        lossY = torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(y_real))-torch.log(torch.abs(y_fake)))**2))
+        RMSE_log = torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(z_real))-torch.log(torch.abs(z_fake)))**2))
+        delta = [RMSE_log, lossX, lossY, lossZ]
+        loss17p2 = 100 * RMSE_log * lossX * lossY        
+Results: Kind of the same like 62...
+Epoch: 29 	Training Loss: 4.996508 	Validation Loss: 6.272554
+#########     ###   #####
+    #        #__    #___#
+    #       #   #       #
+    #        ###     ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: lossX = torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(x_real))-torch.log(torch.abs(x_fake)))**2))
+        lossZ = torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(z_real))-torch.log(torch.abs(z_fake)))**2))
+        lossY = torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(y_real))-torch.log(torch.abs(y_fake)))**2))
+
+        RMSE_log = torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(z_real))-torch.log(torch.abs(z_fake)))**2))
+        delta = [RMSE_log, lossX, lossY, lossZ]
+        loss17p2 = 10*(RMSE_log + lossX + lossY)
+Results: Ish...
+#########  #####    #####  
+    #         #     #   #
+    #        #      #   #
+    #       #       #####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: lossX = torch.sqrt(torch.mean(torch.abs(x_real-x_fake)**2))
+        lossZ = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))
+        lossY = torch.sqrt(torch.mean(torch.abs(y_real-y_fake)**2))
+        RMSE_log = torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(z_real))-torch.log(torch.abs(z_fake)))**2))
+        delta = [RMSE_log, lossX, lossY, lossZ]
+        loss17p1 = 10*RMSE_log * (lossX+lossY+lossZ)
+Results: Not good...
+Epoch: 16 	Training Loss: 0.027706 	Validation Loss: 0.033007
+#########  #####    #
+    #         #   # #  
+    #        #      #
+    #       #     ##### 
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: Jus for the records... T62!
+        lossX = torch.mean(torch.abs(x_real-x_fake))
+        lossZ = torch.mean(torch.abs(z_real-z_fake))
+        lossY = torch.mean(torch.abs(y_real-y_fake))
+        RMSE_log = torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(z_real))-torch.log(torch.abs(z_fake)))**2))
+        delta = [RMSE_log, lossX, lossY, lossZ]
+        loss17 = 10*RMSE_log * torch.abs(10*(3-torch.exp(1*lossX)+torch.exp(1*lossY)+torch.exp(1*lossZ)))
+Results: Working as expected!
+Epoch: 29 	Training Loss: 6.803435 	Validation Loss: 8.855330
+#########  #####     ###  
+    #         #     #   #
+    #        #        # 
+    #       #       # # # 
+Loss:
+Optimizer: Changing SGD for ADAM.
+Training parameters:
+Other training parameters:
+Others: 
+Results: GOLD! Just absolutely awesome!!!!!!
+Epoch: 29 	Training Loss: 4.757107 	Validation Loss: 7.019187
+#########  #####  #####
+    #         #    ___#
+    #        #        #
+    #       #     #####
+Loss:
+Optimizer:
+Training parameters: Now, changing the learning rate from 1e-3 to 1e-5 an lr_decay_gamma from 0.01 to 1
+Other training parameters:
+Others: 
+Results:
+#########  #####     #
+    #         #    # #
+    #        #    #####
+    #       #        #
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results:
+#########  #####    ####
+    #         #    #__ 
+    #        #        #
+    #       #     ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results:
+#########  #####   ##
+    #         #  #__  
+    #        #  #   #
+    #       #    ###
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results:
+#########  #####  #####
+    #         #      #
+    #        #      #
+    #       #      #
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results:
+#########  #####   #####
+    #         #    #___#
+    #        #     #   #
+    #       #      ##### 
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results:
+#########  #####  #####
+    #         #   #___# 
+    #        #        #
+    #       #      ####
+Loss:
+Optimizer:
+Training parameters:
 Other training parameters:
 Others: 
 Results:

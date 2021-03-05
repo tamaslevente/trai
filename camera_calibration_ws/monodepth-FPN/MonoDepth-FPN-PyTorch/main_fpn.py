@@ -1,3 +1,4 @@
+import torch
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -7,7 +8,6 @@ from model_fpn import I2D
 import argparse
 import time
 # from utils.net_utils import adjust_learning_rate
-import torch
 from torch.autograd import Variable
 # from dataset.dataloader import DepthDataset
 # from dataset.nyuv2_dataset import NYUv2Dataset
@@ -27,103 +27,442 @@ class DDDDepthDiff(nn.Module):
     def __init__(self):
         super(DDDDepthDiff, self).__init__()
 
-    def forward(self, fake, real):
+    def forward(self, fake, real,epoch,show_image):
         if not fake.shape == real.shape:
             _, _, H, W = real.shape
             fake = F.interpolate(fake, size=(H, W), mode='bilinear')
         eps = 1e-7
+        # eps = 2
         
         real1 = real[0].clone() #real[0].cpu().detach().numpy()
         fake1 = fake[0].clone() #fake[0].cpu().detach().numpy()
+        ###### debug purposes ########
+        # fake1[real1==0] = 1.0
+        # a = np.asarray(real1.cpu().detach()*7000)[0]
+        # # a[a!=0.0] = 10000
+        # b = np.asarray(fake1.cpu().detach()*7000)[0]
+        # plt.imshow(np.uint16(b), vmin=0, vmax=7000)
+        # plt.colorbar()
+        # plt.savefig(save_dir +'fake1_'+str(epoch)+'.png',bbox_inches='tight')
+        # plt.close()
+
+        # plt.imshow(np.uint16(a), vmin=0, vmax=7000)
+        # plt.colorbar()
+        # plt.savefig(save_dir +'real1_'+str(epoch)+'.png',bbox_inches='tight')
+        # plt.close()
+        # b[b!=0.0] = 10000
+        # c = np.abs(a-b)
+        # cv2.imwrite(save_dir+'gttest_'+str(epoch)+'.png',np.uint16(a))
+        # cv2.imwrite(save_dir+'faketest_'+str(epoch)+'.png',np.uint16(b))
+        # cv2.imwrite(save_dir+'diff_test_'+str(epoch)+'.png',np.uint16(c))
+        ####################################
+
+        # real1[real1==0] = eps
+        # fake1[fake1==0] = eps
         
-        # real2 = real1.cpu().numpy()
-        # fake2 = fake1.cpu().numpy()
-        real1[real1==0] = eps
-        fake1[fake1==0] = eps
+        real_pcd = self.point_cloud(real1).clone() * 1000.0
+        fake_pcd = self.point_cloud(fake1).clone() * 1000.0
 
+        real_pcd[real_pcd==0] = eps
+        fake_pcd[fake_pcd==0] = eps
+        # real_pcd = nan_real_pcd[~torch.isnan(nan_real_pcd)]
+        # fake_pcd = nan_fake_pcd[~torch.isnan(nan_real_pcd)]
 
-        # real_pcd = np.array(self.point_cloud(real1).points)
-        # fake_pcd = np.array(self.point_cloud(fake1).points)
         
-        real_pcd = self.point_cloud(real1).clone()
-        fake_pcd = self.point_cloud(fake1).clone()
-
-        # pcd = o3d.geometry.PointCloud()
-
-        # pcd.points = o3d.utility.Vector3dVector(real_pcd)
-        # o3d.io.write_point_cloud("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_debug/real_cloud_3_unscaled.pcd", pcd)
+        # ### loss 22
+        # # remove nans from z...
+        # nan_z_real = real_pcd[:,2].clone()
+        # z_real = nan_z_real[~torch.isnan(nan_z_real)]
+       
+        # nan_z_fake = fake_pcd[:,2].clone()
+        # z_fake = nan_z_fake[~torch.isnan(nan_z_real)]
         
-        # min_interval = 0 #-0.5
-        # max_interval = 1 #0.5
-        # min_val = 0
-        # # max_val_real = 15
-        # # real_pcd2 = (max_interval-min_interval)*((real_pcd-real_pcd.min()/(real_pcd.max()-real_pcd.min())) + min_interval
-        # real_pcd2 = (max_interval-min_interval)*((real_pcd-min_val)/(real_pcd.max()-min_val)) + min_interval
-        # real_pcd2[:,0] -= real_pcd2[:,0].min()
-        # real_pcd2[:,1] -= real_pcd2[:,1].min()
-        # # real_pcd2[:,2] -= 0.5 #real_pcd2[:,2].min()
-        # # fake_pcd2 = (max_interval-min_interval)*((fake_pcd-fake_pcd.min())/(fake_pcd.max()-fake_pcd.min())) + min_interval
-        # fake_pcd2 = (max_interval-min_interval)*((fake_pcd-min_val)/(fake_pcd.max()-min_val)) + min_interval
-        # fake_pcd2[:,0] -= fake_pcd2[:,0].min()
-        # fake_pcd2[:,1] -= fake_pcd2[:,1].min()
-        # # fake_pcd2[:,2] -= 0.5 #fake_pcd2[:,2].min()
-        # real_pcd2[real_pcd2==0] = eps
-        # fake_pcd2[fake_pcd2==0] = eps
-
-        #### real_pcd[:,0] -= real_pcd[:,0].min()
-        #### real_pcd[:,1] -= real_pcd[:,1].min()
-        # pcd.points = o3d.utility.Vector3dVector(real_pcd)
-        # o3d.io.write_point_cloud("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_debug/real_cloud_3_unscaled.pcd", pcd)
+        # # and replace the nans from x and y with 0.0
+        # x_real = real_pcd[:,0].clone()
+        # x_real[torch.isnan(x_real)] = 0.0
         
-        #### fake_pcd[:,0] -= fake_pcd[:,0].min()
-        #### fake_pcd[:,1] -= fake_pcd[:,1].min()
-        # pcd.points = o3d.utility.Vector3dVector(real_pcd2)
-        # o3d.io.write_point_cloud("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_debug/real_cloud_norm_1.pcd", pcd)
+        # x_fake = fake_pcd[:,0].clone()
+        # x_fake[torch.isnan(x_real)] = 0.0 
         
-        # print("Real min:",real_pcd2.min())
-        # print("Fake min:",fake_pcd2.min())
-        # sum_sq = np.sum(np.square(real_pcd-fake_pcd),axis=1)
-        # loss3 = np.mean(np.sqrt(sum_sq))
-
-        # ################################# #
-        # depth depending on all three axes #
-        # ################################# #        
-        # real_depth = np.sqrt(np.sum(np.square(real_pcd2),axis=1))
-        # fake_depth = np.sqrt(np.sum(np.square(fake_pcd2),axis=1))
-        # loss = np.sqrt(np.mean(np.square(np.log(real_depth)-np.log(fake_depth))))
-        # ############################## #
-        # depth depending only on z axes #
-        # ############################## #
-        # z_real_torch = Variable(torch.FloatTensor(1))
-        # z_fake_torch = Variable(torch.FloatTensor(1))
-
-        # z_real_torch.cuda()
-        # z_fake_torch.cuda()
+        # y_real = real_pcd[:,1].clone()
+        # y_real[torch.isnan(y_real)] = 0.0
         
-        z_real = real_pcd[:,2].clone()
-        z_fake = fake_pcd[:,2].clone()
-
-        # z_real_tensor = torch.from_numpy(z_real)
-        # z_real_tensor.requires_grad_()
-        # z_fake_tensor = torch.from_numpy(z_fake)
-        # z_real_tensor.requires_grad_()
-        # z_real_torch.resize_(z_real_tensor.size()).copy_(z_real_tensor) #   z.resize_(data[1].size()).copy_(data[1])
-        # z_fake_torch.resize_(z_fake_tensor.size()).copy_(z_fake_tensor) 
-        # loss2 = np.sqrt(np.mean(np.square(z_real-z_fake)))
+        # y_fake = fake_pcd[:,1].clone()
+        # y_fake[torch.isnan(y_real)] = 0.0
         
+        # lossX = torch.mean(torch.abs(x_real-x_fake))
+        # lossY = torch.mean(torch.abs(y_real-y_fake))
+        # lossZ = torch.mean(torch.abs(z_real-z_fake))
+        # RMSE = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))
+        # delta = [RMSE, lossX, lossY, lossZ]
+        # loss22 = RMSE * torch.abs(10*(3-torch.exp(1*lossX)+torch.exp(1*lossY)+torch.exp(1*lossZ)))
+
+        # ### loss 21
+        
+        # z_real = real_pcd[:,2].clone()
+        # z_real[torch.isnan(z_real)] = 10.0
+       
+        # z_fake = fake_pcd[:,2].clone()
+        # z_fake[torch.isnan(z_real)] = 10.0
+        
+        # x_real = real_pcd[:,0].clone()
+        # x_real[torch.isnan(x_real)] = 10.0
+        
+        # x_fake = fake_pcd[:,0].clone()
+        # x_fake[torch.isnan(x_real)] = 10.0 
+        
+        # y_real = real_pcd[:,1].clone()
+        # y_real[torch.isnan(y_real)] = 10.0
+        
+        # y_fake = fake_pcd[:,1].clone()
+        # y_fake[torch.isnan(y_real)] = 10.0
+        
+        # lossX = torch.mean(torch.abs(x_real-x_fake))
+        # lossY = torch.mean(torch.abs(y_real-y_fake))
+        # lossZ = torch.mean(torch.abs(z_real-z_fake))
+        # RMSE = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))
+        # delta = [RMSE, lossX, lossY, lossZ]
+        # loss21 = RMSE * torch.abs(1*(3-torch.exp(1*lossX)+torch.exp(1*lossY)+torch.exp(1*lossZ)))
+        
+
+        
+        ### for the next losses you will need this section 
+
+        # nan_z_real = real_pcd[:,2].clone()
+        # z_real = nan_z_real[~torch.isnan(nan_z_real)]
+       
+        # nan_z_fake = fake_pcd[:,2].clone()
+        # z_fake = nan_z_fake[~torch.isnan(nan_z_real)]
+        
+        # nan_x_real = real_pcd[:,0].clone()
+        # x_real = nan_x_real[~torch.isnan(nan_x_real)]
+        
+        # nan_x_fake = fake_pcd[:,0].clone()
+        # x_fake = nan_x_fake[~torch.isnan(nan_x_real)]
+        
+        # nan_y_real = real_pcd[:,1].clone()
+        # y_real = nan_y_real[~torch.isnan(nan_y_real)]
+        
+        # nan_y_fake = fake_pcd[:,1].clone()
+        # y_fake = nan_y_fake[~torch.isnan(nan_y_real)]
         
         # loss = np.sqrt(np.mean(np.abs(np.log(z_real)-np.log(z_fake))**2))
-        dist_real = torch.sqrt(torch.sum(real_pcd**2,dim=1))
-        dist_fake = torch.sqrt(torch.sum(fake_pcd**2,dim=1))
+        # dist_real = torch.sqrt(torch.sum(real_pcd**2,dim=1))
+        # dist_fake = torch.sqrt(torch.sum(fake_pcd**2,dim=1))
+        
+        # loss2 = torch.sqrt(torch.mean(torch.abs(torch.log(dist_real)-torch.log(dist_fake)) ** 2))
+        
+        # ### lossXX
+        # x_real = real_pcd[:,0].clone()
+        # x_fake = fake_pcd[:,0].clone()
+        # y_real = real_pcd[:,1].clone()
+        # y_fake = fake_pcd[:,1].clone()
+        # lossX = torch.mean(torch.exp(torch.abs(x_real-x_fake)**2))
+        # lossY = torch.mean(torch.exp(torch.abs(y_real-y_fake)**2))
+        # lossZ = torch.mean(torch.exp(torch.abs(z_real-z_fake)**2))
+        # RMSE_term = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))
+        # delta = [RMSE_term, lossX, lossY, lossZ]
+        # loss18 = RMSE_term*torch.abs(3-lossX+lossY+lossZ)
 
-        loss2 = torch.sqrt(torch.mean(torch.abs(torch.log(dist_real)-torch.log(dist_fake)) ** 2))
+        # ### lossXX
+        # x_real = real_pcd[:,0].clone()
+        # x_fake = fake_pcd[:,0].clone()
+        # y_real = real_pcd[:,1].clone()
+        # y_fake = fake_pcd[:,1].clone()
+        # lossX = torch.mean(torch.exp(10*torch.abs(x_real-x_fake)))
+        # lossY = torch.mean(torch.exp(10*torch.abs(y_real-y_fake)))
+        # lossZ = torch.mean(torch.exp(10*torch.abs(z_real-z_fake)))
+        # RMSE_term = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))
+        # delta = [RMSE_term, lossX, lossY, lossZ]
+        # loss17 = 10*RMSE_term+torch.abs(3-lossX+lossY+lossZ)
 
-        # # simple loss function on z 
+
+        # ### loss20
+        # lossX = torch.mean(torch.exp(torch.abs(x_real-x_fake))**2)
+        # lossZ = torch.mean(torch.exp(torch.abs(z_real-z_fake))**2)
+        # lossY = torch.mean(torch.exp(torch.abs(y_real-y_fake))**2)
+        # RMSE = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))
+        # delta = [RMSE, lossX, lossY, lossZ]
+        # loss20 = RMSE * torch.abs(10*(3-lossX+lossY+lossZ)) 
+
+        # ### loss19
+        # lossX = torch.mean(torch.exp(10*torch.abs(x_real-x_fake)))
+        # lossZ = torch.mean(torch.exp(10*torch.abs(z_real-z_fake)))
+        # lossY = torch.mean(torch.exp(10*torch.abs(y_real-y_fake)))
+        # RMSE = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))
+        # delta = [RMSE, lossX, lossY, lossZ]
+        # loss19 = RMSE * torch.abs(10*(3-lossX+lossY+lossZ))
+ 
+        # ### loss18
+                
+        # lossX = torch.mean(torch.abs(x_real-x_fake))
+        # lossY = torch.mean(torch.abs(y_real-y_fake))
+        # lossZ = torch.mean(torch.abs(z_real-z_fake))
+        # RMSE = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))
+        # delta = [RMSE, lossX, lossY, lossZ]
+        # loss18 = RMSE + torch.abs(10*(3-torch.exp(1*lossX)+torch.exp(1*lossY)+torch.exp(1*lossZ)))
+
+        #######################
+        # Take out nan points #
+        # If this doesn't work replace the values with 2 or something
+        ### loss17
+        nan_z_real = real_pcd[:,2].clone()
+        temp_z_real = nan_z_real[~torch.isnan(nan_z_real)]
+       
+        nan_z_fake = fake_pcd[:,2].clone()
+        temp_z_fake = nan_z_fake[~torch.isnan(nan_z_real)]
+        
+        nan_x_real = real_pcd[:,0].clone()
+        temp_x_real = nan_x_real[~torch.isnan(nan_x_real)]
+        
+        nan_x_fake = fake_pcd[:,0].clone()
+        temp_x_fake = nan_x_fake[~torch.isnan(nan_x_real)]
+        
+        nan_y_real = real_pcd[:,1].clone()
+        temp_y_real = nan_y_real[~torch.isnan(nan_y_real)]
+        
+        nan_y_fake = fake_pcd[:,1].clone()
+        temp_y_fake = nan_y_fake[~torch.isnan(nan_y_real)]
+
+        z_real = temp_z_real[~torch.isnan(temp_z_fake)]
+        z_fake = temp_z_fake[~torch.isnan(temp_z_fake)]
+
+        x_real = temp_x_real[~torch.isnan(temp_x_fake)]
+        x_fake = temp_x_fake[~torch.isnan(temp_x_fake)]
+
+        y_real = temp_y_real[~torch.isnan(temp_y_fake)]
+        y_fake = temp_y_fake[~torch.isnan(temp_y_fake)]
+        
+
+        ######Original########
+        lossX = torch.mean(torch.abs(x_real-x_fake))
+        lossZ = torch.mean(torch.abs(z_real-z_fake))
+        lossY = torch.mean(torch.abs(y_real-y_fake))
+        ####sixth try #####
+        # lossX = torch.sqrt(torch.mean(torch.abs(x_real-x_fake)**2))
+        # lossZ = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))
+        # lossY = torch.sqrt(torch.mean(torch.abs(y_real-y_fake)**2))
+        
+        #######second#############
+        # lossX = torch.mean(torch.abs(torch.log(torch.abs(x_real))-torch.log(torch.abs(x_fake))))
+        # lossY = torch.mean(torch.abs(torch.log(torch.abs(y_real))-torch.log(torch.abs(y_fake))))
+        # lossZ = torch.mean(torch.abs(torch.log(torch.abs(z_real))-torch.log(torch.abs(z_fake))))
+        
+        ##### third ######
+        # lossX = torch.mean(torch.log(torch.abs(1-torch.abs(x_real-x_fake))))
+        # lossY = torch.mean(torch.log(torch.abs(1-torch.abs(y_real-y_fake))))
+        # lossZ = torch.mean(torch.log(torch.abs(1-torch.abs(z_real-z_fake))))   
+        ##### fourth ######
+        # lossX = 15 - torch.abs(torch.log(torch.mean(torch.abs(x_real-x_fake)**2)))
+        # lossY = 15 - torch.abs(torch.log(torch.mean(torch.abs(y_real-y_fake)**2)))
+        # lossZ = 15 - torch.abs(torch.log(torch.mean(torch.abs(z_real-z_fake)**2)))
+        # RMSE = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))
+        ######fifth ################
+        # lossX = torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(x_real))-torch.log(torch.abs(x_fake)))**2))
+        # lossZ = torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(z_real))-torch.log(torch.abs(z_fake)))**2))
+        # lossY = torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(y_real))-torch.log(torch.abs(y_fake)))**2))
+
+        RMSE_log = torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(z_real))-torch.log(torch.abs(z_fake)))**2))
+        # RMSE_log2 = torch.sqrt(torch.mean(torch.log(torch.abs(z_real-z_fake)**2)))
+        # RMSE_log3 = torch.sqrt(torch.mean(torch.log(1-torch.abs(z_real-z_fake))))
+        delta = [RMSE_log, lossX, lossY, lossZ]
+        # loss13 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))*torch.abs(10*(torch.exp(1*(lossX-0.01))+torch.exp(1*(lossY-0.01))+torch.exp(1*(lossZ-0.05))))
+        loss17 = 10*RMSE_log * torch.abs(10*(3-torch.exp(1*lossX)+torch.exp(1*lossY)+torch.exp(1*lossZ)))
+        # loss17p1 = 10*RMSE_log * (lossX+lossY+lossZ)
+        # loss17p2 = 10*(RMSE_log + lossX + lossY)
+        
+        # if show_image:
+        #     ### A loss pointcloud?... Probably...
+        #     real_pcd = real_pcd 
+        #     fake_pcd = fake_pcd  
+
+        #     z_real = real_pcd[:,2].clone()
+        #     z_real[torch.isnan(z_real)] = 0.0
+        
+        #     z_fake = fake_pcd[:,2].clone()
+        #     z_fake[torch.isnan(z_real)] = 0.0
+            
+        #     x_real = real_pcd[:,0].clone()
+        #     x_real[torch.isnan(x_real)] = 0.0
+            
+        #     x_fake = fake_pcd[:,0].clone()
+        #     x_fake[torch.isnan(x_real)] = 0.0 
+            
+        #     y_real = real_pcd[:,1].clone()
+        #     y_real[torch.isnan(y_real)] = 0.0
+            
+        #     y_fake = fake_pcd[:,1].clone()
+        #     y_fake[torch.isnan(y_real)] = 0.0
+
+        #     ################ - simple difference
+        #     coord_X = torch.abs(x_real-x_fake)
+        #     coord_Y = torch.abs(y_real-y_fake)
+        #     coord_Z = torch.abs(z_real-z_fake) 
+
+            
+        #     max_depth = 7000/1000.0
+        #     o3d_pcd = o3d.geometry.PointCloud()
+            
+        #     loss_pcd = torch.stack((coord_X,coord_Y,coord_Z),dim=1).cpu().detach().numpy()
+        #     o3d_pcd.points = o3d.utility.Vector3dVector(loss_pcd*max_depth)
+        #     o3d.io.write_point_cloud(save_dir+"loss_diff_cloud"+str(epoch)+".pcd", o3d_pcd)
+        #     loss_pcd_img = self.image_from_cloud(real_pcd.cpu().detach().numpy())
+        #     # o3d.io.write_image(save_dir+"loss_diff_cloud"+str(epoch)+".png",loss_pcd_img)
+            
+        #     plt.imshow(loss_pcd_img*max_depth*1000.0, vmin=0, vmax=max_depth*1000.0)
+        #     plt.colorbar()
+        #     plt.savefig(save_dir+"loss_diff_cloud"+str(epoch)+".png",bbox_inches='tight')
+        #     plt.close()
+        #     ################ - difference with exp
+        #     coord_X = torch.exp(torch.abs(x_real-x_fake))
+        #     coord_Y = torch.exp(torch.abs(y_real-y_fake))
+        #     coord_Z = torch.exp(torch.abs(z_real-z_fake))
+
+            
+        #     max_depth = 7000
+        #     o3d_pcd = o3d.geometry.PointCloud()
+            
+        #     loss_pcd = torch.stack((coord_X,coord_Y,coord_Z),dim=1).cpu().detach().numpy()
+        #     o3d_pcd.points = o3d.utility.Vector3dVector(loss_pcd*max_depth)
+        #     o3d.io.write_point_cloud(save_dir+"loss_exp_diff_cloud"+str(epoch)+".pcd", o3d_pcd)
+            
+        #     ################# - difference with exp and rmse multiplied
+        #     coord_X = torch.exp(torch.abs(x_real-x_fake))
+        #     coord_Y = torch.exp(torch.abs(y_real-y_fake))
+        #     coord_Z = torch.exp(torch.abs(z_real-z_fake))
+
+        #     rmse_term = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2)).cpu().detach().numpy()
+        #     max_depth = 7000
+        #     o3d_pcd = o3d.geometry.PointCloud()
+            
+        #     loss_pcd = torch.stack((coord_X,coord_Y,coord_Z),dim=1).cpu().detach().numpy()
+        #     o3d_pcd.points = o3d.utility.Vector3dVector(rmse_term*loss_pcd*max_depth)
+        #     o3d.io.write_point_cloud(save_dir+"loss_exp_diff_multip_rmse_cloud"+str(epoch)+".pcd", o3d_pcd)
+        # ### loss16
+        # x_real = real_pcd[:,0].clone()
+        # x_fake = fake_pcd[:,0].clone()
+        # y_real = real_pcd[:,1].clone()
+        # y_fake = fake_pcd[:,1].clone()
+        # lossX = torch.mean(torch.exp(10*torch.abs(x_real-x_fake)))
+        # lossY = torch.mean(torch.exp(10*torch.abs(y_real-y_fake)))
+        # lossZ = torch.mean(torch.exp(10*torch.abs(z_real-z_fake)))
+        # RMSE_term = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))
+        # delta = [RMSE_term, lossX, lossY, lossZ]
+        # loss16 = RMSE_term*torch.abs(3-lossX+lossY+lossZ)
+        
+        
+        # ### loss15
+        # x_real = real_pcd[:,0].clone()
+        # x_fake = fake_pcd[:,0].clone()
+        # y_real = real_pcd[:,1].clone()
+        # y_fake = fake_pcd[:,1].clone()
+        # lossX = torch.mean(torch.abs(x_real-x_fake))
+        # lossY = torch.mean(torch.abs(y_real-y_fake))
+        # lossZ = torch.mean(torch.abs(z_real-z_fake))
+        # delta = [lossX, lossY, lossZ]
+        # loss15 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))*torch.abs(10*(torch.exp(1*(lossX-0.05))+torch.exp(1*(lossY-0.01))+torch.exp(1*(lossZ-0.1))))
+        
+
+        # ### loss14
+        # x_real = real_pcd[:,0].clone()
+        # x_fake = fake_pcd[:,0].clone()
+        # y_real = real_pcd[:,1].clone()
+        # y_fake = fake_pcd[:,1].clone()
+        # lossX = 1000*torch.mean(torch.abs(x_real-x_fake))
+        # lossY = 1000*torch.mean(torch.abs(y_real-y_fake))
+        # lossZ = 1000*torch.mean(torch.abs(z_real-z_fake))
+        # delta = [lossX, lossY, lossZ]
+        # loss14 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))*torch.abs(10*(torch.exp(1*(lossX-0.01))+torch.exp(1*(lossY-0.01))+torch.exp(1*(lossZ-0.05))))
+        
+        # ### loss13
+        # x_real = real_pcd[:,0].clone()
+        # x_fake = fake_pcd[:,0].clone()
+        # y_real = real_pcd[:,1].clone()
+        # y_fake = fake_pcd[:,1].clone()
+        # lossX = torch.mean(torch.abs(x_real-x_fake))
+        # lossY = torch.mean(torch.abs(y_real-y_fake))
+        # lossZ = torch.mean(torch.abs(z_real-z_fake))
+        # RMSE = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))
+        # delta = [RMSE, lossX, lossY, lossZ]
+        # loss13 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))*torch.abs(10*(torch.exp(1*(lossX-0.01))+torch.exp(1*(lossY-0.01))+torch.exp(1*(lossZ-0.05))))
+        
+        # ### loss12
+        # x_real = real_pcd[:,0].clone()
+        # x_fake = fake_pcd[:,0].clone()
+        # y_real = real_pcd[:,1].clone()
+        # y_fake = fake_pcd[:,1].clone()
+        # lossX = torch.mean(torch.abs(x_real-x_fake))
+        # lossY = torch.mean(torch.abs(y_real-y_fake))
+        # lossZ = torch.mean(torch.abs(z_real-z_fake))
+        # delta = [lossX, lossY, lossZ]
+        # loss12 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))*torch.abs(10*(1-torch.exp(torch.exp(1*(lossX-0.01))+torch.exp(1*(lossY-0.01))+torch.exp(1*(lossZ-0.05)))))
+        
+
+        # ### loss11
+        # x_real = real_pcd[:,0].clone()
+        # x_fake = fake_pcd[:,0].clone()
+        # y_real = real_pcd[:,1].clone()
+        # y_fake = fake_pcd[:,1].clone()
+        # lossX = torch.mean(torch.abs(x_real-x_fake))
+        # lossY = torch.mean(torch.abs(y_real-y_fake))
+        # lossZ = torch.mean(torch.abs(z_real-z_fake))
+        # delta = [lossX, lossY, lossZ]
+        # loss11 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))*torch.abs(1-torch.exp(10*(lossX-0.01)))*torch.abs(1-torch.exp(10*(lossY-0.01)))*torch.abs(1-torch.exp(10*(lossZ-0.05)))
+        
+        # ### loss10
+        # delta = torch.mean(torch.abs(z_real-z_fake))
+        # loss10 = torch.abs(1-torch.exp(10*(delta-0.005)))
+
+        # ### loss9
+        # delta = torch.abs(torch.mean(z_real)-torch.mean(z_fake))
+        # loss9 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2)) * torch.abs(1-torch.exp(10*(delta-0.005)))
+        
+        # ### loss8
+        # delta = torch.mean(torch.abs(z_real-z_fake))
+        # loss8 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))*torch.abs(1-torch.exp(10*(delta-0.05)))
+
+        # ### loss7
+        # delta = torch.mean(torch.abs(z_real-z_fake))
+        # loss7 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))*torch.abs(1-torch.exp(10*(delta-0.005)))
+        
+        ### loss6
+        # delta = torch.mean(torch.abs(z_real-z_fake))
+        # loss6 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2)) * torch.exp(10*(delta-0.005))
+        
+        ### loss 5
+        # delta = torch.mean(torch.abs(z_real-z_fake))
+        # loss5 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2)) * torch.exp(10*(delta-0.1))
+        
+        # loss4 = torch.sqrt(torch.mean(torch.exp(torch.abs(z_real-z_fake))))
+        
+        # # 3. RMSE with condition
+        # delta = torch.mean(torch.abs(z_real-z_fake))
+        
+        # loss3 = torch.sqrt(torch.mean(torch.abs(torch.exp(z_real)-torch.exp(z_fake)) ** 2))
+
+        
+        
+        # # 2. RMSE on every  coordinate
+        # x_real = real_pcd[:,0].clone()
+        # x_fake = fake_pcd[:,0].clone()
+        # y_real = real_pcd[:,1].clone()
+        # y_fake = fake_pcd[:,1].clone()
+        # loss2x = torch.sqrt(torch.mean((x_real-x_fake)**2))
+        # loss2y = torch.sqrt(torch.mean((y_real-y_fake)**2))
+        # loss2z = torch.sqrt(torch.mean((z_real-z_fake)**2))
+        # loss2 = loss2x + loss2y + loss2z
+
+        
+
+        # # 1. without log
+        # loss1 = torch.sqrt(torch.mean((z_real-z_fake) ** 2))
+
+        # #0. simple loss function on z 
         # loss = torch.sqrt(torch.mean(torch.abs(torch.log(z_real)-torch.log(z_fake)) ** 2))
         
         # loss = torch.sqrt(torch.mean(
         #     torch.abs(torch.log(real2)-torch.log(fake2)) ** 2))
-        return loss2
+        return delta, loss17
     
     def l2_norm(self,v):
         norm_v = np.sqrt(np.sum(np.square(v), axis=1))
@@ -143,8 +482,8 @@ class DDDDepthDiff(nn.Module):
 
         """
         # depth is of shape (1,480,640)
-        cx = 334.08
-        cy = 169.807
+        cx = 334.081
+        cy = 169.808
         fx = 460.585
         fy = 460.268
 
@@ -162,11 +501,14 @@ class DDDDepthDiff(nn.Module):
         valid = (depth[0] > 0) & (depth[0] < 65535)
         nan_number = torch.tensor(np.nan).to('cuda')
         zero_number = torch.tensor(0.).to('cuda')
-        z = torch.where(valid, depth[0] / 1000.0, nan_number)
-        x = torch.where(valid, z * (new_c - cx) / fx, zero_number)
-        y = torch.where(valid, z * (new_r - cy) / fy, zero_number)
+        z = torch.where(valid, depth[0]/1000.0, nan_number) # allways divide with 1000.0
+        x = torch.where(valid, z * (new_c - cx) / fx, nan_number)
+        y = torch.where(valid, z * (new_r - cy) / fy, nan_number)
         
-        
+        # plt.plot(z.cpu(),'g')
+        # plt.savefig("z.png")
+        # plt.close()
+
         dimension = rows * cols
         z_ok = z.reshape(dimension)
         x_ok = x.reshape(dimension)
@@ -179,6 +521,51 @@ class DDDDepthDiff(nn.Module):
         # x = np.where(valid, z * (c - cx) / fx, 0)
         # y = np.where(valid, z * (r - cy) / fy, 0)
         return torch.stack((x_ok,y_ok,z_ok),dim=1) #np.dstack((x, y, z)) #pcd 
+
+    def image_from_cloud(self, point_cloud):
+        
+        cx = 334.081
+        cy = 169.808
+        fx = 460.585
+        fy = 460.268
+        
+        # point_cloud = point_cloud/1000.0
+        np_image = np.tile(0,(360,640))
+
+        z = point_cloud[:,2] * 1000.0
+        x = point_cloud[:,0]
+        y = point_cloud[:,1]
+
+        valid = ~(np.isnan(z) | (z==0))
+        z = np.where(valid, z*1000.0, 0)
+        # z[np.isnan(z) | (z==0)] = 1e-7
+        # pos_x = (point_cloud[:,0] * 1000.0 * fx)/ z + cx
+        valid_x = ~(np.isnan(x) | np.isnan(z) | (z==0))
+        pos_x = np.where(valid_x,(x * 1000.0 * fx)/ z + cx, 0)
+        pos_x = pos_x.astype(np.int32)
+        # pos_y = (point_cloud[:,1] * 1000.0 * fy)/ z + cy
+        valid_y = ~(np.isnan(y) | np.isnan(z) | (z==0))
+        pos_y = np.where(valid_y,(y * 1000.0 * fy)/z + cy, 0) 
+        pos_y = pos_y.astype(np.int32)
+        
+        pos_x[pos_x>639] = 639
+        pos_x[pos_x<0] = 0
+        pos_y[pos_y>359] =359
+        pos_y[pos_y<0] = 0
+
+        pos_x = pos_x.reshape(360,640)
+        pos_y = pos_y.reshape(360,640)
+        z = z.reshape(360,640)
+        np_image[pos_y,pos_x] = z
+
+        # depth = depth.cpu().detach().numpy()
+        # rows, cols = depth[0].shape
+        # c, r = np.meshgrid(np.arange(cols), np.arange(rows), sparse=True)
+        # valid = (depth[0] > 0) & (depth[0] < 65535)
+        # z = np.where(valid, depth[0] / 1000.0, np.nan)
+        # x = np.where(valid, z * (c - cx) / fx, 0)
+        # y = np.where(valid, z * (r - cy) / fy, 0)
+        return np_image
 
 class NormalsDiff(nn.Module):
     def __init__(self):
@@ -257,8 +644,8 @@ class NormalsDiff(nn.Module):
 
         """
         # depth is of shape (1,480,640)
-        cx = 334.08
-        cy = 169.807
+        cx = 334.081
+        cy = 169.808
         fx = 460.585
         fy = 460.268
 
@@ -426,16 +813,16 @@ def parse_args():
 # config optimization
     parser.add_argument('--o', dest='optimizer',
                         help='training optimizer',
-                        default="sgd", type=str)
+                        default="adam", type=str)
     parser.add_argument('--lr', dest='lr',
                         help='starting learning rate',
-                        default=1e-3, type=float)
+                        default=1e-5, type=float)
     parser.add_argument('--lr_decay_step', dest='lr_decay_step',
                         help='step to do learning rate decay, unit is epoch',
                         default=5, type=int)
     parser.add_argument('--lr_decay_gamma', dest='lr_decay_gamma',
                         help='learning rate decay ratio',
-                        default=0.1, type=float)
+                        default=1, type=float)
 
 # set training session
     parser.add_argument('--s', dest='session',
@@ -660,6 +1047,7 @@ if __name__ == '__main__':
     # network initialization
     print('Initializing model...')
     i2d = I2D(fixed_feature_weights=False)
+    torch.cuda.empty_cache()
     if args.cuda:
         i2d = i2d.cuda()
 
@@ -723,8 +1111,8 @@ if __name__ == '__main__':
 
     grad_factor = 10.
     normal_factor = 1.
-    max_depth = 6571
-    # max_depth = 6000
+    # max_depth = 6571
+    max_depth = 7000
     for epoch in range(args.start_epoch, args.max_epochs):
 
         train_loss = 0 
@@ -762,64 +1150,9 @@ if __name__ == '__main__':
             optimizer.zero_grad()
             z_fake = i2d(img)#*max_depth # * 6000 #z.max()
             
-            if show_image:
-                # for i in range(img.shape[0]):
-                # plt.imshow(np.transpose(imgs[i], (1, 2, 0)))
-                # plt.show()
-                # save_image(img[0], save_dir+'depthirPIL_'+str(epoch)+'.png')
-                # plt.imshow(img[0].cpu().numpy().transpose((1,2,0)))
-                # plt.savefig(save_dir +'depthir_'+str(epoch)+'.png',bbox_inches='tight')
-                # plt.close()
-                # rgbArray = np.zeros((len(img[0][1]),len(img[0][1][1]),3), 'uint16')
-                rgbArray = np.array(img[0].cpu()*max_depth,np.uint16).transpose((1,2,0))
-                cv2.imwrite(save_dir+'depthirCV_'+str(epoch)+'.png',rgbArray)
-                # a = cv2.imread(save_dir+'depthirCV_'+str(epoch)+'.png', cv2.IMREAD_UNCHANGED)
-                # vmin, vmax = 0, 10000/65536.
-
-                ####################
-                #depth ground truth#
-                plt.imshow(z[0].cpu().numpy().transpose((1,2,0))*max_depth)#, vmin=vmin, vmax=vmax)
-                plt.colorbar()
-                plt.savefig(save_dir +'gt_'+str(epoch)+'.png',bbox_inches='tight')
-                plt.close()
-                # plt.imshow(z[0].cpu().numpy().transpose((1,2,0)))#, vmin=vmin, vmax=vmax)
-                # plt.colorbar()
-                # plt.savefig(save_dir +'unscaled_gt_'+str(epoch)+'.png',bbox_inches='tight')
-                # plt.close()
-                z_pcd = normals_diff.point_cloud(z[0].cpu().detach().numpy()*max_depth)
-                o3d.io.write_point_cloud(save_dir+"gt_cloud"+str(epoch)+".pcd", z_pcd)
-                
-                ##################
-                #depth prediction#
-                plt.imshow(z_fake[0].cpu().detach().numpy().transpose((1,2,0))*max_depth)#, vmin=vmin, vmax=vmax)
-                plt.colorbar()
-                plt.savefig(save_dir +'pred_'+str(epoch)+'.png',bbox_inches='tight')
-                plt.close()
-                # plt.imshow(z_fake[0].cpu().detach().numpy().transpose((1,2,0)))#, vmin=vmin, vmax=vmax)
-                # plt.colorbar()
-                # plt.savefig(save_dir +'unscaled_pred_'+str(epoch)+'.png',bbox_inches='tight')
-                # plt.close()
-                z_fake_pcd = normals_diff.point_cloud(z_fake[0].cpu().detach().numpy()*max_depth)
-                o3d.io.write_point_cloud(save_dir+"pred_cloud"+str(epoch)+".pcd", z_fake_pcd)
-                
-                ##############
-                # txt images #
-                img_file = open(save_dir+'gt_'+str(epoch)+'.txt',"w")
-                for row in z[0].cpu().numpy():
-                    np.savetxt(img_file,row)
-                img_file.close()
-                
-                # save_image(z_fake[0], save_dir+'predPIL_'+str(epoch)+'.png')
-                img_file = open(save_dir+'pred_'+str(epoch)+'.txt',"w")
-                for row in z_fake[0].cpu().detach().numpy():
-                    np.savetxt(img_file,row)
-                img_file.close()
-                
-                show_image=False
-
-            depth_loss = depth_criterion(z_fake, z)
+            # depth_loss = depth_criterion(z_fake, z)
             
-            dddDepth_loss = dddDepth_criterion(z_fake,z)#*max_depth,z*max_depth)
+            delta, dddDepth_loss = dddDepth_criterion(z_fake,z,epoch,show_image)#*max_depth,z*max_depth)
             # dddDepth_loss = dddDepth_criterion(z_fake,z)
 
             # grad_real, grad_fake = imgrad_yx(z), imgrad_yx(z_fake)
@@ -839,12 +1172,16 @@ if __name__ == '__main__':
  
             # loss = 10*(depth_loss + 0.01*grad_loss) + normals_diff_loss #+ normal_loss
             # loss = depth_loss + grad_loss + normal_loss
-            depth_loss_arr.append(depth_loss)
-            dddDepth_loss_arr.append(dddDepth_loss)
+            # depth_loss_arr.append(depth_loss)
+            # dddDepth_loss_arr.append(dddDepth_loss)
             
             torch.autograd.set_detect_anomaly(True)
 
-            loss = 10*dddDepth_loss #depth_loss + 10*dddDepth_loss - depth_loss #+ normal_loss
+            # if delta > 0.193 and epoch > 6:
+            #     loss = (10*dddDepth_loss)**2
+            # else:
+            #     loss = 10*dddDepth_loss #depth_loss + 10*dddDepth_loss - depth_loss #+ normal_loss
+            loss = 1*dddDepth_loss
             # loss *= 10
             loss.backward()
             optimizer.step()
@@ -852,11 +1189,91 @@ if __name__ == '__main__':
             train_loss += loss.item()
             end = time.time()
 
+            if show_image:
+                # for i in range(img.shape[0]):
+                # plt.imshow(np.transpose(imgs[i], (1, 2, 0)))
+                # plt.show()
+                # save_image(img[0], save_dir+'depthirPIL_'+str(epoch)+'.png')
+                # plt.imshow(img[0].cpu().numpy().transpose((1,2,0)))
+                # plt.savefig(save_dir +'depthir_'+str(epoch)+'.png',bbox_inches='tight')
+                # plt.close()
+                # rgbArray = np.zeros((len(img[0][1]),len(img[0][1][1]),3), 'uint16')
+                o3d_pcd = o3d.geometry.PointCloud()
+
+                ##############################
+                #####save input cloud#########
+                rgbArray = np.array(img[0].cpu()*max_depth,np.uint16).transpose((1,2,0))
+                cv2.imwrite(save_dir+'depthirCV_'+str(epoch)+'.png',rgbArray)
+                
+                input_depth = img.clone() 
+                input_pcd = dddDepth_criterion.point_cloud(input_depth[0]).cpu().detach().numpy()
+                o3d_pcd.points = o3d.utility.Vector3dVector(input_pcd*max_depth)
+                o3d.io.write_point_cloud(save_dir+"input_cloud"+str(epoch)+".pcd", o3d_pcd)
+                # a = cv2.imread(save_dir+'depthirCV_'+str(epoch)+'.png', cv2.IMREAD_UNCHANGED)
+                # vmin, vmax = 0, 10000/65536.
+
+                ####################
+                #depth ground truth#
+                plt.imshow(z[0].cpu().numpy().transpose((1,2,0))*max_depth, vmin=0, vmax=max_depth)
+                plt.colorbar()
+                plt.savefig(save_dir +'gt_'+str(epoch)+'.png',bbox_inches='tight')
+                plt.close()
+                # plt.imshow(z[0].cpu().numpy().transpose((1,2,0)))#, vmin=vmin, vmax=vmax)
+                # plt.colorbar()
+                # plt.savefig(save_dir +'unscaled_gt_'+str(epoch)+'.png',bbox_inches='tight')
+                # plt.close()
+                z_pcd = dddDepth_criterion.point_cloud(z[0]).cpu().detach().numpy()
+                o3d_pcd.points = o3d.utility.Vector3dVector(z_pcd*max_depth)
+                o3d.io.write_point_cloud(save_dir+"gt_cloud"+str(epoch)+".pcd", o3d_pcd)
+                
+                ##################
+                #depth prediction#
+                plt.imshow(z_fake[0].cpu().detach().numpy().transpose((1,2,0))*max_depth, vmin=0, vmax=max_depth)
+                plt.colorbar()
+                plt.savefig(save_dir +'pred_'+str(epoch)+'.png',bbox_inches='tight')
+                plt.close()
+                # plt.imshow(z_fake[0].cpu().detach().numpy().transpose((1,2,0)))#, vmin=vmin, vmax=vmax)
+                # plt.colorbar()
+                # plt.savefig(save_dir +'unscaled_pred_'+str(epoch)+'.png',bbox_inches='tight')
+                # plt.close()
+                z_fake_pcd = dddDepth_criterion.point_cloud(z_fake[0]).cpu().detach().numpy()
+                o3d_pcd.points = o3d.utility.Vector3dVector(z_fake_pcd*max_depth)
+                o3d.io.write_point_cloud(save_dir+"pred_cloud"+str(epoch)+".pcd", o3d_pcd)
+
+                ##############
+                # txt images #
+                img_file = open(save_dir+'gt_'+str(epoch)+'.txt',"w")
+                for row in z[0].cpu().numpy():
+                    np.savetxt(img_file,row)
+                img_file.close()
+                
+                # save_image(z_fake[0], save_dir+'predPIL_'+str(epoch)+'.png')
+                img_file = open(save_dir+'pred_'+str(epoch)+'.txt',"w")
+                for row in z_fake[0].cpu().detach().numpy():
+                    np.savetxt(img_file,row)
+                img_file.close()
+
+
+                
+                #### save difference ####
+                plt.imshow(np.abs(z[0].cpu().numpy().transpose((1,2,0)) - z_fake[0].cpu().detach().numpy().transpose((1,2,0)))*max_depth)
+                plt.colorbar()
+                plt.savefig(save_dir+'diff_'+str(epoch)+'.png', bbox_inches='tight')
+                plt.close()
+
+                # z_diff = dddDepth_criterion.point_cloud(torch.abs(z[0]-z_fake[0])).cpu().detach().numpy()
+                # o3d_pcd.points = o3d.utility.Vector3dVector(z_diff*max_depth)
+                # o3d.io.write_point_cloud(save_dir+"diff_cloud"+str(epoch)+".pcd", o3d_pcd)
+                
+
+                show_image=False
+
+
             # info
             if step % args.disp_interval == 0:
                 # file_object = open("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/results.txt", 'a')
-                print("[epoch %2d][iter %4d] loss: %.4f 3DDepthLoss: %.4f "#RMSElog: %.4f Grad: %.4f Normals diff: %.4f"
-                      % (epoch, step, loss, dddDepth_loss))#depth_loss, grad_loss, normals_diff_loss))
+                print("[epoch %2d][iter %4d] loss: %.4f 3DDepthLoss: %.4f RMSE: %.4f lossX: %.4f lossY: %.4f lossZ: %.4f"#RMSElog: %.4f Grad: %.4f Normals diff: %.4f"
+                      % (epoch, step, loss, dddDepth_loss, delta[0], delta[1], delta[2], delta[3]))#depth_loss, grad_loss, normals_diff_loss))
                 # print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f Grad: %.4f Normals loss: %.4f"
                 #       % (epoch, step, loss, depth_loss, grad_loss, normal_loss))
 
@@ -918,7 +1335,7 @@ if __name__ == '__main__':
                 
                 grad_real, grad_fake = imgrad_yx(z), imgrad_yx(z_fake)
                 
-                dddDepth_loss_eval = dddDepth_criterion(z_fake*max_depth,z*max_depth)
+                delta_val, dddDepth_loss_eval = dddDepth_criterion(z_fake,z,epoch,show_image)
                 # dddDepth_loss_eval = dddDepth_criterion(z_fake,z)
                 # if epoch > 3:
                 #     grad_loss_eval = grad_criterion(grad_fake, grad_real) * grad_factor  #* (epoch > 3)
@@ -936,7 +1353,11 @@ if __name__ == '__main__':
                 # loss_val = 10*(depth_loss_eval + 0.01*grad_loss_eval) + normals_diff_loss_eval
                 # loss_val = depth_loss_eval + grad_loss_eval + normal_loss_eval
                 # loss_val *= 10
-                loss_val = 10*dddDepth_loss_eval #depth_loss_eval + 10*dddDepth_loss_eval - depth_loss_eval
+                # if delta_val > 0.193 and epoch > 7:
+                #     loss = (10*dddDepth_loss_eval)**2
+                # else:
+                #     loss_val = 10*dddDepth_loss_eval #depth_loss_eval + 10*dddDepth_loss_eval - depth_loss_eval
+                loss_val = 1*dddDepth_loss_eval
                 val_loss += loss_val.item()
                 # print("Loss on test_data: ",loss_eval)
                 if i==337:
