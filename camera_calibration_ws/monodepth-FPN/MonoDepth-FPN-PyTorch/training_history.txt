@@ -891,7 +891,8 @@ Optimizer:
 Training parameters: Now, changing the learning rate from 1e-3 to 1e-5 an lr_decay_gamma from 0.01 to 1
 Other training parameters:
 Others: 
-Results:
+Results: Not so good... I mean, not for so many epochs... 
+Epoch: 59 	Training Loss: 4.650696 	Validation Loss: 8.080699
 #########  #####     #
     #         #    # #
     #        #    #####
@@ -899,8 +900,8 @@ Results:
 Loss:
 Optimizer:
 Training parameters:
-Other training parameters:
-Others: 
+Other training parameters:                        
+Others: Just like 72, but with a larger dataset... :))  
 Results:
 #########  #####    ####
     #         #    #__ 

@@ -13242,7 +13242,7 @@ Epoch: 27 	Training Loss: 4.757597 	Validation Loss: 6.171466
 Epoch: 28 	Training Loss: 4.757456 	Validation Loss: 6.182828
 Epoch: 29 	Training Loss: 4.757107 	Validation Loss: 7.019187
 ##################################
-# T72 New learning rate  of 1e-5##
+# T73 New learning rate  of 1e-5##
 ##################################
 Epoch: 0 	Training Loss: 91.319148 	Validation Loss: 49.612992
 Epoch: 1 	Training Loss: 46.990090 	Validation Loss: 44.085149
@@ -13322,3 +13322,51 @@ Epoch: 11 	Training Loss: 8.515070 	Validation Loss: 10.577753
 Epoch: 12 	Training Loss: 8.265505 	Validation Loss: 10.302064
 Epoch: 13 	Training Loss: 7.808851 	Validation Loss: 10.739429
 Epoch: 14 	Training Loss: 7.753417 	Validation Loss: 12.026978
+Epoch: 15 	Training Loss: 7.753912 	Validation Loss: 10.239463
+Epoch: 16 	Training Loss: 7.335111 	Validation Loss: 10.377090
+Epoch: 17 	Training Loss: 7.269440 	Validation Loss: 10.021012
+Epoch: 18 	Training Loss: 7.182857 	Validation Loss: 11.866620
+Epoch: 19 	Training Loss: 7.005144 	Validation Loss: 15.169367
+Epoch: 20 	Training Loss: 6.661243 	Validation Loss: 10.762594
+Epoch: 21 	Training Loss: 6.679667 	Validation Loss: 9.030486
+Epoch: 22 	Training Loss: 6.607975 	Validation Loss: 7.844735
+Epoch: 23 	Training Loss: 6.369719 	Validation Loss: 12.352974
+Epoch: 24 	Training Loss: 6.575041 	Validation Loss: 11.558215
+Epoch: 25 	Training Loss: 6.261753 	Validation Loss: 9.530833
+Epoch: 26 	Training Loss: 6.124992 	Validation Loss: 11.861953
+Epoch: 27 	Training Loss: 5.970883 	Validation Loss: 8.725477
+Epoch: 28 	Training Loss: 5.992535 	Validation Loss: 8.558368
+Epoch: 29 	Training Loss: 5.970998 	Validation Loss: 10.411144
+Epoch: 30 	Training Loss: 5.799338 	Validation Loss: 9.591286
+Epoch: 31 	Training Loss: 5.866008 	Validation Loss: 10.596168
+Epoch: 32 	Training Loss: 5.803813 	Validation Loss: 8.325256
+Epoch: 33 	Training Loss: 5.796883 	Validation Loss: 6.969124
+Epoch: 34 	Training Loss: 5.866033 	Validation Loss: 9.194049
+Epoch: 35 	Training Loss: 5.606202 	Validation Loss: 8.659601
+Epoch: 36 	Training Loss: 5.455549 	Validation Loss: 9.756931
+Epoch: 37 	Training Loss: 5.425761 	Validation Loss: 7.042640
+Epoch: 38 	Training Loss: 5.388938 	Validation Loss: 9.085716
+Epoch: 39 	Training Loss: 5.435680 	Validation Loss: 12.835277
+Epoch: 40 	Training Loss: 5.411586 	Validation Loss: 7.160484
+Epoch: 41 	Training Loss: 5.386573 	Validation Loss: 7.625536
+Epoch: 42 	Training Loss: 5.265871 	Validation Loss: 10.888390
+Epoch: 43 	Training Loss: 5.280894 	Validation Loss: 10.983845
+Epoch: 44 	Training Loss: 5.261077 	Validation Loss: 10.685396
+Epoch: 45 	Training Loss: 5.361098 	Validation Loss: 7.710189
+Epoch: 46 	Training Loss: 5.004466 	Validation Loss: 9.816493
+Epoch: 47 	Training Loss: 5.009043 	Validation Loss: 8.952828
+Epoch: 48 	Training Loss: 4.956529 	Validation Loss: 9.369476
+Epoch: 49 	Training Loss: 5.154839 	Validation Loss: 8.373557
+Epoch: 50 	Training Loss: 5.098415 	Validation Loss: 9.747309
+Epoch: 51 	Training Loss: 5.135019 	Validation Loss: 10.034379
+Epoch: 52 	Training Loss: 4.943986 	Validation Loss: 7.701556
+Epoch: 53 	Training Loss: 4.859659 	Validation Loss: 7.916538
+Epoch: 54 	Training Loss: 4.987968 	Validation Loss: 8.656162
+Epoch: 55 	Training Loss: 4.989579 	Validation Loss: 6.945360
+Epoch: 56 	Training Loss: 4.876819 	Validation Loss: 9.132846
+Epoch: 57 	Training Loss: 5.045255 	Validation Loss: 9.500187
+Epoch: 58 	Training Loss: 4.839611 	Validation Loss: 7.903988
+Epoch: 59 	Training Loss: 4.650696 	Validation Loss: 8.080699
+##################################
+# T74 A bigger dataset ##
+##################################

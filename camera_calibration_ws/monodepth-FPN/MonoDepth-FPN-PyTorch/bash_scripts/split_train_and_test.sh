@@ -1,6 +1,6 @@
 #!/bin/bash
 n=0
-pre="ir_"
+# pre="ir_"
 suf=".png"
 
 mkdir -p $1train
@@ -10,7 +10,7 @@ train=$1train
 test=$1test
 
 for filename in $1/*.png; do
-    if ((n%3==0))
+    if ((n%4==0))
     then
         echo $test
         mv "$filename" $test

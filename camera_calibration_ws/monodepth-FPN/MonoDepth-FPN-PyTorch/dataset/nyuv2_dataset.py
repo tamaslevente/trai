@@ -134,7 +134,7 @@ class MyCustomDataset(data.Dataset):
             self.rgb_paths = [root+'combined_ddd/train/' +
                               d for d in os.listdir(root+'combined_ddd/train/')]
             # Randomly choose 50k images without replacement
-            self.rgb_paths = np.random.choice(self.rgb_paths, 600, False)
+            # self.rgb_paths = np.random.choice(self.rgb_paths, 600, False)
         else:
             self.rgb_paths = [root+'combined_ddd/test/' +
                               d for d in os.listdir(root+'combined_ddd/test/')]

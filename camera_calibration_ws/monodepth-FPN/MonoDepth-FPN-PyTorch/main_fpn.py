@@ -816,13 +816,13 @@ def parse_args():
                         default="adam", type=str)
     parser.add_argument('--lr', dest='lr',
                         help='starting learning rate',
-                        default=1e-5, type=float)
+                        default=1e-3, type=float)
     parser.add_argument('--lr_decay_step', dest='lr_decay_step',
                         help='step to do learning rate decay, unit is epoch',
                         default=5, type=int)
     parser.add_argument('--lr_decay_gamma', dest='lr_decay_gamma',
                         help='learning rate decay ratio',
-                        default=1, type=float)
+                        default=0.1, type=float)
 
 # set training session
     parser.add_argument('--s', dest='session',
@@ -1113,6 +1113,11 @@ if __name__ == '__main__':
     normal_factor = 1.
     # max_depth = 6571
     max_depth = 7000
+    
+    #for visualizing the train and validation loss
+    train_loss_arr = []
+    val_loss_arr = []
+
     for epoch in range(args.start_epoch, args.max_epochs):
 
         train_loss = 0 
@@ -1135,9 +1140,7 @@ if __name__ == '__main__':
         # saving results in a txt file
         save_dir = '/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process/'
         
-        depth_loss_arr = []
-        dddDepth_loss_arr = []
-
+        
         for step in range(iters_per_epoch):
             start = time.time()
             data = train_data_iter.next()
@@ -1188,7 +1191,7 @@ if __name__ == '__main__':
 
             train_loss += loss.item()
             end = time.time()
-
+            
             if show_image:
                 # for i in range(img.shape[0]):
                 # plt.imshow(np.transpose(imgs[i], (1, 2, 0)))
@@ -1242,16 +1245,16 @@ if __name__ == '__main__':
 
                 ##############
                 # txt images #
-                img_file = open(save_dir+'gt_'+str(epoch)+'.txt',"w")
-                for row in z[0].cpu().numpy():
-                    np.savetxt(img_file,row)
-                img_file.close()
+                # img_file = open(save_dir+'gt_'+str(epoch)+'.txt',"w")
+                # for row in z[0].cpu().numpy():
+                #     np.savetxt(img_file,row)
+                # img_file.close()
                 
-                # save_image(z_fake[0], save_dir+'predPIL_'+str(epoch)+'.png')
-                img_file = open(save_dir+'pred_'+str(epoch)+'.txt',"w")
-                for row in z_fake[0].cpu().detach().numpy():
-                    np.savetxt(img_file,row)
-                img_file.close()
+                # # save_image(z_fake[0], save_dir+'predPIL_'+str(epoch)+'.png')
+                # img_file = open(save_dir+'pred_'+str(epoch)+'.txt',"w")
+                # for row in z_fake[0].cpu().detach().numpy():
+                #     np.savetxt(img_file,row)
+                # img_file.close()
 
 
                 
@@ -1380,6 +1383,8 @@ if __name__ == '__main__':
             train_loss = train_loss/iters_per_epoch #len(train_dataloader)
             val_loss = val_loss/len(eval_dataloader)
 
+            train_loss_arr.append(train_loss)
+            val_loss_arr.append(train_loss)
             print('Epoch: {} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}'.format(epoch, train_loss, val_loss))
 
             file_object = open("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/results.txt", 'a')
@@ -1395,3 +1400,7 @@ if __name__ == '__main__':
             # with open('val.txt', 'a') as f:
             #     f.write("[epoch %2d] RMSE_log: %.4f RMSE: %.4f\n"
             #             % (epoch, torch.sqrt(eval_loss/count), torch.sqrt(rmse_accum/count)))
+        
+    plt.plot(train_loss_arr,'g',val_loss_arr,'r')
+    plt.savefig(save_dir +'losses'+str(epoch)+'.png',bbox_inches='tight')
+    plt.close()
