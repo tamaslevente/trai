@@ -33,9 +33,11 @@ class DDDDepthDiff(nn.Module):
             fake = F.interpolate(fake, size=(H, W), mode='bilinear')
         eps = 1e-7
         # eps = 2
+
+        batch_size = real.shape[0]
         
-        real1 = real[0].clone() #real[0].cpu().detach().numpy()
-        fake1 = fake[0].clone() #fake[0].cpu().detach().numpy()
+        real1 = real.clone() #real[0].cpu().detach().numpy()
+        fake1 = fake.clone() #fake[0].cpu().detach().numpy()
         ###### debug purposes ########
         # fake1[real1==0] = 1.0
         # a = np.asarray(real1.cpu().detach()*7000)[0]
@@ -59,12 +61,21 @@ class DDDDepthDiff(nn.Module):
 
         # real1[real1==0] = eps
         # fake1[fake1==0] = eps
-        
-        real_pcd = self.point_cloud(real1).clone() * 1000.0
-        fake_pcd = self.point_cloud(fake1).clone() * 1000.0
 
-        real_pcd[real_pcd==0] = eps
-        fake_pcd[fake_pcd==0] = eps
+        # for calculating the loss on all the images in the batch size (Thanks Szilard for telling me about this!!!)
+        all_real_pcd = self.point_cloud(real1[0]).clone() * 1000.0
+        all_fake_pcd = self.point_cloud(fake1[0]).clone() * 1000.0
+        
+        for nr_img in range(1,batch_size):
+            real_pcd = self.point_cloud(real1[nr_img]).clone() * 1000.0
+            fake_pcd = self.point_cloud(fake1[nr_img]).clone() * 1000.0
+
+            all_real_pcd = torch.cat(all_real_pcd,real_pcd)
+            all_fake_pcd = torch.cat(all_fake_pcd,fake_pcd)
+
+        all_real_pcd[all_real_pcd==0] = eps
+        all_fake_pcd[all_fake_pcd==0] = eps
+
         # real_pcd = nan_real_pcd[~torch.isnan(nan_real_pcd)]
         # fake_pcd = nan_fake_pcd[~torch.isnan(nan_real_pcd)]
 
@@ -206,22 +217,22 @@ class DDDDepthDiff(nn.Module):
         # Take out nan points #
         # If this doesn't work replace the values with 2 or something
         ### loss17
-        nan_z_real = real_pcd[:,2].clone()
+        nan_z_real = all_real_pcd[:,2].clone()
         temp_z_real = nan_z_real[~torch.isnan(nan_z_real)]
        
-        nan_z_fake = fake_pcd[:,2].clone()
+        nan_z_fake = all_fake_pcd[:,2].clone()
         temp_z_fake = nan_z_fake[~torch.isnan(nan_z_real)]
         
-        nan_x_real = real_pcd[:,0].clone()
+        nan_x_real = all_real_pcd[:,0].clone()
         temp_x_real = nan_x_real[~torch.isnan(nan_x_real)]
         
-        nan_x_fake = fake_pcd[:,0].clone()
-        temp_x_fake = nan_x_fake[~torch.isnan(nan_x_real)]
+        nan_x_fake = all_fake_pcd[:,0].clone()
+        temp_x_fake = all_nan_x_fake[~torch.isnan(nan_x_real)]
         
-        nan_y_real = real_pcd[:,1].clone()
+        nan_y_real = all_real_pcd[:,1].clone()
         temp_y_real = nan_y_real[~torch.isnan(nan_y_real)]
         
-        nan_y_fake = fake_pcd[:,1].clone()
+        nan_y_fake = all_fake_pcd[:,1].clone()
         temp_y_fake = nan_y_fake[~torch.isnan(nan_y_real)]
 
         z_real = temp_z_real[~torch.isnan(temp_z_fake)]
@@ -267,7 +278,7 @@ class DDDDepthDiff(nn.Module):
         # RMSE_log3 = torch.sqrt(torch.mean(torch.log(1-torch.abs(z_real-z_fake))))
         delta = [RMSE_log, lossX, lossY, lossZ]
         # loss13 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))*torch.abs(10*(torch.exp(1*(lossX-0.01))+torch.exp(1*(lossY-0.01))+torch.exp(1*(lossZ-0.05))))
-        loss17 = 10*RMSE_log * torch.abs(10*(3-torch.exp(1*lossX)+torch.exp(1*lossY)+torch.exp(1*lossZ)))
+        loss17 = 100*RMSE_log * torch.abs(10*(3-torch.exp(1*lossX)-torch.exp(1*lossY)-torch.exp(1*lossZ)))
         # loss17p1 = 10*RMSE_log * (lossX+lossY+lossZ)
         # loss17p2 = 10*(RMSE_log + lossX + lossY)
         
@@ -505,22 +516,13 @@ class DDDDepthDiff(nn.Module):
         x = torch.where(valid, z * (new_c - cx) / fx, nan_number)
         y = torch.where(valid, z * (new_r - cy) / fy, nan_number)
         
-        # plt.plot(z.cpu(),'g')
-        # plt.savefig("z.png")
-        # plt.close()
 
         dimension = rows * cols
         z_ok = z.reshape(dimension)
         x_ok = x.reshape(dimension)
         y_ok = y.reshape(dimension)
-        # depth = depth.cpu().detach().numpy()
-        # rows, cols = depth[0].shape
-        # c, r = np.meshgrid(np.arange(cols), np.arange(rows), sparse=True)
-        # valid = (depth[0] > 0) & (depth[0] < 65535)
-        # z = np.where(valid, depth[0] / 1000.0, np.nan)
-        # x = np.where(valid, z * (c - cx) / fx, 0)
-        # y = np.where(valid, z * (r - cy) / fy, 0)
-        return torch.stack((x_ok,y_ok,z_ok),dim=1) #np.dstack((x, y, z)) #pcd 
+    
+        return torch.stack((x_ok,y_ok,z_ok),dim=1) 
 
     def image_from_cloud(self, point_cloud):
         
@@ -1384,7 +1386,7 @@ if __name__ == '__main__':
             val_loss = val_loss/len(eval_dataloader)
 
             train_loss_arr.append(train_loss)
-            val_loss_arr.append(train_loss)
+            val_loss_arr.append(val_loss)
             print('Epoch: {} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}'.format(epoch, train_loss, val_loss))
 
             file_object = open("/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/results.txt", 'a')
@@ -1401,6 +1403,17 @@ if __name__ == '__main__':
             #     f.write("[epoch %2d] RMSE_log: %.4f RMSE: %.4f\n"
             #             % (epoch, torch.sqrt(eval_loss/count), torch.sqrt(rmse_accum/count)))
         
-    plt.plot(train_loss_arr,'g',val_loss_arr,'r')
-    plt.savefig(save_dir +'losses'+str(epoch)+'.png',bbox_inches='tight')
+    # plt.plot(train_loss_arr,'g',val_loss_arr,'r')
+    # plt.legend((train_loss_arr, val_loss_arr),('training loss', 'validation loss'))
+    # plt.savefig(save_dir +'t75losses'+'.png',bbox_inches='tight')
+    # plt.close()
+
+    epochs = range(args.start_epoch, args.max_epochs)
+    plt.plot(epochs, train_loss_arr, '-g', label='Training loss')
+    plt.plot(epochs, val_loss_arr, 'b', label='Validation loss')
+    plt.title('Training and Validation loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.savefig(save_dir+"losses.png")
     plt.close()

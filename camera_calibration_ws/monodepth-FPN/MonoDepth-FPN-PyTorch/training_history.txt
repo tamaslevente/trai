@@ -901,8 +901,9 @@ Loss:
 Optimizer:
 Training parameters:
 Other training parameters:                        
-Others: Just like 72, but with a larger dataset... :))  
-Results:
+Others: Just like 72, but with a larger dataset... :))  And on 100 epochs. :))
+Results: Not ok, because the rotated images in my augmented dataset were producing a disturbance in the model because when they were translated in point cloud, they are distorted.
+Epoch: 99 	Training Loss: 87.337174 	Validation Loss: 122.322869
 #########  #####    ####
     #         #    #__ 
     #        #        #
@@ -911,8 +912,9 @@ Loss:
 Optimizer:
 Training parameters:
 Other training parameters:
-Others: 
-Results:
+Others: Just removing rotated images.
+Results: Seems ok. It's just a little bit smaller than it was before...
+Epoch: 29 	Training Loss: 4.262129 	Validation Loss: 5.895973
 #########  #####   ##
     #         #  #__  
     #        #  #   #
@@ -921,18 +923,20 @@ Loss:
 Optimizer:
 Training parameters:
 Other training parameters:
-Others: 
-Results:
+Others: Replacing the triple depth dataset with the IR_D_D dataset.
+Results:With 0.10 worse than before, when looking at the loss function, but visually it's kind of the same, so we'll change back.
+Epoch: 29 	Training Loss: 4.364529 	Validation Loss: 5.900367
 #########  #####  #####
     #         #      #
     #        #      #
     #       #      #
 Loss:
 Optimizer:
-Training parameters:
+Training parameters: lr_decay_step = 3, lr_decay_gamma=0.01
 Other training parameters:
-Others: 
-Results:
+Others: Back to DDD dataset.
+Results: Not so good results.
+Epoch: 99 	Training Loss: 7.088389 	Validation Loss: 9.934402
 #########  #####   #####
     #         #    #___#
     #        #     #   #
@@ -941,8 +945,10 @@ Loss:
 Optimizer:
 Training parameters:
 Other training parameters:
-Others: 
-Results:
+Others: Back to the good learning rate, and decay step, but with a small fix in the loss function. (lr_decay_step = 5, lr_decay_gamma=0.1)
+        loss17 = 10*RMSE_log * torch.abs(10*(3-torch.exp(1*lossX)-torch.exp(1*lossY)-torch.exp(1*lossZ))) #changing the + with -
+Results: Pretty good. In terms of numbers it is much better.
+Epoch: 29 	Training Loss: 0.010397 	Validation Loss: 0.030839
 #########  #####  #####
     #         #   #___# 
     #        #        #
@@ -951,5 +957,7 @@ Loss:
 Optimizer:
 Training parameters:
 Other training parameters:
-Others: 
-Results:
+Others: loss17 = 100*RMSE_log * torch.abs(10*(3-torch.exp(1*lossX)-torch.exp(1*lossY)-torch.exp(1*lossZ))) #changing the + with -
+Results: It is ok, but remember: no more than 25 epochs!
+Epoch: 39 	Training Loss: 0.101756 	Validation Loss: 0.155747
+
