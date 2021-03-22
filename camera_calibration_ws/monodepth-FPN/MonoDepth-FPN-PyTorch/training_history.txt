@@ -87,10 +87,10 @@ Other training parameters:
 Others: 6000 is the max depth for output after scaling, plus only some error corrections for OpenCV when saving images
 Results: 
 Epoch: 14 	Training Loss: 41.909513 	Validation Loss: 561.895508
-#########   / \
-    #       \ / 
-    #       / \
-    #       \_/ 
+#########   /--\
+    #       \__/ 
+    #       /  \
+    #       \__/ 
 Loss:
 Optimizer:
 Training parameters:
@@ -960,4 +960,108 @@ Other training parameters:
 Others: loss17 = 100*RMSE_log * torch.abs(10*(3-torch.exp(1*lossX)-torch.exp(1*lossY)-torch.exp(1*lossZ))) #changing the + with -
 Results: It is ok, but remember: no more than 25 epochs!
 Epoch: 39 	Training Loss: 0.101756 	Validation Loss: 0.155747
+#########  ####   ####
+    #      #__#   #  # 
+    #      #  #   #  #
+    #      ####   ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: loss18 = 10*(RMSE_log + torch.abs(10*(3-torch.exp(1*lossX)-torch.exp(1*lossY)-torch.exp(1*lossZ))))
+Results: It is still, kind of the same, even though I got some other ideas. :)) P.S: I know I have more than 225 epochs, but I'm jus curios, ok?!
+Epoch: 29 	Training Loss: 0.678151 	Validation Loss: 1.126020
+#########  ####     #
+    #      #__#   # # 
+    #      #  #     #
+    #      ####   # # #
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: loss18, but with these terms:
+        lossX = torch.sqrt(torch.mean(torch.abs(x_real-x_fake)**2))
+        lossZ = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))
+        lossY = torch.sqrt(torch.mean(torch.abs(y_real-y_fake)**2))
+Results: 
+#########  ####
+    #      #__# 
+    #      #  #
+    #      ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results: 
+#########  ####
+    #      #__# 
+    #      #  #
+    #      ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results: 
+#########  ####
+    #      #__# 
+    #      #  #
+    #      ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results: 
+#########  ####
+    #      #__# 
+    #      #  #
+    #      ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results: 
+#########  ####
+    #      #__# 
+    #      #  #
+    #      ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results: 
+#########  ####
+    #      #__# 
+    #      #  #
+    #      ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results: 
+#########  ####
+    #      #__# 
+    #      #  #
+    #      ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results: 
+#########  ####
+    #      #__# 
+    #      #  #
+    #      ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: 
+Results: 
 

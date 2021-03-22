@@ -13715,3 +13715,50 @@ Epoch: 36 	Training Loss: 0.101756 	Validation Loss: 0.146312
 Epoch: 37 	Training Loss: 0.101756 	Validation Loss: 0.141294
 Epoch: 38 	Training Loss: 0.101756 	Validation Loss: 0.145217
 Epoch: 39 	Training Loss: 0.101756 	Validation Loss: 0.155747
+##############################
+#T80 a new type of loss (18) #
+##############################
+Epoch: 0 	Training Loss: 5.038095 	Validation Loss: 2.694223
+Epoch: 1 	Training Loss: 2.625767 	Validation Loss: 2.272549
+Epoch: 2 	Training Loss: 2.185575 	Validation Loss: 1.425943
+Epoch: 3 	Training Loss: 1.881500 	Validation Loss: 1.492203
+Epoch: 4 	Training Loss: 1.745387 	Validation Loss: 2.570857
+Epoch: 5 	Training Loss: 1.597525 	Validation Loss: 1.313763
+Epoch: 6 	Training Loss: 1.009296 	Validation Loss: 1.166673
+Epoch: 7 	Training Loss: 0.935401 	Validation Loss: 1.149335
+Epoch: 8 	Training Loss: 0.894063 	Validation Loss: 1.058145
+Epoch: 9 	Training Loss: 0.856838 	Validation Loss: 1.194605
+Epoch: 10 	Training Loss: 0.829500 	Validation Loss: 1.149076
+Epoch: 11 	Training Loss: 0.802850 	Validation Loss: 1.065235
+Epoch: 12 	Training Loss: 0.724384 	Validation Loss: 1.091357
+Epoch: 13 	Training Loss: 0.714015 	Validation Loss: 1.030655
+Epoch: 14 	Training Loss: 0.707845 	Validation Loss: 1.116468
+Epoch: 15 	Training Loss: 0.702037 	Validation Loss: 1.283048
+Epoch: 16 	Training Loss: 0.696607 	Validation Loss: 1.128317
+Epoch: 17 	Training Loss: 0.692034 	Validation Loss: 1.189925
+Epoch: 18 	Training Loss: 0.682513 	Validation Loss: 1.298993
+Epoch: 19 	Training Loss: 0.681643 	Validation Loss: 1.204125
+Epoch: 20 	Training Loss: 0.681133 	Validation Loss: 1.064066
+Epoch: 21 	Training Loss: 0.680700 	Validation Loss: 1.049329
+Epoch: 22 	Training Loss: 0.679966 	Validation Loss: 1.101811
+Epoch: 23 	Training Loss: 0.679561 	Validation Loss: 1.133445
+Epoch: 24 	Training Loss: 0.678447 	Validation Loss: 1.050190
+Epoch: 25 	Training Loss: 0.678370 	Validation Loss: 1.138026
+Epoch: 26 	Training Loss: 0.678309 	Validation Loss: 1.077450
+Epoch: 27 	Training Loss: 0.678251 	Validation Loss: 1.000806
+Epoch: 28 	Training Loss: 0.678188 	Validation Loss: 1.232812
+Epoch: 29 	Training Loss: 0.678151 	Validation Loss: 1.126020
+#####################################
+#T81  Other terms for loss18   ######
+#####################################
+Epoch: 0 	Training Loss: 6.110008 	Validation Loss: 2.488451
+Epoch: 1 	Training Loss: 3.237296 	Validation Loss: 3.135441
+Epoch: 2 	Training Loss: 2.643290 	Validation Loss: 2.307764
+Epoch: 3 	Training Loss: 2.430073 	Validation Loss: 1.997380
+Epoch: 4 	Training Loss: 2.400521 	Validation Loss: 2.413545
+Epoch: 5 	Training Loss: 2.219593 	Validation Loss: 1.860705
+Epoch: 6 	Training Loss: 1.516019 	Validation Loss: 1.729038
+Epoch: 7 	Training Loss: 1.454209 	Validation Loss: 1.684317
+Epoch: 8 	Training Loss: 1.414675 	Validation Loss: 1.740409
+Epoch: 9 	Training Loss: 1.380534 	Validation Loss: 1.731209
+Epoch: 10 	Training Loss: 1.349542 	Validation Loss: 1.704169

@@ -227,7 +227,7 @@ class DDDDepthDiff(nn.Module):
         temp_x_real = nan_x_real[~torch.isnan(nan_x_real)]
         
         nan_x_fake = all_fake_pcd[:,0].clone()
-        temp_x_fake = all_nan_x_fake[~torch.isnan(nan_x_real)]
+        temp_x_fake = nan_x_fake[~torch.isnan(nan_x_real)]
         
         nan_y_real = all_real_pcd[:,1].clone()
         temp_y_real = nan_y_real[~torch.isnan(nan_y_real)]
@@ -246,13 +246,13 @@ class DDDDepthDiff(nn.Module):
         
 
         ######Original########
-        lossX = torch.mean(torch.abs(x_real-x_fake))
-        lossZ = torch.mean(torch.abs(z_real-z_fake))
-        lossY = torch.mean(torch.abs(y_real-y_fake))
+        # lossX = torch.mean(torch.abs(x_real-x_fake))
+        # lossZ = torch.mean(torch.abs(z_real-z_fake))
+        # lossY = torch.mean(torch.abs(y_real-y_fake))
         ####sixth try #####
-        # lossX = torch.sqrt(torch.mean(torch.abs(x_real-x_fake)**2))
-        # lossZ = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))
-        # lossY = torch.sqrt(torch.mean(torch.abs(y_real-y_fake)**2))
+        lossX = torch.sqrt(torch.mean(torch.abs(x_real-x_fake)**2))
+        lossZ = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))
+        lossY = torch.sqrt(torch.mean(torch.abs(y_real-y_fake)**2))
         
         #######second#############
         # lossX = torch.mean(torch.abs(torch.log(torch.abs(x_real))-torch.log(torch.abs(x_fake))))
@@ -278,7 +278,8 @@ class DDDDepthDiff(nn.Module):
         # RMSE_log3 = torch.sqrt(torch.mean(torch.log(1-torch.abs(z_real-z_fake))))
         delta = [RMSE_log, lossX, lossY, lossZ]
         # loss13 = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))*torch.abs(10*(torch.exp(1*(lossX-0.01))+torch.exp(1*(lossY-0.01))+torch.exp(1*(lossZ-0.05))))
-        loss17 = 100*RMSE_log * torch.abs(10*(3-torch.exp(1*lossX)-torch.exp(1*lossY)-torch.exp(1*lossZ)))
+        # loss17 = 100*RMSE_log * torch.abs(10*(3-torch.exp(1*lossX)-torch.exp(1*lossY)-torch.exp(1*lossZ)))
+        loss18 = 10*(RMSE_log + torch.abs(10*(3-torch.exp(1*lossX)-torch.exp(1*lossY)-torch.exp(1*lossZ))))
         # loss17p1 = 10*RMSE_log * (lossX+lossY+lossZ)
         # loss17p2 = 10*(RMSE_log + lossX + lossY)
         
@@ -473,7 +474,7 @@ class DDDDepthDiff(nn.Module):
         
         # loss = torch.sqrt(torch.mean(
         #     torch.abs(torch.log(real2)-torch.log(fake2)) ** 2))
-        return delta, loss17
+        return delta, loss18
     
     def l2_norm(self,v):
         norm_v = np.sqrt(np.sum(np.square(v), axis=1))
