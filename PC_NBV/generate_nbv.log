@@ -1,0 +1,60 @@
+coverage:0.4796142578125 in scan round 0
+choose view:31 add coverage:0.3470458984375
+scan 0 done, time=0.3191 sec
+coverage:0.82666015625 in scan round 1
+choose view:10 add coverage:0.1431884765625
+scan 1 done, time=0.5849 sec
+coverage:0.9698486328125 in scan round 2
+choose view:28 add coverage:0.1011962890625
+scan 2 done, time=0.8534 sec
+coverage:1.071044921875 in scan round 3
+choose view:12 add coverage:0.039306640625
+scan 3 done, time=1.1278 sec
+coverage:1.1103515625 in scan round 4
+choose view:26 add coverage:0.02044677734375
+scan 4 done, time=1.4112 sec
+coverage:1.13079833984375 in scan round 5
+choose view:19 add coverage:0.00982666015625
+scan 5 done, time=1.6998 sec
+coverage:1.140625 in scan round 6
+choose view:23 add coverage:0.006591796875
+scan 6 done, time=1.9808 sec
+coverage:1.147216796875 in scan round 7
+choose view:17 add coverage:0.00604248046875
+scan 7 done, time=2.2610 sec
+coverage:1.15325927734375 in scan round 8
+choose view:30 add coverage:0.0032958984375
+scan 8 done, time=2.5438 sec
+coverage:1.15655517578125 in scan round 9
+choose view:21 add coverage:0.00238037109375
+scan 9 done, time=2.8310 sec
+coverage:0.2989501953125 in scan round 0
+choose view:28 add coverage:0.40484619140625
+scan 0 done, time=0.1749 sec
+coverage:0.70379638671875 in scan round 1
+choose view:8 add coverage:0.27813720703125
+scan 1 done, time=0.3978 sec
+coverage:0.98193359375 in scan round 2
+choose view:25 add coverage:0.08575439453125
+scan 2 done, time=0.6609 sec
+coverage:1.06768798828125 in scan round 3
+choose view:13 add coverage:0.029052734375
+scan 3 done, time=0.9327 sec
+coverage:1.09674072265625 in scan round 4
+choose view:31 add coverage:0.00689697265625
+scan 4 done, time=1.2066 sec
+coverage:1.1036376953125 in scan round 5
+choose view:5 add coverage:0.0040283203125
+scan 5 done, time=1.4861 sec
+coverage:1.107666015625 in scan round 6
+choose view:16 add coverage:0.0037841796875
+scan 6 done, time=1.7614 sec
+coverage:1.1114501953125 in scan round 7
+choose view:26 add coverage:0.00347900390625
+scan 7 done, time=2.0384 sec
+coverage:1.11492919921875 in scan round 8
+choose view:29 add coverage:0.0028076171875
+scan 8 done, time=2.3159 sec
+coverage:1.11773681640625 in scan round 9
+choose view:32 add coverage:0.00244140625
+scan 9 done, time=2.5829 sec
