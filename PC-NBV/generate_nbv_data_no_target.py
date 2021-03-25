@@ -16,10 +16,10 @@ if __name__ == '__main__':
     view_num = 33
 
     # path
-    data_type = 'train/'
+    data_type = 'test/'
     ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/'    
     pc_dir = "/home/cuda/Alex/trai/PC-NBV/Output_model_blender/" + data_type + "/pcd"
-    save_dir = "/home/cuda/Alex/trai/PC-NBV/NBV_data/shapenet_33_views_640x480/train"
+    save_dir = "/home/cuda/Alex/trai/PC-NBV/NBV_data_no_target/shapenet_33_views_640x480/test"
     model_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/' + data_type
 
     
@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     class_list = os.listdir(model_dir)
 
-    f=open('generate_nbv.log', 'w+')
+    f=open('generate_nbv_no_target.log', 'w+')
 
     for class_id in class_list:
 
@@ -68,7 +68,7 @@ if __name__ == '__main__':
             # reconstruct from different views 1 times
             selected_init_view = []
             #for ex_index in range(1): 
-            for ex_index in range(10):  
+            for ex_index in range(view_num):  
 
                 start = time.time() 
 
@@ -111,7 +111,8 @@ if __name__ == '__main__':
                     np.save(os.path.join(cur_ex_dir, str(scan_index) + "_acc_pc.npy"), acc_pc_points)
                     # np.savetxt(os.path.join(cur_ex_dir, str(scan_index) + "_acc_pc.xyz"), acc_pc_points)    
 
-                    target_value = np.zeros((view_num, 1)) # surface coverage, register coverage, moving cost for each view         
+                    target_value = np.zeros((view_num, 1)) # surface coverage, register coverage, moving cost for each view  
+                    target_value_2 = np.zeros((33, 1)) # surface coverage, register coverage, moving cost for each view        
 
                     max_view_index = 0
                     max_view_cov = 0
@@ -153,7 +154,7 @@ if __name__ == '__main__':
                             max_view_cov = target_value[i, 0]
                             max_new_pc = pc_new 
 
-                    np.save(os.path.join(cur_ex_dir, str(scan_index) + "_target_value.npy"), target_value)  
+                    np.save(os.path.join(cur_ex_dir, str(scan_index) + "_target_value.npy"), target_value_2)  
 
                     print("choose view:" + str(max_view_index) + " add coverage:" + str(max_view_cov)) 
 

@@ -50,6 +50,9 @@ def train(args):
     test_total_time = 0
     test_total_spearmanr = 0
     sess.run(tf.local_variables_initializer())
+
+    f=open('Test_viewstate.log', 'w+')
+
     for i in range(num_eval_steps):
 
         if (i%10==0):
@@ -82,6 +85,9 @@ def train(args):
             if test_eval_value_pre[0,k,0]>maximum2:
                 pozitie2=k
                 maximum2=test_eval_value_pre[0,k,0]
+        
+        
+        f.write(str(pozitie2)+" "+str(pozitie1)+'\n')
         
 
         print("Predicted position:",pozitie2," ","Actual position:",pozitie1)

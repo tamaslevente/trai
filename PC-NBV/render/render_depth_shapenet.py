@@ -9,7 +9,7 @@ import sys
 import time
 import pdb
 import argparse
-# Usage: blender -b -P render_depth.py
+# Usage: blender -b -P render_depth_shapenet.py
 
 
 def setup_blender(width, height, focal_length, output_dir):
@@ -54,9 +54,9 @@ if __name__ == '__main__':
     viewspace_path = 'viewspace_shapenet_33.txt'
 
     data_type = 'test/'
-    ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1'
-    model_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1' + data_type
-    output_dir = '/home/cuda/Alex/trai/PC-NBV/Output_model_blender' + data_type
+    ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/'
+    model_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/' + data_type
+    output_dir = '/home/cuda/Alex/trai/PC-NBV/Output_model_blender/' + data_type
 
 
    
