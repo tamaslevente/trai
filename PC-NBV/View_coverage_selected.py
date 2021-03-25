@@ -15,6 +15,7 @@ if __name__ == '__main__':
     # view num
     view_num = 33
 
+
     # path
     data_type = 'train/'
     ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/'    
@@ -38,6 +39,11 @@ if __name__ == '__main__':
 
     test_viewstate=np.loadtxt(test_predicted_path)
 
+    nr_elemente=0
+
+    
+
+
 
     for class_id in class_list:
 
@@ -45,7 +51,7 @@ if __name__ == '__main__':
 
         for model in model_list:
             
-            
+            nr_elemente=nr_elemente+1
 
             # gt point cloud
             gt_points = sio.loadmat(os.path.join(ShapeNetv1_dir, data_type, class_id, model, 'model.mat'))
@@ -73,7 +79,8 @@ if __name__ == '__main__':
             for i in range(10): 
             
                 
-                pozitie_actuala=int(test_viewstate[i][0])
+                pozitie_actuala=int(test_viewstate[(nr_elemente-1)*10+i][0])
+                
                 
                 view_state = np.zeros(view_num, dtype=np.int) # 0 unselected, 1 selected, 2 cur
 
@@ -95,49 +102,23 @@ if __name__ == '__main__':
                 cover_sum = np.sum(dis_flag_new == True)
                 cur_cov = cover_sum / dis_flag_new.shape[1]
 
-                print("coverage:" + str(cur_cov) + " in scan round " + str(i)) 
+                print("Pozitie actuala:"+str(cur_view)+" coverage:" + str(cur_cov) + " in scan round " + str(i)) 
 
-                f.write("coverage:" + str(cur_cov) + " in scan round " + str(i) +'\n')
+                f.write("Pozitie actuala:"+str(cur_view)+" coverage:" + str(cur_cov) + " in scan round " + str(i) +'\n')
 
                   
 
-                #     # # accumulate points coverage
-                # batch_acc = acc_pc_points[np.newaxis, :, :]
-                # batch_gt = gt_points[np.newaxis, :, :]
+                    # # accumulate points coverage
+                batch_acc = acc_pc_points[np.newaxis, :, :]
+                batch_gt = gt_points[np.newaxis, :, :]
                     
-                #     # evaluate all the views
-                #        # trebuie schimbat ca sa selecteze predicted position
+                    # evaluate all the views
+                       # trebuie schimbat ca sa selecteze predicted position
 
-                # j=int(test_viewstate[i][1])
+                pozitie_prezisa=int(test_viewstate[(nr_elemente-1)*10+i][1])
 
-                #         # current evaluate view
-                # batch_part_cur = part_points_list[j][np.newaxis, :, :]  
-
-                #         # new pc
-                # dist1_new = sess.run(dist1, feed_dict={part_tensor:batch_part_cur, gt_tensor:batch_acc})
-                # dis_flag_new = dist1_new < 0.00005  
-
-                # pc_register = batch_part_cur[dis_flag_new]
-                # pc_new = batch_part_cur[~dis_flag_new]
-
-                # batch_new = pc_new[np.newaxis, :, :]    
-
-                #         # test new coverage
-                #         if batch_new.shape[1] != 0:
-                #             dist2_new = sess.run(dist2, feed_dict={part_tensor:batch_new, gt_tensor:batch_gt})      
-
-                #             dis_flag_new = dist2_new < 0.00005
-                #             cover_sum = np.sum(dis_flag_new == True)
-                #             cover_new = cover_sum / dis_flag_new.shape[1]
-                #         else:
-                #             cover_new = 0   
-
-                # print("Coverage predicted:"+str(cover_new)+"\n")
-
-
-                # k=int(test_viewstate[i][2])
-
-                # batch_part_cur = part_points_list[k][np.newaxis, :, :]  
+                        # current evaluate view
+                batch_part_cur = part_points_list[pozitie_prezisa][np.newaxis, :, :]  
 
                 #         # new pc
                 # dist1_new = sess.run(dist1, feed_dict={part_tensor:batch_part_cur, gt_tensor:batch_acc})
@@ -146,19 +127,58 @@ if __name__ == '__main__':
                 # pc_register = batch_part_cur[dis_flag_new]
                 # pc_new = batch_part_cur[~dis_flag_new]
 
-                # batch_new = pc_new[np.newaxis, :, :]    
+               
+                pc_new=acc_pc_points
+                pc_new=np.append(pc_new, part_points_list[pozitie_prezisa], axis=0)
+                batch_new = pc_new[np.newaxis, :, :]    
 
-                #         # test new coverage
-                #         if batch_new.shape[1] != 0:
-                #             dist2_new = sess.run(dist2, feed_dict={part_tensor:batch_new, gt_tensor:batch_gt})      
+                        # test new coverage
+                if batch_new.shape[1] != 0:
+                    dist2_new = sess.run(dist2, feed_dict={part_tensor:batch_new, gt_tensor:batch_gt})      
 
-                #             dis_flag_new = dist2_new < 0.00005
-                #             cover_sum = np.sum(dis_flag_new == True)
-                #             cover_new2 = cover_sum / dis_flag_new.shape[1]
-                #         else:
-                #             cover_new2 = 0   
+                    dis_flag_new = dist2_new < 0.00005
+                    cover_sum = np.sum(dis_flag_new == True)
+                    cover_new = cover_sum / dis_flag_new.shape[1]
+                else:
+                    cover_new = 0   
 
-                # print("Coverage actual:"+str(cover_new2)+"\n")
+                print("Pozitie next predict:"+str(pozitie_prezisa)+" Coverage predicted:"+str(cover_new)+"in scan round " + str(i))
+
+                f.write("Pozitie next predict:"+str(pozitie_prezisa)+" Coverage predicted:" + str(cover_new) + " in scan round " + str(i) +'\n')
+
+
+                pozitie_greedy=int(test_viewstate[(nr_elemente-1)*10+i][2])
+
+
+                batch_part_cur = part_points_list[pozitie_greedy][np.newaxis, :, :]  
+
+                #         # new pc
+                dist1_new = sess.run(dist1, feed_dict={part_tensor:batch_part_cur, gt_tensor:batch_acc})
+                dis_flag_new = dist1_new < 0.00005  
+
+                pc_register = batch_part_cur[dis_flag_new]
+                pc_new = batch_part_cur[~dis_flag_new]
+
+                # pc_new=acc_pc_points
+                # pc_new=np.append(pc_new, part_points_list[pozitie_greedy], axis=0)
+
+                batch_new = pc_new[np.newaxis, :, :]    
+
+                        # test new coverage
+                if batch_new.shape[1] != 0:
+                    dist2_new = sess.run(dist2, feed_dict={part_tensor:batch_new, gt_tensor:batch_gt})      
+
+                    dis_flag_new = dist2_new < 0.00005
+                    cover_sum = np.sum(dis_flag_new == True)
+                    cover_new2 = cover_sum / dis_flag_new.shape[1]
+                else:
+                    cover_new2 = 0   
+
+                greedy_coverage=cur_cov+cover_new2
+
+                print("Pozitie next greedy:"+str(pozitie_greedy)+" Coverage greedy:"+str(greedy_coverage)+"in scan round " + str(i)+'\n')
+
+                f.write("Pozitie next greedy:"+str(pozitie_greedy)+" Coverage greedy:" + str(greedy_coverage) + " in scan round " + str(i) +'\n')
 
                         
 

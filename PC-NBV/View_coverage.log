@@ -1,160 +1,150 @@
-coverage:0.31256103515625 in scan round 0
-coverage:0.59375 in scan round 1
-coverage:0.8115234375 in scan round 2
-coverage:0.82867431640625 in scan round 3
-coverage:0.9437255859375 in scan round 4
-coverage:0.94732666015625 in scan round 5
-coverage:0.95526123046875 in scan round 6
-coverage:0.9573974609375 in scan round 7
-coverage:0.9573974609375 in scan round 8
-coverage:0.96173095703125 in scan round 9
-coverage:0.4197998046875 in scan round 0
-coverage:0.8135986328125 in scan round 1
-coverage:0.9444580078125 in scan round 2
-coverage:0.97479248046875 in scan round 3
-coverage:0.977294921875 in scan round 4
-coverage:0.9779052734375 in scan round 5
-coverage:0.9779052734375 in scan round 6
-coverage:0.97930908203125 in scan round 7
-coverage:0.979736328125 in scan round 8
-coverage:0.979736328125 in scan round 9
-coverage:0.39288330078125 in scan round 0
-coverage:0.76080322265625 in scan round 1
-coverage:0.9532470703125 in scan round 2
-coverage:0.96710205078125 in scan round 3
-coverage:0.96990966796875 in scan round 4
-coverage:0.97076416015625 in scan round 5
-coverage:0.97119140625 in scan round 6
-coverage:0.9718017578125 in scan round 7
-coverage:0.9718017578125 in scan round 8
-coverage:0.9718017578125 in scan round 9
-coverage:0.33721923828125 in scan round 0
-coverage:0.67950439453125 in scan round 1
-coverage:0.8450927734375 in scan round 2
-coverage:0.86212158203125 in scan round 3
-coverage:0.8697509765625 in scan round 4
-coverage:0.8709716796875 in scan round 5
-coverage:0.87103271484375 in scan round 6
-coverage:0.87115478515625 in scan round 7
-coverage:0.8712158203125 in scan round 8
-coverage:0.8712158203125 in scan round 9
-coverage:0.359130859375 in scan round 0
-coverage:0.718994140625 in scan round 1
-coverage:0.87744140625 in scan round 2
-coverage:0.92724609375 in scan round 3
-coverage:0.93829345703125 in scan round 4
-coverage:0.94024658203125 in scan round 5
-coverage:0.9415283203125 in scan round 6
-coverage:0.94805908203125 in scan round 7
-coverage:0.9482421875 in scan round 8
-coverage:0.9482421875 in scan round 9
-coverage:0.31512451171875 in scan round 0
-coverage:0.66070556640625 in scan round 1
-coverage:0.82794189453125 in scan round 2
-coverage:0.845703125 in scan round 3
-coverage:0.8524169921875 in scan round 4
-coverage:0.85357666015625 in scan round 5
-coverage:0.85382080078125 in scan round 6
-coverage:0.85406494140625 in scan round 7
-coverage:0.85406494140625 in scan round 8
-coverage:0.85406494140625 in scan round 9
-coverage:0.40911865234375 in scan round 0
-coverage:0.87481689453125 in scan round 1
-coverage:0.97796630859375 in scan round 2
-coverage:0.99322509765625 in scan round 3
-coverage:0.995849609375 in scan round 4
-coverage:0.99609375 in scan round 5
-coverage:0.99609375 in scan round 6
-coverage:0.99609375 in scan round 7
-coverage:0.99609375 in scan round 8
-coverage:0.99609375 in scan round 9
-coverage:0.41790771484375 in scan round 0
-coverage:0.817626953125 in scan round 1
-coverage:0.9678955078125 in scan round 2
-coverage:0.99560546875 in scan round 3
-coverage:0.99639892578125 in scan round 4
-coverage:0.99755859375 in scan round 5
-coverage:0.99755859375 in scan round 6
-coverage:0.99761962890625 in scan round 7
-coverage:0.9976806640625 in scan round 8
-coverage:0.997802734375 in scan round 9
-coverage:0.23516845703125 in scan round 0
-coverage:0.52496337890625 in scan round 1
-coverage:0.76849365234375 in scan round 2
-coverage:0.80511474609375 in scan round 3
-coverage:0.828369140625 in scan round 4
-coverage:0.829833984375 in scan round 5
-coverage:0.83599853515625 in scan round 6
-coverage:0.8505859375 in scan round 7
-coverage:0.8511962890625 in scan round 8
-coverage:0.85540771484375 in scan round 9
-coverage:0.4052734375 in scan round 0
-coverage:0.7412109375 in scan round 1
-coverage:0.8538818359375 in scan round 2
-coverage:0.85821533203125 in scan round 3
-coverage:0.86407470703125 in scan round 4
-coverage:0.86895751953125 in scan round 5
-coverage:0.8690185546875 in scan round 6
-coverage:0.8690185546875 in scan round 7
-coverage:0.86920166015625 in scan round 8
-coverage:0.86920166015625 in scan round 9
-coverage:0.40966796875 in scan round 0
-coverage:0.820068359375 in scan round 1
-coverage:0.94427490234375 in scan round 2
-coverage:0.9678955078125 in scan round 3
-coverage:0.9718017578125 in scan round 4
-coverage:0.97247314453125 in scan round 5
-coverage:0.97259521484375 in scan round 6
-coverage:0.97650146484375 in scan round 7
-coverage:0.97650146484375 in scan round 8
-coverage:0.97650146484375 in scan round 9
-coverage:0.2603759765625 in scan round 0
-coverage:0.60552978515625 in scan round 1
-coverage:0.82763671875 in scan round 2
-coverage:0.853759765625 in scan round 3
-coverage:0.861328125 in scan round 4
-coverage:0.86346435546875 in scan round 5
-coverage:0.90673828125 in scan round 6
-coverage:0.90875244140625 in scan round 7
-coverage:0.90924072265625 in scan round 8
-coverage:0.9132080078125 in scan round 9
-coverage:0.17706298828125 in scan round 0
-coverage:0.6202392578125 in scan round 1
-coverage:0.98992919921875 in scan round 2
-coverage:0.99017333984375 in scan round 3
-coverage:1.0 in scan round 4
-coverage:1.0 in scan round 5
-coverage:1.0 in scan round 6
-coverage:1.0 in scan round 7
-coverage:1.0 in scan round 8
-coverage:1.0 in scan round 9
-coverage:0.32568359375 in scan round 0
-coverage:0.76116943359375 in scan round 1
-coverage:0.90704345703125 in scan round 2
-coverage:0.92523193359375 in scan round 3
-coverage:0.9288330078125 in scan round 4
-coverage:0.92919921875 in scan round 5
-coverage:0.9295654296875 in scan round 6
-coverage:0.9296875 in scan round 7
-coverage:0.9296875 in scan round 8
-coverage:0.9296875 in scan round 9
-coverage:0.423828125 in scan round 0
-coverage:0.82977294921875 in scan round 1
-coverage:0.97869873046875 in scan round 2
-coverage:0.98388671875 in scan round 3
-coverage:0.99462890625 in scan round 4
-coverage:0.99493408203125 in scan round 5
-coverage:0.99554443359375 in scan round 6
-coverage:0.99578857421875 in scan round 7
-coverage:0.99591064453125 in scan round 8
-coverage:0.99591064453125 in scan round 9
-coverage:0.23748779296875 in scan round 0
-coverage:0.5335693359375 in scan round 1
-coverage:0.669921875 in scan round 2
-coverage:0.6885986328125 in scan round 3
-coverage:0.69830322265625 in scan round 4
-coverage:0.70281982421875 in scan round 5
-coverage:0.70343017578125 in scan round 6
-coverage:0.70361328125 in scan round 7
-coverage:0.703857421875 in scan round 8
-coverage:0.703857421875 in scan round 9
+Pozitie actuala:22 coverage:0.31256103515625 in scan round 0
+Pozitie next predict:26 Coverage predicted:0.59375 in scan round 0
+Pozitie next greedy:26 Coverage greedy:0.64886474609375 in scan round 0
+Pozitie actuala:26 coverage:0.59375 in scan round 1
+Pozitie next predict:2 Coverage predicted:0.802001953125 in scan round 1
+Pozitie next greedy:3 Coverage greedy:0.837890625 in scan round 1
+Pozitie actuala:3 coverage:0.8115234375 in scan round 2
+Pozitie next predict:2 Coverage predicted:0.81646728515625 in scan round 2
+Pozitie next greedy:28 Coverage greedy:0.85565185546875 in scan round 2
+Pozitie actuala:28 coverage:0.82867431640625 in scan round 3
+Pozitie next predict:2 Coverage predicted:0.8336181640625 in scan round 3
+Pozitie next greedy:16 Coverage greedy:0.95831298828125 in scan round 3
+Pozitie actuala:16 coverage:0.9437255859375 in scan round 4
+Pozitie next predict:4 Coverage predicted:0.9437255859375 in scan round 4
+Pozitie next greedy:24 Coverage greedy:0.952392578125 in scan round 4
+Pozitie actuala:24 coverage:0.94732666015625 in scan round 5
+Pozitie next predict:4 Coverage predicted:0.94732666015625 in scan round 5
+Pozitie next greedy:6 Coverage greedy:0.9571533203125 in scan round 5
+Pozitie actuala:6 coverage:0.95526123046875 in scan round 6
+Pozitie next predict:27 Coverage predicted:0.9573974609375 in scan round 6
+Pozitie next greedy:27 Coverage greedy:0.95867919921875 in scan round 6
+Pozitie actuala:27 coverage:0.9573974609375 in scan round 7
+Pozitie next predict:17 Coverage predicted:0.9576416015625 in scan round 7
+Pozitie next greedy:25 Coverage greedy:0.9573974609375 in scan round 7
+Pozitie actuala:25 coverage:0.9573974609375 in scan round 8
+Pozitie next predict:22 Coverage predicted:0.9573974609375 in scan round 8
+Pozitie next greedy:15 Coverage greedy:0.9639892578125 in scan round 8
+Pozitie actuala:15 coverage:0.96173095703125 in scan round 9
+Pozitie next predict:22 Coverage predicted:0.96173095703125 in scan round 9
+Pozitie next greedy:17 Coverage greedy:0.96173095703125 in scan round 9
+Pozitie actuala:17 coverage:0.38189697265625 in scan round 0
+Pozitie next predict:26 Coverage predicted:0.65234375 in scan round 0
+Pozitie next greedy:12 Coverage greedy:0.85369873046875 in scan round 0
+Pozitie actuala:12 coverage:0.79071044921875 in scan round 1
+Pozitie next predict:26 Coverage predicted:0.9293212890625 in scan round 1
+Pozitie next greedy:27 Coverage greedy:1.0147705078125 in scan round 1
+Pozitie actuala:27 coverage:0.9549560546875 in scan round 2
+Pozitie next predict:16 Coverage predicted:0.96002197265625 in scan round 2
+Pozitie next greedy:31 Coverage greedy:1.00201416015625 in scan round 2
+Pozitie actuala:31 coverage:0.97882080078125 in scan round 3
+Pozitie next predict:16 Coverage predicted:0.98187255859375 in scan round 3
+Pozitie next greedy:2 Coverage greedy:0.98956298828125 in scan round 3
+Pozitie actuala:2 coverage:0.98162841796875 in scan round 4
+Pozitie next predict:16 Coverage predicted:0.98187255859375 in scan round 4
+Pozitie next greedy:25 Coverage greedy:0.9820556640625 in scan round 4
+Pozitie actuala:25 coverage:0.9820556640625 in scan round 5
+Pozitie next predict:22 Coverage predicted:0.98236083984375 in scan round 5
+Pozitie next greedy:28 Coverage greedy:0.98321533203125 in scan round 5
+Pozitie actuala:28 coverage:0.98248291015625 in scan round 6
+Pozitie next predict:32 Coverage predicted:0.98260498046875 in scan round 6
+Pozitie next greedy:23 Coverage greedy:0.98248291015625 in scan round 6
+Pozitie actuala:23 coverage:0.98260498046875 in scan round 7
+Pozitie next predict:24 Coverage predicted:0.982666015625 in scan round 7
+Pozitie next greedy:26 Coverage greedy:0.982666015625 in scan round 7
+Pozitie actuala:26 coverage:0.98272705078125 in scan round 8
+Pozitie next predict:24 Coverage predicted:0.98272705078125 in scan round 8
+Pozitie next greedy:32 Coverage greedy:0.98272705078125 in scan round 8
+Pozitie actuala:32 coverage:0.98272705078125 in scan round 9
+Pozitie next predict:15 Coverage predicted:0.98272705078125 in scan round 9
+Pozitie next greedy:8 Coverage greedy:0.98272705078125 in scan round 9
+Pozitie actuala:8 coverage:0.56195068359375 in scan round 0
+Pozitie next predict:27 Coverage predicted:0.85089111328125 in scan round 0
+Pozitie next greedy:28 Coverage greedy:0.95733642578125 in scan round 0
+Pozitie actuala:28 coverage:0.88848876953125 in scan round 1
+Pozitie next predict:17 Coverage predicted:0.9422607421875 in scan round 1
+Pozitie next greedy:26 Coverage greedy:0.99285888671875 in scan round 1
+Pozitie actuala:26 coverage:0.949462890625 in scan round 2
+Pozitie next predict:22 Coverage predicted:0.96417236328125 in scan round 2
+Pozitie next greedy:24 Coverage greedy:0.95745849609375 in scan round 2
+Pozitie actuala:24 coverage:0.95159912109375 in scan round 3
+Pozitie next predict:11 Coverage predicted:0.9683837890625 in scan round 3
+Pozitie next greedy:30 Coverage greedy:0.9727783203125 in scan round 3
+Pozitie actuala:30 coverage:0.9625244140625 in scan round 4
+Pozitie next predict:22 Coverage predicted:0.96746826171875 in scan round 4
+Pozitie next greedy:11 Coverage greedy:0.978759765625 in scan round 4
+Pozitie actuala:11 coverage:0.9720458984375 in scan round 5
+Pozitie next predict:14 Coverage predicted:0.9725341796875 in scan round 5
+Pozitie next greedy:21 Coverage greedy:0.97552490234375 in scan round 5
+Pozitie actuala:21 coverage:0.97320556640625 in scan round 6
+Pozitie next predict:17 Coverage predicted:0.97320556640625 in scan round 6
+Pozitie next greedy:25 Coverage greedy:0.97320556640625 in scan round 6
+Pozitie actuala:25 coverage:0.9732666015625 in scan round 7
+Pozitie next predict:14 Coverage predicted:0.97332763671875 in scan round 7
+Pozitie next greedy:27 Coverage greedy:0.9754638671875 in scan round 7
+Pozitie actuala:27 coverage:0.97344970703125 in scan round 8
+Pozitie next predict:14 Coverage predicted:0.9735107421875 in scan round 8
+Pozitie next greedy:17 Coverage greedy:0.97344970703125 in scan round 8
+Pozitie actuala:17 coverage:0.97344970703125 in scan round 9
+Pozitie next predict:15 Coverage predicted:0.97344970703125 in scan round 9
+Pozitie next greedy:19 Coverage greedy:0.97344970703125 in scan round 9
+Pozitie actuala:19 coverage:0.211181640625 in scan round 0
+Pozitie next predict:12 Coverage predicted:0.59027099609375 in scan round 0
+Pozitie next greedy:12 Coverage greedy:0.6295166015625 in scan round 0
+Pozitie actuala:12 coverage:0.59027099609375 in scan round 1
+Pozitie next predict:32 Coverage predicted:0.826416015625 in scan round 1
+Pozitie next greedy:30 Coverage greedy:0.8121337890625 in scan round 1
+Pozitie actuala:30 coverage:0.7764892578125 in scan round 2
+Pozitie next predict:16 Coverage predicted:0.86090087890625 in scan round 2
+Pozitie next greedy:3 Coverage greedy:0.841552734375 in scan round 2
+Pozitie actuala:3 coverage:0.8243408203125 in scan round 3
+Pozitie next predict:16 Coverage predicted:0.86187744140625 in scan round 3
+Pozitie next greedy:1 Coverage greedy:0.86065673828125 in scan round 3
+Pozitie actuala:1 coverage:0.84967041015625 in scan round 4
+Pozitie next predict:27 Coverage predicted:0.87225341796875 in scan round 4
+Pozitie next greedy:19 Coverage greedy:0.84967041015625 in scan round 4
+Pozitie actuala:19 coverage:0.84967041015625 in scan round 5
+Pozitie next predict:27 Coverage predicted:0.87225341796875 in scan round 5
+Pozitie next greedy:14 Coverage greedy:0.84967041015625 in scan round 5
+Pozitie actuala:14 coverage:0.8497314453125 in scan round 6
+Pozitie next predict:26 Coverage predicted:0.87420654296875 in scan round 6
+Pozitie next greedy:4 Coverage greedy:0.84979248046875 in scan round 6
+Pozitie actuala:4 coverage:0.8497314453125 in scan round 7
+Pozitie next predict:26 Coverage predicted:0.87420654296875 in scan round 7
+Pozitie next greedy:18 Coverage greedy:0.876220703125 in scan round 7
+Pozitie actuala:18 coverage:0.86181640625 in scan round 8
+Pozitie next predict:23 Coverage predicted:0.86614990234375 in scan round 8
+Pozitie next greedy:16 Coverage greedy:0.87237548828125 in scan round 8
+Pozitie actuala:16 coverage:0.86968994140625 in scan round 9
+Pozitie next predict:25 Coverage predicted:0.87445068359375 in scan round 9
+Pozitie next greedy:29 Coverage greedy:0.874267578125 in scan round 9
+Pozitie actuala:29 coverage:0.48681640625 in scan round 0
+Pozitie next predict:26 Coverage predicted:0.6912841796875 in scan round 0
+Pozitie next greedy:26 Coverage greedy:0.7352294921875 in scan round 0
+Pozitie actuala:26 coverage:0.6912841796875 in scan round 1
+Pozitie next predict:6 Coverage predicted:0.91949462890625 in scan round 1
+Pozitie next greedy:29 Coverage greedy:0.6912841796875 in scan round 1
+Pozitie actuala:29 coverage:0.6912841796875 in scan round 2
+Pozitie next predict:8 Coverage predicted:0.92095947265625 in scan round 2
+Pozitie next greedy:24 Coverage greedy:0.83111572265625 in scan round 2
+Pozitie actuala:24 coverage:0.8074951171875 in scan round 3
+Pozitie next predict:8 Coverage predicted:0.92864990234375 in scan round 3
+Pozitie next greedy:20 Coverage greedy:0.87725830078125 in scan round 3
+Pozitie actuala:20 coverage:0.864990234375 in scan round 4
+Pozitie next predict:8 Coverage predicted:0.93536376953125 in scan round 4
+Pozitie next greedy:23 Coverage greedy:0.92803955078125 in scan round 4
+Pozitie actuala:23 coverage:0.909912109375 in scan round 5
+Pozitie next predict:16 Coverage predicted:0.9405517578125 in scan round 5
+Pozitie next greedy:31 Coverage greedy:0.9326171875 in scan round 5
+Pozitie actuala:31 coverage:0.91937255859375 in scan round 6
+Pozitie next predict:16 Coverage predicted:0.94696044921875 in scan round 6
+Pozitie next greedy:27 Coverage greedy:0.92498779296875 in scan round 6
+Pozitie actuala:27 coverage:0.9228515625 in scan round 7
+Pozitie next predict:16 Coverage predicted:0.9503173828125 in scan round 7
+Pozitie next greedy:30 Coverage greedy:0.9237060546875 in scan round 7
+Pozitie actuala:30 coverage:0.9248046875 in scan round 8
+Pozitie next predict:15 Coverage predicted:0.9510498046875 in scan round 8
+Pozitie next greedy:17 Coverage greedy:0.9329833984375 in scan round 8
+Pozitie actuala:17 coverage:0.93267822265625 in scan round 9
+Pozitie next predict:15 Coverage predicted:0.9520263671875 in scan round 9
+Pozitie next greedy:28 Coverage greedy:0.93267822265625 in scan round 9
