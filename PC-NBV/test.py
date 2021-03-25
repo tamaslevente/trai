@@ -53,6 +53,11 @@ def train(args):
 
     f=open('Test_viewstate.log', 'w+')
 
+    
+
+    pozitie1_global=-1
+        
+
     for i in range(num_eval_steps):
 
         if (i%10==0):
@@ -68,29 +73,43 @@ def train(args):
 
         #print(eval_value)
         #print(test_eval_value_pre)
+        if (i==0):
+            for m in range(args.views):
+                if view_state[0,m]==1:
+                    pozitie_actuala=m
+        else:
+                pozitie_actuala=pozitie_greedy
+
 
         maximum1=-500
         maximum2=-500
 
-        pozitie1=-1
-        pozitie2=-1
+        pozitie_greedy=-1
+        pozitie_predict=-1
         
         
         for k in range(args.views):
             if eval_value[0,k,0]>maximum1:
-                pozitie1=k
+                pozitie_greedy=k
                 maximum1=eval_value[0,k,0]
 
-        for k in range(args.views):
+        for k in range(args.views): 
             if test_eval_value_pre[0,k,0]>maximum2:
-                pozitie2=k
+                pozitie_predict=k
                 maximum2=test_eval_value_pre[0,k,0]
+
+        pozitie1_global=pozitie_greedy
         
         
-        f.write(str(pozitie2)+" "+str(pozitie1)+'\n')
+        f.write(str(pozitie_actuala)+" "+str(pozitie_predict)+" "+str(pozitie_greedy)+'\n')
+
         
 
-        print("Predicted position:",pozitie2," ","Actual position:",pozitie1)
+       
+
+        
+
+        print("Current Position:"+str(pozitie_actuala)+" Predicted position:",pozitie_predict," ","Actual position:",pozitie_greedy)
         
 
         
@@ -120,9 +139,9 @@ def train(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--lmdb_test', default='/home/cuda/Alex/PC-NBV/data/train.lmdb')
+    parser.add_argument('--lmdb_test', default='/home/cuda/Alex/trai/PC-NBV/data/valid.lmdb')
     parser.add_argument('--model_type', default='pc-nbv')
-    parser.add_argument('--checkpoint', default='/home/cuda/Alex/PC-NBV/log/7_11_1/model-400000')
+    parser.add_argument('--checkpoint', default='/home/cuda/Alex/trai/PC-NBV/log/New_test/model-80000')
     parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument('--num_input_points', type=int, default=512)
     parser.add_argument('--num_gt_points', type=int, default=1024)
