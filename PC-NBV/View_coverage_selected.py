@@ -44,18 +44,12 @@ if __name__ == '__main__':
         model_list = os.listdir(os.path.join(ShapeNetv1_dir, data_type, class_id))
 
         for model in model_list:
-            save_model_path = os.path.join(save_dir, model)
-            if os.path.exists(save_model_path):
-                print("skip " + save_model_path)
-                continue
+            
+            
 
             # gt point cloud
             gt_points = sio.loadmat(os.path.join(ShapeNetv1_dir, data_type, class_id, model, 'model.mat'))
-            gt_points = np.array(gt_points['points'])
-            if not os.path.exists(os.path.join(save_dir, model)):
-                os.makedirs(os.path.join(save_dir, model))
-
-            np.savetxt(os.path.join(save_dir, model, "gt.xyz"), gt_points)    
+            gt_points = np.array(gt_points['points'])    
 
             # every view's partial point cloud
             part_points_list = []
@@ -101,9 +95,9 @@ if __name__ == '__main__':
                 cover_sum = np.sum(dis_flag_new == True)
                 cur_cov = cover_sum / dis_flag_new.shape[1]
 
-                print("coverage:" + str(cur_cov) + " in scan round " + str(scan_index)) 
+                print("coverage:" + str(cur_cov) + " in scan round " + str(i)) 
 
-                f.write("coverage:" + str(cur_cov) + " in scan round " + str(scan_index) +'\n')
+                f.write("coverage:" + str(cur_cov) + " in scan round " + str(i) +'\n')
 
                   
 

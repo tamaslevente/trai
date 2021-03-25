@@ -51,7 +51,7 @@ def train(args):
     test_total_spearmanr = 0
     sess.run(tf.local_variables_initializer())
 
-    f=open('Test_viewstate.log', 'w+')
+    f=open('Test_viewstate.txt', 'w+')
 
     
 
