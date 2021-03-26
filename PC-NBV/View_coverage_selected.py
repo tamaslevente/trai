@@ -17,10 +17,9 @@ if __name__ == '__main__':
 
 
     # path
-    data_type = 'train/'
+    data_type = 'valid/'
     ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/'    
     pc_dir = "/home/cuda/Alex/trai/PC-NBV/Output_model_blender/" + data_type + "/pcd"
-    save_dir = "/home/cuda/Alex/trai/PC-NBV/NBV_data/shapenet_33_views_640x480/train"
     model_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/' + data_type
 
     

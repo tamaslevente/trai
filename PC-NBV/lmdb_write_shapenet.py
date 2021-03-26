@@ -52,11 +52,11 @@ if __name__ == '__main__':
     # output_path = "data/" + data_type + ".lmdb"
     # NBV_dir = "/home/zengrui/IROS/pcn/NBV_data/shapenet_33_views"
 
-    data_type = 'train'
+    data_type = 'test'
     class_list_path = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/' + data_type + '/_class.txt'
     gt_dir = "/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/" + data_type
     output_path = "data/" + data_type + ".lmdb"
-    NBV_dir = "/home/cuda/Alex/trai/PC-NBV/NBV_data/shapenet_33_views_640x480/train"
+    NBV_dir = "/home/cuda/Alex/trai/PC-NBV/NBV_data/shapenet_33_views_640x480/"+data_type
     #NBV_dir = "/home/cuda/Alex/trai/PC-NBV/NBV_data_no_target/shapenet_33_views_640x480/test"
 
 
