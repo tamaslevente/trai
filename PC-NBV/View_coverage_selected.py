@@ -121,15 +121,15 @@ if __name__ == '__main__':
                 batch_part_cur = part_points_list[pozitie_prezisa][np.newaxis, :, :]  
 
                 #         # new pc
-                # dist1_new = sess.run(dist1, feed_dict={part_tensor:batch_part_cur, gt_tensor:batch_acc})
-                # dis_flag_new = dist1_new < 0.00005  
+                dist1_new = sess.run(dist1, feed_dict={part_tensor:batch_part_cur, gt_tensor:batch_acc})
+                dis_flag_new = dist1_new < 0.00005  
 
-                # pc_register = batch_part_cur[dis_flag_new]
-                # pc_new = batch_part_cur[~dis_flag_new]
+                pc_register = batch_part_cur[dis_flag_new]
+                pc_new = batch_part_cur[~dis_flag_new]
 
                
-                pc_new=acc_pc_points
-                pc_new=np.append(pc_new, part_points_list[pozitie_prezisa], axis=0)
+                # pc_new=acc_pc_points
+                # pc_new=np.append(pc_new, part_points_list[pozitie_prezisa], axis=0)
                 batch_new = pc_new[np.newaxis, :, :]    
 
                         # test new coverage
@@ -142,9 +142,11 @@ if __name__ == '__main__':
                 else:
                     cover_new = 0   
 
-                print("Pozitie next predict:"+str(pozitie_prezisa)+" Coverage predicted:"+str(cover_new)+"in scan round " + str(i))
+                predict_coverage=cur_cov+cover_new
 
-                f.write("Pozitie next predict:"+str(pozitie_prezisa)+" Coverage predicted:" + str(cover_new) + " in scan round " + str(i) +'\n')
+                print("Pozitie next predict:"+str(pozitie_prezisa)+" Coverage predicted:"+str(predict_coverage)+"in scan round " + str(i))
+
+                f.write("Pozitie next predict:"+str(pozitie_prezisa)+" Coverage predicted:" + str(predict_coverage) + " in scan round " + str(i) +'\n')
 
 
                 pozitie_greedy=int(test_viewstate[(nr_elemente-1)*10+i][2])
