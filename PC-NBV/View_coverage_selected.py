@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
         for model in model_list:
             
-            nr_elemente=nr_elemente+1
+            
 
             # gt point cloud
             gt_points = sio.loadmat(os.path.join(ShapeNetv1_dir, data_type, class_id, model, 'model.mat'))
@@ -74,37 +74,66 @@ if __name__ == '__main__':
             selected_init_view = []
 
             
-            
+            coverage_model=0
             
             for i in range(10): 
             
                 
-                pozitie_actuala=int(test_viewstate[(nr_elemente-1)*10+i][0])
+                cur_view=int(test_viewstate[(nr_elemente)*10+i][0])
                 
                 
                 view_state = np.zeros(view_num, dtype=np.int) # 0 unselected, 1 selected, 2 cur
 
-                cur_view = pozitie_actuala
+                
                
                 view_state[cur_view] = 1
 
                 if (i==0):
                     acc_pc_points = part_points_list[cur_view]  
+
+                     # accumulate points coverage
+                    batch_acc = acc_pc_points[np.newaxis, :, :]
+                    batch_gt = gt_points[np.newaxis, :, :]
+
+                    dist2_new = sess.run(dist2, feed_dict={part_tensor:batch_acc, gt_tensor:batch_gt})      
+                    dis_flag_new = dist2_new < 0.00005
+                    cover_sum = np.sum(dis_flag_new == True)
+                    cur_cov = cover_sum / dis_flag_new.shape[1]
+
+                    coverage_model=coverage_model+cur_cov 
+
                 else:
-                    acc_pc_points = np.append(acc_pc_points, part_points_list[cur_view], axis=0)
+                    batch_acc = acc_pc_points[np.newaxis, :, :]
+                    batch_gt = gt_points[np.newaxis, :, :]
 
-                # accumulate points coverage
-                batch_acc = acc_pc_points[np.newaxis, :, :]
-                batch_gt = gt_points[np.newaxis, :, :]
+                    batch_part_cur = part_points_list[cur_view][np.newaxis, :, :]  
 
-                dist2_new = sess.run(dist2, feed_dict={part_tensor:batch_acc, gt_tensor:batch_gt})      
-                dis_flag_new = dist2_new < 0.00005
-                cover_sum = np.sum(dis_flag_new == True)
-                cur_cov = cover_sum / dis_flag_new.shape[1]
+                    dist1_new = sess.run(dist1, feed_dict={part_tensor:batch_part_cur, gt_tensor:batch_acc})
+                    dis_flag_new = dist1_new < 0.00005  
 
-                print("Pozitie actuala:"+str(cur_view)+" coverage:" + str(cur_cov) + " in scan round " + str(i)) 
+                    pc_register = batch_part_cur[dis_flag_new]
+                    pc_new = batch_part_cur[~dis_flag_new]
 
-                f.write("Pozitie actuala:"+str(cur_view)+" coverage:" + str(cur_cov) + " in scan round " + str(i) +'\n')
+                    batch_new = pc_new[np.newaxis, :, :]    
+
+                        # test new coverage
+                    if batch_new.shape[1] != 0:
+                        dist2_new = sess.run(dist2, feed_dict={part_tensor:batch_new, gt_tensor:batch_gt})      
+
+                        dis_flag_new = dist2_new < 0.00005
+                        cover_sum = np.sum(dis_flag_new == True)
+                        cur_cov = cover_sum / dis_flag_new.shape[1]
+                    else:
+                        cur_cov = 0   
+
+                    acc_pc_points = np.append(acc_pc_points, pc_new, axis=0)
+
+                    coverage_model=coverage_model+cur_cov 
+                    
+               
+                print("Pozitie actuala:"+str(cur_view)+" coverage:" + str(coverage_model) + " in scan round " + str(i)) 
+
+                f.write("Pozitie actuala:"+str(cur_view)+" coverage:" + str(coverage_model) + " in scan round " + str(i) +'\n')
 
                   
 
@@ -115,7 +144,7 @@ if __name__ == '__main__':
                     # evaluate all the views
                        # trebuie schimbat ca sa selecteze predicted position
 
-                pozitie_prezisa=int(test_viewstate[(nr_elemente-1)*10+i][1])
+                pozitie_prezisa=int(test_viewstate[(nr_elemente)*10+i][1])
 
                         # current evaluate view
                 batch_part_cur = part_points_list[pozitie_prezisa][np.newaxis, :, :]  
@@ -142,14 +171,14 @@ if __name__ == '__main__':
                 else:
                     cover_new = 0   
 
-                predict_coverage=cur_cov+cover_new
+                predict_coverage=coverage_model+cover_new
 
                 print("Pozitie next predict:"+str(pozitie_prezisa)+" Coverage predicted:"+str(predict_coverage)+"in scan round " + str(i))
 
                 f.write("Pozitie next predict:"+str(pozitie_prezisa)+" Coverage predicted:" + str(predict_coverage) + " in scan round " + str(i) +'\n')
 
 
-                pozitie_greedy=int(test_viewstate[(nr_elemente-1)*10+i][2])
+                pozitie_greedy=int(test_viewstate[(nr_elemente)*10+i][2])
 
 
                 batch_part_cur = part_points_list[pozitie_greedy][np.newaxis, :, :]  
@@ -176,12 +205,13 @@ if __name__ == '__main__':
                 else:
                     cover_new2 = 0   
 
-                greedy_coverage=cur_cov+cover_new2
+                greedy_coverage=coverage_model+cover_new2
 
                 print("Pozitie next greedy:"+str(pozitie_greedy)+" Coverage greedy:"+str(greedy_coverage)+"in scan round " + str(i)+'\n')
 
                 f.write("Pozitie next greedy:"+str(pozitie_greedy)+" Coverage greedy:" + str(greedy_coverage) + " in scan round " + str(i) +'\n')
 
+        nr_elemente=nr_elemente+1
                         
 
                        
