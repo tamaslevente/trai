@@ -1,0 +1,27 @@
+sudo docker run --gpus all -it --rm --net=host --ipc=host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix -v /home/cuda/Alex:/home/cuda/Alex vastai/tensorflow  bash
+
+
+sudo docker run --gpus all -it --rm --net=host --ipc=host -e DISPLAY=$DISPLAY --device=/dev/video0 -v /tmp/.X11-unix/:/tmp/.X11-unix --privileged -v path/to/your/workspace/folder:/the/same/path docker_image_name:tag_of_the_image bash
+
+
+sudo docker run --gpus all -it --rm --net=host --ipc=host -e DISPLAY=$DISPLAY -v /media/cuda/ssd/Shapenet_v1:/media/cuda/ssd/Shapenet_v1 -v /tmp/.X11-unix/:/tmp/.X11-unix -v /home/cuda/Alex:/home/cuda/Alex nvidia/cuda:10.0-devel-ubuntu16.04  bash
+
+sudo docker run --gpus all -it -d --rm --net=host --ipc=host -e DISPLAY=$DISPLAY -v /media/cuda/ssd/Shapenet_v1:/media/cuda/ssd/Shapenet_v1 -v /tmp/.X11-unix/:/tmp/.X11-unix -v /home/cuda/Alex:/home/cuda/Alex vastai/tensorflow:latest  bash
+
+-d pentru demo -> sa mearga continuu
+
+sudo docker exec -it musing_ishizaka bash
+
+docker ps -a
+
+sudo docker rm 551db84c7626
+
+sudo docker commit <nume imagine>
+
+docker rmi ubuntu:latest -f ->sterge imagine
+
+sudo docker run --gpus all -it -d --rm --net=host --ipc=host -e DISPLAY=$DISPLAY --device=/dev/video0 -v /tmp/.X11-unix/:/tmp/.X11-unix  -v /media/cuda/ssd/log:/media/cuda/ssd/log -v /media/cuda/ssd/Shapenet_v1:/media/cuda/ssd/Shapenet_v1 -v /tmp/.X11-unix/:/tmp/.X11-unix -v /home/cuda/Alex:/home/cuda/Alex vastai/tensorflow:latest  bash
+
+sudo docker run --gpus all -it -d --rm --net=host --ipc=host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix --privileged  -v /media/cuda/ssd/log:/media/cuda/ssd/log -v /media/cuda/ssd/Shapenet_v1:/media/cuda/ssd/Shapenet_v1 -v /tmp/.X11-unix/:/tmp/.X11-unix -v /home/cuda/Alex:/home/cuda/Alex vastai/tensorflow:latest  bash
+
+sudo docker run --gpus all -it -d --rm --net=host --ipc=host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix --volume="$HOME/.Xauthority:/root/.Xauthority:rw" --privileged -v /media/cuda/ssd/Alex/Output_model_blender:/media/cuda/ssd/Alex/Output_model_blender -v /media/cuda/ssd/Alex/NBV_data:/media/cuda/ssd/Alex/NBV_data  -v /media/cuda/ssd/Alex/data:/media/cuda/ssd/Alex/data -v /media/cuda/ssd/Alex/log:/media/cuda/ssd/Alex/log -v /media/cuda/ssd/Alex/Shapenet_v1:/media/cuda/ssd/Alex/Shapenet_v1 -v /tmp/.X11-unix/:/tmp/.X11-unix -v /home/cuda/Alex:/home/cuda/Alex vastai/tensorflow:latest  bash
