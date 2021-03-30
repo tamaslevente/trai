@@ -68,7 +68,7 @@ if __name__ == '__main__':
             # reconstruct from different views 1 times
             selected_init_view = []
             #for ex_index in range(1): 
-            for ex_index in range(10):  
+            for ex_index in range(32):  
 
                 start = time.time() 
 
@@ -101,7 +101,7 @@ if __name__ == '__main__':
                 
 
                 # max scan 10 times
-                for scan_index in range(10):    
+                for scan_index in range(1):    
 
                     print("coverage:" + str(cur_cov) + " in scan round " + str(scan_index)) 
 

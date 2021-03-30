@@ -40,7 +40,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_scans', type=int, default=33)
     args = parser.parse_args()
 
-    data_type = 'test'
+    data_type = 'train'
     ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/'
     model_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/' + data_type
     output_dir = '/home/cuda/Alex/trai/PC-NBV/Output_model_blender/' + data_type
