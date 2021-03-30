@@ -16,11 +16,11 @@ if __name__ == '__main__':
     view_num = 33
 
     # path
-    data_type = 'train/'
-    ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/'    
+    data_type = 'valid/'
+    ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid/'    
     pc_dir = "/home/cuda/Alex/trai/PC-NBV/Output_model_blender/" + data_type + "/pcd"
     save_dir = "/home/cuda/Alex/trai/PC-NBV/NBV_data/shapenet_33_views_640x480/"+ data_type
-    model_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/' + data_type
+    model_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid/' + data_type
 
     
 
@@ -68,7 +68,7 @@ if __name__ == '__main__':
             # reconstruct from different views 1 times
             selected_init_view = []
             #for ex_index in range(1): 
-            for ex_index in range(32):  
+            for ex_index in range(16):  
 
                 start = time.time() 
 
