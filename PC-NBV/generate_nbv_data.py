@@ -13,7 +13,8 @@ if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = "0"
     
     # view num
-    view_num = 33
+    #view_num = 33
+    view_num = 16
 
     # path
     data_type = 'valid/'
