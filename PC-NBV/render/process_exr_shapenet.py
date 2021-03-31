@@ -37,10 +37,10 @@ def depth2pcd(depth, intrinsics, pose):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--num_scans', type=int, default=33)
+    parser.add_argument('--num_scans', type=int, default=16)
     args = parser.parse_args()
 
-    data_type = 'valid'
+    data_type = 'train'
     ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid/'
     model_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid/' + data_type
     output_dir = '/home/cuda/Alex/trai/PC-NBV/Output_model_blender/' + data_type
