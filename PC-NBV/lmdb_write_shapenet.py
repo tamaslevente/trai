@@ -60,8 +60,8 @@ if __name__ == '__main__':
     #NBV_dir = "/home/cuda/Alex/trai/PC-NBV/NBV_data_no_target/shapenet_33_views_640x480/test"
 
 
-    ex_times = 1
-    num_scans = 16
+    ex_times = 15
+    num_scans = 1
 
     with open(os.path.join(class_list_path)) as file:
         class_list = [line.strip() for line in file]
