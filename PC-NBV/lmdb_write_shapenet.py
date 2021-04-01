@@ -31,7 +31,7 @@ class pcd_df(DataFlow):
     def get_data(self):
         #ShapeNetv1_dir = '/home/zengrui/IROS/pcn/data/ShapeNetv1/'
 
-        ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid'
+        ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid/'
         for class_id in self.class_list:
             model_list = os.listdir(os.path.join(ShapeNetv1_dir, self.data_type, class_id))
             for model_id in model_list:
@@ -53,15 +53,15 @@ if __name__ == '__main__':
     # NBV_dir = "/home/zengrui/IROS/pcn/NBV_data/shapenet_33_views"
 
     data_type = 'valid'
-    class_list_path = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid' + data_type + '/_class.txt'
-    gt_dir = "/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid" + data_type
+    class_list_path = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid/' + data_type + '/_class.txt'
+    gt_dir = "/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid/" + data_type
     output_path = "data/" + data_type + ".lmdb"
     NBV_dir = "/home/cuda/Alex/trai/PC-NBV/NBV_data/shapenet_33_views_640x480/"+data_type
     #NBV_dir = "/home/cuda/Alex/trai/PC-NBV/NBV_data_no_target/shapenet_33_views_640x480/test"
 
 
     ex_times = 1
-    num_scans = 10
+    num_scans = 16
 
     with open(os.path.join(class_list_path)) as file:
         class_list = [line.strip() for line in file]
