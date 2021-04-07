@@ -10,7 +10,7 @@ class Model:
     def __init__(self, inputs, npts, gt, view_state, eval_value_gt, is_training):
         self.is_training = is_training
         self.num_coarse = 1024
-        self.views = 33
+        self.views = 16 # 33 default
         with tf.variable_scope('pcn', reuse=tf.AUTO_REUSE):
             self.features = self.create_encoder(inputs, npts, view_state)
         

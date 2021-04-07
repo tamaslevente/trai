@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
     viewspace_path = 'viewspace_shapenet_33.txt'
 
-    data_type = 'train/'
+    data_type = 'valid/'
     ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid/'
     model_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid/' + data_type
     output_dir = '/home/cuda/Alex/trai/PC-NBV/Output_model_blender/' + data_type
