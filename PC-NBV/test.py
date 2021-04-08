@@ -52,6 +52,7 @@ def train(args):
     sess.run(tf.local_variables_initializer())
 
     f=open('Test_viewstate.txt', 'w+')
+    f2=open('Test_viewstate_model.txt', 'w+')
 
     
 
@@ -67,7 +68,7 @@ def train(args):
 
     for i in range(num_eval_steps):
 
-        if (i%16==0):
+        if (i%15==0):
             print("New Point Cloud")
 
         print('step ' + str(i))
@@ -113,22 +114,24 @@ def train(args):
         pozitie1_global=pozitie_greedy
         
         
-        f.write(str(pozitie_actuala)+" "+str(view_state)+" "+str(pozitie_predict)+" "+str(pozitie_greedy)+'\n')
-
+        
+        nr_ok=0;
         
 
         if(pozitie_predict==pozitie_greedy):
-            #print(colored('Testing...', 'grey', 'on_green'))
-            print(CGREEN+"Current Position:"+str(pozitie_actuala)+" "+str(view_state)+" "+" Predicted position:",str(pozitie_predict)," ","Greedy position:",str(pozitie_greedy)+" Corect"+CEND)
+            nr_ok=2
+            print(CGREEN+str(ids)+" Current Position:"+str(pozitie_actuala)+" "+str(view_state)+" "+" Predicted position:",str(pozitie_predict)," ","Greedy position:",str(pozitie_greedy)+" Corect"+CEND)
         elif(abs(pozitie_predict-pozitie_greedy)==1):
-            print(CYELLOW+"Current Position:"+str(pozitie_actuala)+" "+str(view_state)+" "+" Predicted position:",str(pozitie_predict)," ","Greedy position:",str(pozitie_greedy)+" Almost"+CEND)
+            nr_ok=1
+            print(CYELLOW+str(ids)+" Current Position:"+str(pozitie_actuala)+" "+str(view_state)+" "+" Predicted position:",str(pozitie_predict)," ","Greedy position:",str(pozitie_greedy)+" Almost"+CEND)
         else:
-            print(CRED+"Current Position:"+str(pozitie_actuala)+" "+str(view_state)+" "+" Predicted position:",str(pozitie_predict)," ","Greedy position:",str(pozitie_greedy)+" Wrong"+CEND)
+            nr_ok=0
+            print(CRED+str(ids)+" Current Position:"+str(pozitie_actuala)+" "+str(view_state)+" "+" Predicted position:",str(pozitie_predict)," ","Greedy position:",str(pozitie_greedy)+" Wrong"+CEND)
 
         #print("Current Position:"+str(pozitie_actuala)+" "+str(view_state)+" "+" Predicted position:",pozitie_predict," ","Greedy position:",pozitie_greedy)
         
-
-        
+        f.write(str(pozitie_actuala)+" "+str(pozitie_predict)+" "+str(pozitie_greedy)+" "+str(nr_ok)+'\n')
+        f2.write(str(ids)+'\n')
         
         test_total_time += time.time() - start
         test_spearmanr_batch_total = 0
@@ -157,7 +160,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--lmdb_test', default='/home/cuda/Alex/trai/PC-NBV/data/valid.lmdb')
     parser.add_argument('--model_type', default='pc-nbv')
-    parser.add_argument('--checkpoint', default='/home/cuda/Alex/trai/PC-NBV/log/New_test/model-65000')
+    parser.add_argument('--checkpoint', default='/home/cuda/Alex/trai/PC-NBV/log/New_test/model-90000')
     parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument('--num_input_points', type=int, default=512)
     parser.add_argument('--num_gt_points', type=int, default=1024)
