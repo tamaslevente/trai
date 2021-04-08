@@ -87,10 +87,14 @@ def train(args):
     train_start = time.time()
     init_step = sess.run(global_step)
 
+    print("All_good")
+
 
     for step in range(init_step + 1, args.max_step + 1):
         epoch = step * args.batch_size // num_train + 1
         ids, inputs, npts, gt, view_state, eval_value = next(train_gen)
+
+        print("All good 2")
 
 
         start = time.time()
@@ -155,9 +159,7 @@ def train(args):
     
 
 if __name__ == '__main__':
-    #ctx=mp.get_context('fork')
-
-    #mp.set_start_method('spawn',force=True)
+    
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--lmdb_train', default='/home/cuda/Alex/trai/PC-NBV/data/train.lmdb')
