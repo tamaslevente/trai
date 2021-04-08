@@ -94,7 +94,7 @@ def train(args):
         epoch = step * args.batch_size // num_train + 1
         ids, inputs, npts, gt, view_state, eval_value = next(train_gen)
 
-        print("All good 2")
+        #print("All good 2")
 
 
         start = time.time()

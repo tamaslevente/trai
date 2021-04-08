@@ -56,11 +56,18 @@ def train(args):
     
 
     pozitie1_global=-1
+
+    CRED = '\033[91m'
+    CEND = '\033[0m'
+
+    CGREEN  = '\33[32m'
+
+    CYELLOW = '\33[33m'
         
 
     for i in range(num_eval_steps):
 
-        if (i%10==0):
+        if (i%16==0):
             print("New Point Cloud")
 
         print('step ' + str(i))
@@ -73,13 +80,18 @@ def train(args):
 
         #print(eval_value)
         #print(test_eval_value_pre)
-        if (i==0):
-            for m in range(args.views):
+        # if (i==0):
+        #     for m in range(args.views):
+        #         if view_state[0,m]==1:
+        #             pozitie_actuala=m
+        # else:
+        #         pozitie_actuala=pozitie_greedy
+
+
+
+        for m in range(args.views):
                 if view_state[0,m]==1:
                     pozitie_actuala=m
-        else:
-                pozitie_actuala=pozitie_greedy
-
 
         maximum1=-500
         maximum2=-500
@@ -101,15 +113,19 @@ def train(args):
         pozitie1_global=pozitie_greedy
         
         
-        f.write(str(pozitie_actuala)+" "+str(pozitie_predict)+" "+str(pozitie_greedy)+'\n')
+        f.write(str(pozitie_actuala)+" "+str(view_state)+" "+str(pozitie_predict)+" "+str(pozitie_greedy)+'\n')
 
         
 
-       
+        if(pozitie_predict==pozitie_greedy):
+            #print(colored('Testing...', 'grey', 'on_green'))
+            print(CGREEN+"Current Position:"+str(pozitie_actuala)+" "+str(view_state)+" "+" Predicted position:",str(pozitie_predict)," ","Greedy position:",str(pozitie_greedy)+" Corect"+CEND)
+        elif(abs(pozitie_predict-pozitie_greedy)==1):
+            print(CYELLOW+"Current Position:"+str(pozitie_actuala)+" "+str(view_state)+" "+" Predicted position:",str(pozitie_predict)," ","Greedy position:",str(pozitie_greedy)+" Almost"+CEND)
+        else:
+            print(CRED+"Current Position:"+str(pozitie_actuala)+" "+str(view_state)+" "+" Predicted position:",str(pozitie_predict)," ","Greedy position:",str(pozitie_greedy)+" Wrong"+CEND)
 
-        
-
-        print("Current Position:"+str(pozitie_actuala)+" Predicted position:",pozitie_predict," ","Actual position:",pozitie_greedy)
+        #print("Current Position:"+str(pozitie_actuala)+" "+str(view_state)+" "+" Predicted position:",pozitie_predict," ","Greedy position:",pozitie_greedy)
         
 
         
@@ -139,13 +155,13 @@ def train(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--lmdb_test', default='/home/cuda/Alex/trai/PC-NBV/data/test.lmdb')
+    parser.add_argument('--lmdb_test', default='/home/cuda/Alex/trai/PC-NBV/data/valid.lmdb')
     parser.add_argument('--model_type', default='pc-nbv')
-    parser.add_argument('--checkpoint', default='/home/cuda/Alex/trai/PC-NBV/log/New_test/model-400000')
+    parser.add_argument('--checkpoint', default='/home/cuda/Alex/trai/PC-NBV/log/New_test/model-65000')
     parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument('--num_input_points', type=int, default=512)
     parser.add_argument('--num_gt_points', type=int, default=1024)
-    parser.add_argument('--views', type=int, default=33)
+    parser.add_argument('--views', type=int, default=16) # original 33
     parser.add_argument('--gpu', default='0')  #original default='2'
 
     args = parser.parse_args()

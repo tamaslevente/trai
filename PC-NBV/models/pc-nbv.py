@@ -27,7 +27,7 @@ class Model:
             feature_viewstate = point_unpool(view_state, npts)
 
             features = tf.concat([features, features_global, feature_viewstate], axis=2)
-            features = tf.reshape(features, (1, tf.shape(features)[1], 1, 561))
+            features = tf.reshape(features, (1, tf.shape(features)[1], 1, 544))  #(571 initial)
             features = ops.attention_unit(features, is_training=self.is_training)
             features = tf.squeeze(features, [2])
 
