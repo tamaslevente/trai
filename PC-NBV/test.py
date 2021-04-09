@@ -131,7 +131,14 @@ def train(args):
         #print("Current Position:"+str(pozitie_actuala)+" "+str(view_state)+" "+" Predicted position:",pozitie_predict," ","Greedy position:",pozitie_greedy)
         
         f.write(str(pozitie_actuala)+" "+str(pozitie_predict)+" "+str(pozitie_greedy)+" "+str(nr_ok)+'\n')
-        f2.write(str(ids)+'\n')
+
+        aux=str(ids)
+        better_id=aux.replace("['","")
+        better_id_2=better_id.replace("']","")
+
+        f2.write(str(better_id_2)+'\n')
+
+        
         
         test_total_time += time.time() - start
         test_spearmanr_batch_total = 0
@@ -160,7 +167,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--lmdb_test', default='/home/cuda/Alex/trai/PC-NBV/data/valid.lmdb')
     parser.add_argument('--model_type', default='pc-nbv')
-    parser.add_argument('--checkpoint', default='/home/cuda/Alex/trai/PC-NBV/log/New_test/model-90000')
+    parser.add_argument('--checkpoint', default='/home/cuda/Alex/trai/PC-NBV/log/New_test/model-330000')
     parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument('--num_input_points', type=int, default=512)
     parser.add_argument('--num_gt_points', type=int, default=1024)
