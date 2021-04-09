@@ -9,8 +9,6 @@ import sys
 import time
 import pdb
 import argparse
-import time
-
 
 
 
@@ -58,12 +56,29 @@ def setup_blender(width, height, focal_length, output_dir):
 
 if __name__ == '__main__':
 
-    viewspace_path = '/home/cuda/Alex/trai/PC-NBV/Vizualizaton_code/viewspace_shapenet_33.txt'
+    viewspace_path = '/home/alex-pop/Desktop/Doctorat/Program_blender/viewspace_shapenet_33.txt'
 
-    test_predicted_path ='/home/cuda/Alex/trai/PC-NBV/Test_viewstate.txt'
+    test_predicted_path ='/home/alex-pop/Desktop/Doctorat/Program_blender/Test_viewstate.txt'
 
     
-    output_dir = '/home/cuda/Alex/trai/PC-NBV/Vizualizaton_code'
+    output_dir = '/home/alex-pop/Desktop/Doctorat/Program_blender/'
+
+
+    data_type = 'valid'
+    class_list_path = '/home/alex-pop/Desktop/Doctorat/Backups/Trial_Test_Valid_mat/Train_Test/' + data_type + '/_class.txt'
+    ShapeNetv1_dir = '/home/alex-pop/Desktop/Doctorat/Backups/Trial_Test_Valid_mat/Train_Test/'
+    with open(os.path.join(class_list_path)) as file:
+        class_list = [line.strip() for line in file]
+
+    #print(class_list)
+
+
+    
+    # for class_id in self.class_list:
+    #     model_list = os.listdir(os.path.join(ShapeNetv1_dir, self.data_type, class_id))
+        #for model_id in model_list:
+
+
 
 
     viewspace = np.loadtxt(viewspace_path)
@@ -79,14 +94,35 @@ if __name__ == '__main__':
 
     np.savetxt(os.path.join(output_dir, 'intrinsics.txt'), intrinsics, '%f')
 
+    viewspace_start_filepath='/home/alex-pop/Desktop/Doctorat/Program_blender/Viewspace_start.txt'
+    nr_pozitie_filepath='/home/alex-pop/Desktop/Doctorat/Program_blender/nr_pozitie.txt'
+    tip_view_path='/home/alex-pop/Desktop/Doctorat/Program_blender/tip_view.txt'
+    model_view_path='/home/alex-pop/Desktop/Doctorat/Program_blender/Test_viewstate_model.txt'
+
+    viewsapace_start=np.loadtxt(viewspace_start_filepath)
+    nr_pozitie=np.loadtxt(nr_pozitie_filepath)
+    tip_view=np.loadtxt(tip_view_path)
+
+    with open(os.path.join(model_view_path)) as file:
+        model_id_list = [line.strip() for line in file]
+
+    print(model_id_list[0])
+
+
+
+
+    # viewspace_start=
+    # nr_pozitie=open('nr_pozitie.txt', 'w+')
+    # tip_view=open('nr_pozitie.txt', 'w+')
+
 
     exr_dir = os.path.join(output_dir, 'exr', "02654")
     pose_dir = os.path.join(output_dir, 'pose', "02654")
     os.makedirs(exr_dir, exist_ok=True)
     os.makedirs(pose_dir, exist_ok=True)   
 
-    # bpy.data.objects['Camera'].select=False
-    # bpy.data.objects['Camera'].select=True
+    bpy.data.objects['Camera'].select=False
+    bpy.data.objects['Camera'].select=True
     #bpy.context.object.scan_type='kinect'
     #bpy.context.object.save_scan=True
 
@@ -105,63 +141,66 @@ if __name__ == '__main__':
     # Render
     # for i in range(viewspace.shape[0]):
     
+    t_view=open('/home/alex-pop/Desktop/Doctorat/Program_blender/tip_view.txt', 'w+')
     
+    if(int(viewsapace_start)==0):
+        print('restart')
+        vs_start=open('Viewspace_start.txt', 'w+')
+        nr_poz=open('nr_pozitie.txt', 'w+')
+        vs_start.write("1")
+        vs_start.close()
+        nr_poz.write('0')
+        nr_poz.close()
+        t_view.write('0')
+        t_view.close()
+    else:
+        i=int(nr_pozitie)
 
-    # for i in range(10):    
-    #      trig_time=0
-    #      trig_time = time.time()
-         
-    #      value=True
-    #      ok=True
-
-    #      while(value & ok):
-    #         new_time=time.time()
-    #         #print("Triger time: "+str(trig_time))
-    #         #print("New time: "+str(new_time))
-    #         #print("Difference: "+str(new_time-trig_time))
-    #         if(new_time-trig_time>5):
-    #             print("Triger time: "+str(trig_time))
-    #             print("New time: "+str(new_time))
-    #             print("Difference: "+str(new_time-trig_time))
-    #             scene.frame_set(i)
-    #             pozitie_prezisa=int(test_viewstate[i][1])    
-    #             cam_pose = mathutils.Vector((viewspace[i][0], viewspace[i][1], viewspace[i][2])) 
-    #             center_pose = mathutils.Vector((0, 0, 0))
-    #             direct = center_pose - cam_pose
-    #             rot_quat = direct.to_track_quat('-Z', 'Y')
-    #             camera.rotation_euler = rot_quat.to_euler()
-    #             camera.location = cam_pose
-    #             ok=0
        
+
+
+
+
+
+
+        if(int(tip_view)==0):
+            pozitie_actuala=int(test_viewstate[i][0])    
+            cam_pose = mathutils.Vector((viewspace[pozitie_actuala][0], viewspace[pozitie_actuala][1], viewspace[pozitie_actuala][2])) 
+            center_pose = mathutils.Vector((0, 0, 0))
+            direct = center_pose - cam_pose
+            rot_quat = direct.to_track_quat('-Z', 'Y')
+            camera.rotation_euler = rot_quat.to_euler()
+            camera.location = cam_pose
+            t_view.write('1')
+            t_view.close()
+
+            print('Nr:'+str(i)+" Initial position nr:"+str(pozitie_actuala))
+        else:
+
+            nr_poz=open('nr_pozitie.txt', 'w+')
+
+            pozitie_prezisa=int(test_viewstate[i][1])    
+            cam_pose = mathutils.Vector((viewspace[pozitie_prezisa][0], viewspace[pozitie_prezisa][1], viewspace[pozitie_prezisa][2])) 
+            center_pose = mathutils.Vector((0, 0, 0))
+            direct = center_pose - cam_pose
+            rot_quat = direct.to_track_quat('-Z', 'Y')
+            camera.rotation_euler = rot_quat.to_euler()
+            camera.location = cam_pose
+            t_view.write('0')
+            t_view.close()
+            print('Nr:'+str(i)+" Predicted position nr:"+str(pozitie_prezisa))
+            i=i+1
+            nr_poz.write(str(i))
+            nr_poz.close()
+
+            
+
         
     
-
+    # i=0     
+    # scene.frame_set(i)
     
 
-    for i in range(10):    
-        scene.frame_set(i)
-        pozitie_actuala=int(test_viewstate[i][0])
-        print(pozitie_actuala)
-        cam_pose = mathutils.Vector((viewspace[pozitie_actuala][0], viewspace[pozitie_actuala][1], viewspace[pozitie_actuala][2])) 
-        center_pose = mathutils.Vector((0, 0, 0))
-        direct = center_pose - cam_pose
-        rot_quat = direct.to_track_quat('-Z', 'Y')
-        camera.rotation_euler = rot_quat.to_euler()
-        camera.location = cam_pose
-
-
-        time.sleep(1)
-        scene.frame_set(i)
-        pozitie_prezisa=int(test_viewstate[i][1])    
-        cam_pose = mathutils.Vector((viewspace[i][0], viewspace[i][1], viewspace[i][2])) 
-        center_pose = mathutils.Vector((0, 0, 0))
-        direct = center_pose - cam_pose
-        rot_quat = direct.to_track_quat('-Z', 'Y')
-        camera.rotation_euler = rot_quat.to_euler()
-        camera.location = cam_pose
-        time.sleep(1)                
-       
-        
         
 
     #     np.savetxt(os.path.join(pose_dir, '%d.txt' % i), pose_matrix, '%f') 
