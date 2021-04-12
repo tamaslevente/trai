@@ -173,7 +173,7 @@ def train(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--lmdb_test', default='/home/cuda/Alex/trai/PC-NBV/data/cub.lmdb')
+    parser.add_argument('--lmdb_test', default='/home/cuda/Alex/trai/PC-NBV/data/test.lmdb')
     parser.add_argument('--model_type', default='pc-nbv')
     parser.add_argument('--checkpoint', default='/home/cuda/Alex/trai/PC-NBV/log/New_test/model-400000')
     parser.add_argument('--batch_size', type=int, default=1)

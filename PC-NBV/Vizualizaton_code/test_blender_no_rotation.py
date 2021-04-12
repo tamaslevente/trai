@@ -14,6 +14,20 @@ import argparse
 
 def setup_blender(width, height, focal_length, output_dir):
     # camera
+
+    #bpy.ops.object.delete()
+    for m in bpy.data.meshes:
+        bpy.data.meshes.remove(m)
+    for m in bpy.data.materials:
+        m.user_clear()
+        bpy.data.materials.remove(m)
+
+    # camera_data = bpy.data.cameras.new(name='Camera')
+    # camera_object = bpy.data.objects.new('Camera', camera_data)
+    # bpy.context.scene.collection.objects.link(camera_object)
+
+
+
     camera = bpy.data.objects['Camera']
     camera.data.angle = np.arctan(width / 2 / focal_length) * 2
     # camera.data.clip_end = 1.2
@@ -64,7 +78,7 @@ if __name__ == '__main__':
     output_dir = '/home/alex-pop/Desktop/Doctorat/Program_blender/'
 
 
-    data_type = 'valid'
+    data_type = 'test'
     class_list_path = '/home/alex-pop/Desktop/Doctorat/Backups/Trial_Test_Valid_mat/Train_Test/' + data_type + '/_class.txt'
     ShapeNetv1_dir = '/home/alex-pop/Desktop/Doctorat/Backups/Trial_Test_Valid_mat/Train_Test/'
     with open(os.path.join(class_list_path)) as file:
@@ -74,11 +88,7 @@ if __name__ == '__main__':
 
 
     
-    # for class_id in self.class_list:
-    #     model_list = os.listdir(os.path.join(ShapeNetv1_dir, self.data_type, class_id))
-        #for model_id in model_list:
-
-
+    
 
 
     viewspace = np.loadtxt(viewspace_path)
@@ -103,10 +113,16 @@ if __name__ == '__main__':
     nr_pozitie=np.loadtxt(nr_pozitie_filepath)
     tip_view=np.loadtxt(tip_view_path)
 
+
+    
+
     with open(os.path.join(model_view_path)) as file:
         model_id_list = [line.strip() for line in file]
 
-    print(model_id_list[0])
+    
+    
+
+    
 
 
 
@@ -155,9 +171,24 @@ if __name__ == '__main__':
         t_view.close()
     else:
         i=int(nr_pozitie)
+        print("Nr_pozitie:"+str(i))
 
+        working_model=model_id_list[i]
+        print(model_id_list[i])
        
+        for class_id in class_list:
+            model_list = os.listdir(os.path.join(ShapeNetv1_dir, data_type, class_id))
+            if(working_model in model_list):
+ 
 
+                model_path = os.path.join(ShapeNetv1_dir, data_type, class_id, working_model, 'model.obj')
+                bpy.ops.import_scene.obj(filepath=model_path)
+
+                bpy.ops.transform.rotate(value=-np.pi / 2, axis=(1, 0, 0))
+
+                break
+
+            
 
 
 
@@ -192,6 +223,9 @@ if __name__ == '__main__':
             i=i+1
             nr_poz.write(str(i))
             nr_poz.close()
+
+        # Clean up
+        
 
             
 
