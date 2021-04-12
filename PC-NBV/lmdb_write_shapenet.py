@@ -25,7 +25,7 @@ class pcd_df(DataFlow):
             return 4000
         elif self.data_type == 'test_novel':
             return 4000
-        elif self.data_type == 'training_test':
+        elif self.data_type == 'cub':
             return 4000
 
     def get_data(self):
@@ -52,7 +52,7 @@ if __name__ == '__main__':
     # output_path = "data/" + data_type + ".lmdb"
     # NBV_dir = "/home/zengrui/IROS/pcn/NBV_data/shapenet_33_views"
 
-    data_type = 'valid'
+    data_type = 'cub'
     class_list_path = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid/' + data_type + '/_class.txt'
     gt_dir = "/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid/" + data_type
     output_path = "data/" + data_type + ".lmdb"

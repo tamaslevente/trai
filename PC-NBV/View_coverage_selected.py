@@ -17,10 +17,10 @@ if __name__ == '__main__':
 
 
     # path
-    data_type = 'train/'
-    ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/'    
+    data_type = 'test/'
+    ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid/'    
     pc_dir = "/home/cuda/Alex/trai/PC-NBV/Output_model_blender/" + data_type + "/pcd"
-    model_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/' + data_type
+    model_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid/' + data_type
 
     
 

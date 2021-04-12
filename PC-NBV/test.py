@@ -64,12 +64,14 @@ def train(args):
     CGREEN  = '\33[32m'
 
     CYELLOW = '\33[33m'
+
+    threshold_coverage_difference=0.05
         
 
     for i in range(num_eval_steps):
 
-        if (i%15==0):
-            print("New Point Cloud")
+        # if (i%15==0):
+        #     print("New Point Cloud")
 
         print('step ' + str(i))
         
@@ -94,41 +96,47 @@ def train(args):
                 if view_state[0,m]==1:
                     pozitie_actuala=m
 
-        maximum1=-500
-        maximum2=-500
+        maximum_predict=-500
+        maximum_greedy=-500
 
         pozitie_greedy=-1
         pozitie_predict=-1
         
         
         for k in range(args.views):
-            if eval_value[0,k,0]>maximum1:
+            if eval_value[0,k,0]>maximum_greedy:
                 pozitie_greedy=k
-                maximum1=eval_value[0,k,0]
+                maximum_greedy=eval_value[0,k,0]
 
         for k in range(args.views): 
-            if test_eval_value_pre[0,k,0]>maximum2:
+            if test_eval_value_pre[0,k,0]>maximum_predict:
                 pozitie_predict=k
-                maximum2=test_eval_value_pre[0,k,0]
+                maximum_predict=test_eval_value_pre[0,k,0]
 
         pozitie1_global=pozitie_greedy
         
         
         
         nr_ok=0;
+
+        # if(abs(maximum_predict-maximum_greedy)<threshold_coverage_difference):
+        #     print(CGREEN+str(ids)+" Current Position:"+str(pozitie_actuala)+" "+str(view_state)+" "+" Predicted position:",str(pozitie_predict)," ","Greedy position:",str(pozitie_greedy)+" Corect"+CEND)
+        #     print("Predicted coverage:"+str(maximum_predict)+" "+"Greedy coverage:"+str(maximum_greedy))
+        # else:
+        #     print(CRED+str(ids)+" Current Position:"+str(pozitie_actuala)+" "+str(view_state)+" "+" Predicted position:",str(pozitie_predict)," ","Greedy position:",str(pozitie_greedy)+" Wrong"+CEND)
+        #     print("Predicted coverage:"+str(maximum_predict)+" "+"Greedy coverage:"+str(maximum_greedy))
         
 
         if(pozitie_predict==pozitie_greedy):
-            nr_ok=2
-            print(CGREEN+str(ids)+" Current Position:"+str(pozitie_actuala)+" "+str(view_state)+" "+" Predicted position:",str(pozitie_predict)," ","Greedy position:",str(pozitie_greedy)+" Corect"+CEND)
-        elif(abs(pozitie_predict-pozitie_greedy)==1):
             nr_ok=1
-            print(CYELLOW+str(ids)+" Current Position:"+str(pozitie_actuala)+" "+str(view_state)+" "+" Predicted position:",str(pozitie_predict)," ","Greedy position:",str(pozitie_greedy)+" Almost"+CEND)
+            print(CGREEN+str(ids)+" Current Position:"+str(pozitie_actuala)+" "+str(view_state)+" "+" Predicted position:",str(pozitie_predict)," ","Greedy position:",str(pozitie_greedy)+" Corect"+CEND)
+            print("Predicted coverage:"+str(maximum_predict)+" "+"Greedy coverage:"+str(maximum_greedy))
         else:
             nr_ok=0
             print(CRED+str(ids)+" Current Position:"+str(pozitie_actuala)+" "+str(view_state)+" "+" Predicted position:",str(pozitie_predict)," ","Greedy position:",str(pozitie_greedy)+" Wrong"+CEND)
+            print("Predicted coverage:"+str(maximum_predict)+" "+"Greedy coverage:"+str(maximum_greedy))
 
-        #print("Current Position:"+str(pozitie_actuala)+" "+str(view_state)+" "+" Predicted position:",pozitie_predict," ","Greedy position:",pozitie_greedy)
+        # print("Current Position:"+str(pozitie_actuala)+" "+str(view_state)+" "+" Predicted position:",pozitie_predict," ","Greedy position:",pozitie_greedy)
         
         f.write(str(pozitie_actuala)+" "+str(pozitie_predict)+" "+str(pozitie_greedy)+" "+str(nr_ok)+'\n')
 
@@ -165,9 +173,9 @@ def train(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--lmdb_test', default='/home/cuda/Alex/trai/PC-NBV/data/valid.lmdb')
+    parser.add_argument('--lmdb_test', default='/home/cuda/Alex/trai/PC-NBV/data/cub.lmdb')
     parser.add_argument('--model_type', default='pc-nbv')
-    parser.add_argument('--checkpoint', default='/home/cuda/Alex/trai/PC-NBV/log/New_test/model-330000')
+    parser.add_argument('--checkpoint', default='/home/cuda/Alex/trai/PC-NBV/log/New_test/model-400000')
     parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument('--num_input_points', type=int, default=512)
     parser.add_argument('--num_gt_points', type=int, default=1024)
