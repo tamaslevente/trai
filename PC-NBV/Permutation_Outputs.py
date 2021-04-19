@@ -64,7 +64,7 @@ if __name__ == '__main__':
 
                 
 
-                np.savetxt(os.path.join(save_dir_final, model,str(i),"0_target_value_permuted.npy"),View_scores_permuted)    
+                np.save(os.path.join(save_dir_final, model,str(i),"0_target_value_permuted.npy"),View_scores_permuted)    
               
          
                 
