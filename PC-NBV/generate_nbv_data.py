@@ -86,8 +86,8 @@ if __name__ == '__main__':
                         selected_init_view.append(cur_view)
                         break   
 
-                #view_state[cur_view] = 1
-                view_state[0]=1
+                view_state[cur_view] = 1
+                #view_state[0]=1
 
                 acc_pc_points = part_points_list[cur_view]  
 

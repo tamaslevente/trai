@@ -41,7 +41,23 @@ class pcd_df(DataFlow):
                     for scan_index in range(self.num_scans):
                         view_state = np.load(os.path.join(self.NBV_dir, str(model_id), str(ex_index), str(scan_index) + "_viewstate.npy")) # shape (33) , 33 is view number
                         accumulate_pointcloud = np.load(os.path.join(self.NBV_dir, str(model_id), str(ex_index), str(scan_index) + "_acc_pc.npy")) # shape (point number, 3)
-                        target_value = np.load(os.path.join(self.NBV_dir, str(model_id), str(ex_index), str(scan_index) + "_target_value.npy")) # shape (33, 1), 33 is view number
+                        #target_value = np.load(os.path.join(self.NBV_dir, str(model_id), str(ex_index), str(scan_index) + "_target_value.npy")) # shape (33, 1), 33 is view number
+                        
+                        #############################
+                            #Just for Test
+
+
+                        
+                        target_value=np.load(os.path.join("/home/cuda/Alex/trai/PC-NBV/NBV_data/shapenet_33_views_640x480/test2_permuted/", str(model_id), str(ex_index), str(scan_index) + "_target_value_permuted.npy"))
+
+
+                        ######3
+                        #    
+
+
+                        
+                        
+                       
                         yield model_id, accumulate_pointcloud, gt_pc, view_state, target_value
 
 if __name__ == '__main__':
@@ -57,6 +73,10 @@ if __name__ == '__main__':
     gt_dir = "/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid/" + data_type
     output_path = "data/" + data_type + ".lmdb"
     NBV_dir = "/home/cuda/Alex/trai/PC-NBV/NBV_data/shapenet_33_views_640x480/"+data_type
+
+    
+
+
     #NBV_dir = "/home/cuda/Alex/trai/PC-NBV/NBV_data_no_target/shapenet_33_views_640x480/test"
 
 
