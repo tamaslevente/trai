@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     nr_elemente=0
 
-    
+    j=0
 
 
 
@@ -75,7 +75,7 @@ if __name__ == '__main__':
             
             coverage_model=0
             
-            for i in range(10): 
+            for i in range(16): 
             
                 
                 cur_view=int(test_viewstate[(nr_elemente)*10+i][0])
@@ -129,7 +129,8 @@ if __name__ == '__main__':
 
                     coverage_model=coverage_model+cur_cov 
                     
-               
+                j=j+1
+                print(str(j)+'\n')
                 print("Pozitie actuala:"+str(cur_view)+" coverage:" + str(coverage_model) + " in scan round " + str(i)) 
 
                 f.write("Pozitie actuala:"+str(cur_view)+" coverage:" + str(coverage_model) + " in scan round " + str(i) +'\n')

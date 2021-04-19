@@ -52,7 +52,7 @@ if __name__ == '__main__':
     # output_path = "data/" + data_type + ".lmdb"
     # NBV_dir = "/home/zengrui/IROS/pcn/NBV_data/shapenet_33_views"
 
-    data_type = 'cub'
+    data_type = 'test'
     class_list_path = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid/' + data_type + '/_class.txt'
     gt_dir = "/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid/" + data_type
     output_path = "data/" + data_type + ".lmdb"

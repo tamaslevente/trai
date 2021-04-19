@@ -138,13 +138,18 @@ def train(args):
 
         # print("Current Position:"+str(pozitie_actuala)+" "+str(view_state)+" "+" Predicted position:",pozitie_predict," ","Greedy position:",pozitie_greedy)
         
-        f.write(str(pozitie_actuala)+" "+str(pozitie_predict)+" "+str(pozitie_greedy)+" "+str(nr_ok)+'\n')
+        predict_coverage_real=eval_value[0,pozitie_predict,0]
+        
+        difference = maximum_greedy-predict_coverage_real
+        f.write(str(pozitie_actuala)+" "+str(pozitie_predict)+" "+str(pozitie_greedy)+" "+str(predict_coverage_real)+" "+str(maximum_greedy)+" "+str(difference)+'\n')
 
         aux=str(ids)
         better_id=aux.replace("['","")
         better_id_2=better_id.replace("']","")
 
         f2.write(str(better_id_2)+'\n')
+
+        
 
         
         

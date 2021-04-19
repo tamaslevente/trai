@@ -17,7 +17,7 @@ if __name__ == '__main__':
     view_num = 16
 
     # path
-    data_type = 'cub/'
+    data_type = 'test/'
     ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid/'    
     pc_dir = "/home/cuda/Alex/trai/PC-NBV/Output_model_blender/" + data_type + "/pcd"
     save_dir = "/home/cuda/Alex/trai/PC-NBV/NBV_data/shapenet_33_views_640x480/"+ data_type
@@ -86,7 +86,8 @@ if __name__ == '__main__':
                         selected_init_view.append(cur_view)
                         break   
 
-                view_state[cur_view] = 1
+                #view_state[cur_view] = 1
+                view_state[0]=1
 
                 acc_pc_points = part_points_list[cur_view]  
 
