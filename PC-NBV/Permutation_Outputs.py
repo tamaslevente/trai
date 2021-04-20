@@ -24,7 +24,7 @@ if __name__ == '__main__':
     save_dir = "/home/cuda/Alex/trai/PC-NBV/NBV_data/shapenet_33_views_640x480/"+ data_type
     
 
-    save_type='test2_permuted/'
+    save_type='test_permuted/'
 
     save_dir_final= NBV_file+save_type
 
@@ -57,14 +57,18 @@ if __name__ == '__main__':
                 for j in range(view_num):
                     if(Viewstate[j]==1):
                         pos=j
-                print(pos)
+                #print(pos)
+
+                View_state_init_permuted = np.zeros(view_num, dtype=np.int)
+                View_state_init_permuted[0]=1
 
                 View_scores = np.load(score_path, mmap_mode='r')
                 View_scores_permuted = (np.roll(View_scores, -pos))
 
                 
 
-                np.save(os.path.join(save_dir_final, model,str(i),"0_target_value_permuted.npy"),View_scores_permuted)    
+                np.save(os.path.join(save_dir_final, model,str(i),"0_target_value_permuted.npy"),View_scores_permuted)  
+                np.save(os.path.join(save_dir_final, model,str(i),"0_viewstate_permuted.npy"),View_state_init_permuted)    
               
          
                 
