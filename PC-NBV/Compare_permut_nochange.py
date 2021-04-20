@@ -1,13 +1,9 @@
 import os
 import numpy as np
-import tensorflow as tf
 import scipy.io as sio
-from open3d import *
 import random
-from tf_ops.nn_distance import tf_nndistance 
-import time
-import pdb
 from termcolor import colored
+import csv
 
 if __name__ == '__main__':
 
@@ -42,6 +38,32 @@ if __name__ == '__main__':
     data_permuted_path='/home/cuda/Alex/trai/PC-NBV/Archive/Archive_tests/Permuted_vs_nochange_122/Test_viewstate_permuted.txt'
     data_permuted=np.loadtxt(data_permuted_path)
 
+    
+    coverage_difference=np.zeros((view_num*nr_of_models, 1))
+    coverage_difference_nochange=np.zeros((view_num*nr_of_models, 1))
+    coverage_difference_permuted=np.zeros((view_num*nr_of_models, 1))
+
+    coverage_nochange=np.zeros((view_num*nr_of_models, 1))
+    coverage_permuted=np.zeros((view_num*nr_of_models, 1))
+
+    csv_file = open('All_data.csv','a+')
+    csv_writer = csv.writer(csv_file)
+
+    # csv_file2 = open('coverage_difference_nochange.csv','a+')
+    # csv_writer2 = csv.writer(csv_file2)
+
+    # csv_file3 = open('coverage_difference_permut.csv','a+')
+    # csv_writer3 = csv.writer(csv_file3)
+
+    # csv_file4 = open('coverage_nochange.csv','a+')
+    # csv_writer4 = csv.writer(csv_file4)
+
+    # csv_file5 = open('coverage_permuted.csv','a+')
+    # csv_writer5 = csv.writer(csv_file5)
+
+    
+
+
     for i in range(view_num*nr_of_models):
         if(model_id_list_nochange[i]==model_id_list_permuted[i]):
             
@@ -57,7 +79,10 @@ if __name__ == '__main__':
             coverage_predicted_nochange=data_nochange[i][3]
             coverage_predicted_permuted=data_permuted[i][3]
             difference_predicted=coverage_predicted_nochange-coverage_predicted_permuted
+
             
+            coverage_nochange[i]=coverage_predicted_nochange
+            coverage_permuted[i]=coverage_predicted_permuted
 
             greedy_nochange=int(data_nochange[i][2])
             greedy_nochange_permuted = ((greedy_nochange - initial_pos_nochange) + 16 ) %16
@@ -72,6 +97,9 @@ if __name__ == '__main__':
             coverage_difference_final_nochange=coverage_greedy_nochange-coverage_predicted_nochange
             coverage_difference_final_permuted=coverage_greedy_permuted-coverage_predicted_permuted
 
+            coverage_difference[i]=difference_predicted
+            coverage_difference_nochange[i]=coverage_difference_final_nochange
+            coverage_difference_permuted[i]=coverage_difference_final_permuted
             
             print(i)
             print("Initial position:"+ str(initial_pos_nochange))
@@ -88,4 +116,19 @@ if __name__ == '__main__':
             print("Coverage nochange:"+str(coverage_predicted_nochange)+" Coverage_permuted:"+str(coverage_predicted_permuted)+ " Coverage difference:"+str(difference_predicted))
 
             print("cov_dif(greedy,nochange): "+str(coverage_difference_final_nochange) + " cov_dif(greedy,permuted): "+str(coverage_difference_final_permuted))
-            
+
+            csv_writer.writerow([difference_predicted,coverage_difference_final_nochange,coverage_difference_final_permuted,coverage_predicted_nochange,coverage_predicted_permuted,])
+
+            # csv_writer2.writerow(coverage_difference_nochange[i])
+
+            # csv_writer3.writerow(coverage_difference_permuted[i])
+
+            # csv_writer4.writerow(coverage_nochange[i])
+
+            # csv_writer5.writerow(coverage_permuted[i])
+
+    csv_file.close() 
+    # csv_file2.close()
+    # csv_file3.close()  
+    # csv_file4.close() 
+    # csv_file5.close() 
