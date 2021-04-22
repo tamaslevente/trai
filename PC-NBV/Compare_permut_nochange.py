@@ -49,17 +49,7 @@ if __name__ == '__main__':
     csv_file = open('All_data.csv','a+')
     csv_writer = csv.writer(csv_file)
 
-    # csv_file2 = open('coverage_difference_nochange.csv','a+')
-    # csv_writer2 = csv.writer(csv_file2)
-
-    # csv_file3 = open('coverage_difference_permut.csv','a+')
-    # csv_writer3 = csv.writer(csv_file3)
-
-    # csv_file4 = open('coverage_nochange.csv','a+')
-    # csv_writer4 = csv.writer(csv_file4)
-
-    # csv_file5 = open('coverage_permuted.csv','a+')
-    # csv_writer5 = csv.writer(csv_file5)
+   
 
     
 
@@ -117,18 +107,9 @@ if __name__ == '__main__':
 
             print("cov_dif(greedy,nochange): "+str(coverage_difference_final_nochange) + " cov_dif(greedy,permuted): "+str(coverage_difference_final_permuted))
 
-            csv_writer.writerow([difference_predicted,coverage_difference_final_nochange,coverage_difference_final_permuted,coverage_predicted_nochange,coverage_predicted_permuted,])
+            csv_writer.writerow([difference_predicted,coverage_difference_final_nochange,coverage_difference_final_permuted,coverage_predicted_nochange,coverage_predicted_permuted,coverage_greedy_nochange,])
 
-            # csv_writer2.writerow(coverage_difference_nochange[i])
-
-            # csv_writer3.writerow(coverage_difference_permuted[i])
-
-            # csv_writer4.writerow(coverage_nochange[i])
-
-            # csv_writer5.writerow(coverage_permuted[i])
+            
 
     csv_file.close() 
-    # csv_file2.close()
-    # csv_file3.close()  
-    # csv_file4.close() 
-    # csv_file5.close() 
+     
