@@ -11,7 +11,7 @@ if __name__ == '__main__':
     
     # view num
     view_num = 16
-    nr_of_models =122
+    nr_of_models =400
 
     CRED = '\033[91m'
     CEND = '\033[0m'
@@ -24,18 +24,18 @@ if __name__ == '__main__':
     
 
 
-    models_nochange_path ='/home/cuda/Alex/trai/PC-NBV/Archive/Archive_tests/Permuted_vs_nochange_122/Test_viewstate_model_nochange.txt'
+    models_nochange_path ='/home/cuda/Alex/trai/PC-NBV/Archive/Archive_tests/Permuted_vs_nochange_400/Test_viewstate_model_nochange.txt'
     with open(os.path.join(models_nochange_path)) as file:
         model_id_list_nochange = [line.strip() for line in file]
 
-    models_permuted_path ='/home/cuda/Alex/trai/PC-NBV/Archive/Archive_tests/Permuted_vs_nochange_122/Test_viewstate_model_permuted.txt'
+    models_permuted_path ='/home/cuda/Alex/trai/PC-NBV/Archive/Archive_tests/Permuted_vs_nochange_400/Test_viewstate_model_permut.txt'
     with open(os.path.join(models_permuted_path)) as file:
         model_id_list_permuted = [line.strip() for line in file]
 
-    data_nochange_path='/home/cuda/Alex/trai/PC-NBV/Archive/Archive_tests/Permuted_vs_nochange_122/Test_viewstate_nochange.txt'
+    data_nochange_path='/home/cuda/Alex/trai/PC-NBV/Archive/Archive_tests/Permuted_vs_nochange_400/Test_viewstate_nochange.txt'
     data_nochange=np.loadtxt(data_nochange_path)
     
-    data_permuted_path='/home/cuda/Alex/trai/PC-NBV/Archive/Archive_tests/Permuted_vs_nochange_122/Test_viewstate_permuted.txt'
+    data_permuted_path='/home/cuda/Alex/trai/PC-NBV/Archive/Archive_tests/Permuted_vs_nochange_400/Test_viewstate_permut.txt'
     data_permuted=np.loadtxt(data_permuted_path)
 
     
