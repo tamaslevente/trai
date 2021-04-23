@@ -94,15 +94,10 @@ if __name__ == '__main__':
 
     viewspace_path = '/home/alex-pop/Desktop/Doctorat/Blender_visualization/viewspace_shapenet_33.txt'
 
-    test_viewstate_nochange_path ='/home/alex-pop/Desktop/Doctorat/Blender_visualization/FIles/Permuted_vs_nochange/Test_viewstate_nochange.txt'
-    test_viewstate_permut_path ='/home/alex-pop/Desktop/Doctorat/Blender_visualization/FIles/Permuted_vs_nochange/Test_viewstate_permuted.txt'
+    test_predicted_path ='/home/alex-pop/Desktop/Doctorat/Blender_visualization/Test_viewstate.txt'
 
     
     output_dir = '/home/alex-pop/Desktop/Doctorat/Blender_visualization'
-
-    nr_views=16
-
-    
 
 
     data_type = 'test'
@@ -114,11 +109,12 @@ if __name__ == '__main__':
     #print(class_list)
 
 
+    
+    nr_views=15
+
 
     viewspace = np.loadtxt(viewspace_path)
-    
-    test_viewstate_nochange=np.loadtxt(test_viewstate_nochange_path)
-    test_viewstate_permut=np.loadtxt(test_viewstate_permut_path)
+    test_viewstate=np.loadtxt(test_predicted_path)
 
     width = 640
     height = 480
@@ -133,35 +129,68 @@ if __name__ == '__main__':
     viewspace_start_filepath='/home/alex-pop/Desktop/Doctorat/Blender_visualization/Viewspace_start.txt'
     nr_pozitie_filepath='/home/alex-pop/Desktop/Doctorat/Blender_visualization/nr_pozitie.txt'
     tip_view_path='/home/alex-pop/Desktop/Doctorat/Blender_visualization/tip_view.txt'
-    model_view_path='/home/alex-pop/Desktop/Doctorat/Blender_visualization/FIles/Permuted_vs_nochange/Test_viewstate_model_permuted.txt'
+    model_view_path='/home/alex-pop/Desktop/Doctorat/Blender_visualization/Test_viewstate_model.txt'
 
     viewsapace_start=np.loadtxt(viewspace_start_filepath)
     nr_pozitie=np.loadtxt(nr_pozitie_filepath)
+    #tip_view=np.loadtxt(tip_view_path)
+
+
+    
 
     with open(os.path.join(model_view_path)) as file:
         model_id_list = [line.strip() for line in file]
 
     past_model='no_model'
     
+
+    
+
+
+
+
+    # viewspace_start=
+    # nr_pozitie=open('nr_pozitie.txt', 'w+')
+    # tip_view=open('nr_pozitie.txt', 'w+')
+
+
     
 
     bpy.data.objects['Camera'].select=False
     bpy.data.objects['Camera'].select=True
 
-    problem_views_path="/home/alex-pop/Desktop/Doctorat/Blender_visualization/FIles/Permuted_vs_nochange/Problem_views.txt"
-    problem_views=np.loadtxt(problem_views_path)
+    #bpy.context.object.scan_type='kinect'
+    #bpy.context.object.save_scan=True
 
-    length_problem_views=int(np.size(problem_views))
+    # Redirect output to log file
+    
+
+    # Rotate model by 90 degrees around x-axis (z-up => y-up) to match ShapeNet's coordinates
+    #bpy.ops.transform.rotate(value=-np.pi / 2, axis=(1, 0, 0))  # ->original code
+
+
+
+    #bpy.ops.transform.rotate(value=-np.pi / 2, orient_axis=(1, 0, 0)) 
+    #bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
+    #bpy.ops.transform.rotate(value=-np.pi / 2, orient_axis='Z')
+
+    # Render
+    # for i in range(viewspace.shape[0]):
+    
+    t_view=open('/home/alex-pop/Desktop/Doctorat/Blender_visualization/tip_view.txt', 'w+')
     
     
     if(int(viewsapace_start)==0):
         print('restart')
         vs_start=open('/home/alex-pop/Desktop/Doctorat/Blender_visualization/Viewspace_start.txt', 'w+')
+        nr_poz=open('/home/alex-pop/Desktop/Doctorat/Blender_visualization/nr_pozitie.txt', 'w+')
         vs_start.write("1")
         vs_start.close()
-        nr_poz=open('/home/alex-pop/Desktop/Doctorat/Blender_visualization/nr_pozitie.txt', 'w+')
         nr_poz.write('0')
         nr_poz.close()
+        t_view.write('0')
+        t_view.close()
+
 
         for m in bpy.data.meshes:
             bpy.data.meshes.remove(m)
@@ -169,80 +198,38 @@ if __name__ == '__main__':
             m.user_clear()
             bpy.data.materials.remove(m)
 
-        j=0
+        i=0
 
 
 
     else:
-        j=int(nr_pozitie)
+        i=int(nr_pozitie)
+        i=i+480
+        print("Nr_pozitie:"+str(i))
 
-        if(j<length_problem_views):
-            if(j//3==0):
-                operation_type="Differences_permut_bad"  
-                print(operation_type) 
-            if(j//3==1):
-                operation_type="Differences_nochange_bad" 
-                print(operation_type) 
-            if(j//3==2):
-                operation_type="Coverage_nochange_bad" 
-                print(operation_type) 
-            if(j//3==3):
-                operation_type="Coverage_permut_bad" 
-                print(operation_type)  
+        pozitie_actuala=int(test_viewstate[i][0])
+        pozitie_prezisa=int(test_viewstate[i][1]) 
+        pozitie_greedy=int(test_viewstate[i][2])    
 
-
-            
-
-            problem_views2=problem_views[:,0].astype(int)
-
-            i=problem_views2[j]
-
+        if(pozitie_greedy==pozitie_prezisa):
             working_model=model_id_list[i]
-            
-            print("Nr_pozitie:"+str(i))
 
-            pozitie_actuala=int(test_viewstate_nochange[i][0])
-            pozitie_prezisa_nochange=int(test_viewstate_nochange[i][1]) 
-            pozitie_greedy=int(test_viewstate_nochange[i][2]) 
-            pozitie_prezisa_permut_brut=int(test_viewstate_nochange[i][2]) 
-
-            pozitie_presiza_permut_back=(pozitie_prezisa_permut_brut +pozitie_actuala) % nr_views
-
-            print(working_model+" "
-                  "Pozitie actuala:"+str(pozitie_actuala)+" "
-                  "Pozitie prezisa nochange:"+str(pozitie_prezisa_nochange)+" "
-                  "Pozitie prezisa permut brut:"+str(pozitie_prezisa_permut_brut)+" "
-                  "Pozitie prezisa permut back:"+str(pozitie_presiza_permut_back)+" "
-                  "Pozitie prezisa Groundtruth:"+str(pozitie_greedy))                       
-
-
-            output_dir_2=os.path.join(output_dir, operation_type)
-            exr_dir = os.path.join(output_dir_2, 'exr',working_model, str(i%nr_views))
-            pose_dir = os.path.join(output_dir_2, 'pose',working_model, str(i%nr_views))
+            exr_dir = os.path.join(output_dir, 'exr',working_model, str(i%nr_views))
+            pose_dir = os.path.join(output_dir, 'pose',working_model, str(i%nr_views))
             os.makedirs(exr_dir, exist_ok=True)
             os.makedirs(pose_dir, exist_ok=True)  
 
-            pcd_dir = os.path.join(output_dir_2, 'pcd',working_model, str(i%nr_views))
+            #depth_dir = os.path.join(output_dir, 'depth', str(i))
+            pcd_dir = os.path.join(output_dir, 'pcd',working_model, str(i%nr_views))
 
-            
+            #os.makedirs(depth_dir, exist_ok=True)
             os.makedirs(pcd_dir, exist_ok=True)
 
-            
-
-
-            nr_poz=open('/home/alex-pop/Desktop/Doctorat/Blender_visualization/nr_pozitie.txt', 'w+')
-                
-            j=j+1
-            print("New position:"+str(j))
-            nr_poz.write(str(j))
-            nr_poz.close()
-
+            # if (i%15==0) and (past_model!='no model'):
+            #     past_model='no model'
 
             
-           
-
-            
-    #       
+            print(model_id_list[i])
 
             if(past_model!=working_model):
                 for m in bpy.data.meshes:
@@ -264,7 +251,7 @@ if __name__ == '__main__':
 
                         break
 
-            pozitie_actuala=int(test_viewstate_nochange[i][0])    
+            pozitie_actuala=int(test_viewstate[i][0])    
             cam_pose = mathutils.Vector((viewspace[pozitie_actuala][0], viewspace[pozitie_actuala][1], viewspace[pozitie_actuala][2])) 
             center_pose = mathutils.Vector((0, 0, 0))
             direct = center_pose - cam_pose
@@ -272,13 +259,13 @@ if __name__ == '__main__':
             camera.rotation_euler = rot_quat.to_euler()
             camera.location = cam_pose
             pose_matrix = camera.matrix_world
-            output.file_slots[0].path = os.path.join(exr_dir,"actual"+".exr")
+            output.file_slots[0].path = os.path.join(exr_dir, str(i)+"_"+"actual"+".exr")
             bpy.ops.render.render(write_still=True)
-            np.savetxt(os.path.join(pose_dir, "actual"+".txt"), pose_matrix, '%f') 
-            pose_path=os.path.join(pose_dir, "actual"+".txt")
+            np.savetxt(os.path.join(pose_dir, str(i)+"_"+"actual"+".txt"), pose_matrix, '%f') 
+            pose_path=os.path.join(pose_dir, str(i)+"_"+"actual"+".txt")
 
-            exr_path_1 = os.path.join(exr_dir, "actual"+".exr")
-            exr_path_2 = os.path.join(exr_dir, "actual"+".exr0001"+".exr")
+            exr_path_1 = os.path.join(exr_dir, str(i)+"_"+"actual"+".exr")
+            exr_path_2 = os.path.join(exr_dir, str(i)+"_"+"actual"+".exr0001"+".exr")
 
                 
                 
@@ -292,14 +279,14 @@ if __name__ == '__main__':
                 points1 = np.array([(1.0,1.0,1.0)])
             pcd1 = open3d.geometry.PointCloud()
             pcd1.points = open3d.utility.Vector3dVector(points1)
-            open3d.io.write_point_cloud(os.path.join(pcd_dir,"1_actual"+".pcd"), pcd1)
+            open3d.io.write_point_cloud(os.path.join(pcd_dir,"actual"+".pcd"), pcd1)
         
             
 
             
 
 
-            pozitie_prezisa=int(test_viewstate_nochange[i][1])    
+            pozitie_prezisa=int(test_viewstate[i][1])    
             cam_pose = mathutils.Vector((viewspace[pozitie_prezisa][0], viewspace[pozitie_prezisa][1], viewspace[pozitie_prezisa][2])) 
             center_pose = mathutils.Vector((0, 0, 0))
             direct = center_pose - cam_pose
@@ -307,19 +294,19 @@ if __name__ == '__main__':
             camera.rotation_euler = rot_quat.to_euler()
             camera.location = cam_pose
             pose_matrix = camera.matrix_world
-            output.file_slots[0].path = os.path.join(exr_dir, "predicted"+".exr")
+            output.file_slots[0].path = os.path.join(exr_dir, str(i)+"_"+"predicted"+".exr")
             bpy.ops.render.render(write_still=True)
-            np.savetxt(os.path.join(pose_dir, "predicted"+".txt"), pose_matrix, '%f') 
-            pose_path=os.path.join(pose_dir, "predicted"+".txt")
+            np.savetxt(os.path.join(pose_dir, str(i)+"_"+"predicted"+".txt"), pose_matrix, '%f') 
+            pose_path=os.path.join(pose_dir, str(i)+"_"+"predicted"+".txt")
                 
-            exr_path_1 = os.path.join(exr_dir, "predicted"+".exr")
-            exr_path_2 = os.path.join(exr_dir, "predicted"+".exr0001"+".exr")
+            exr_path_1 = os.path.join(exr_dir, str(i)+"_"+"predicted"+".exr")
+            exr_path_2 = os.path.join(exr_dir, str(i)+"_"+"predicted"+".exr0001"+".exr")
 
             os.rename(exr_path_2, exr_path_1)
             
 
 
-            pose_path = os.path.join(pose_dir, "predicted"+".txt")  
+            pose_path = os.path.join(pose_dir, str(i)+"_"+"predicted"+".txt")  
 
             depth = read_exr(exr_path_1, height, width)
                 
@@ -329,7 +316,7 @@ if __name__ == '__main__':
                 points2 = np.array([(1.0,1.0,1.0)])
             pcd2 = open3d.geometry.PointCloud()
             pcd2.points = open3d.utility.Vector3dVector(points2)
-            open3d.io.write_point_cloud(os.path.join(pcd_dir,"2_predicted"+".pcd"), pcd2)
+            open3d.io.write_point_cloud(os.path.join(pcd_dir,str(i)+"_"+"predicted"+".pcd"), pcd2)
 
             pcd_combined_predict=open3d.geometry.PointCloud()
             points_predict_combined=np.concatenate((points1,points2),axis=0)
@@ -337,7 +324,7 @@ if __name__ == '__main__':
             open3d.io.write_point_cloud(os.path.join(pcd_dir,"combined_predict"+".pcd"), pcd_combined_predict)
 
 
-            pozitie_greedy=int(test_viewstate_nochange[i][2])    
+            pozitie_greedy=int(test_viewstate[i][2])    
             cam_pose = mathutils.Vector((viewspace[pozitie_greedy][0], viewspace[pozitie_greedy][1], viewspace[pozitie_greedy][2])) 
             center_pose = mathutils.Vector((0, 0, 0))
             direct = center_pose - cam_pose
@@ -345,19 +332,19 @@ if __name__ == '__main__':
             camera.rotation_euler = rot_quat.to_euler()
             camera.location = cam_pose
             pose_matrix = camera.matrix_world
-            output.file_slots[0].path = os.path.join(exr_dir, "greedy"+".exr")
+            output.file_slots[0].path = os.path.join(exr_dir, str(i)+"_"+"greedy"+".exr")
             bpy.ops.render.render(write_still=True)
-            np.savetxt(os.path.join(pose_dir, "greedy"+".txt"), pose_matrix, '%f') 
-            pose_path=os.path.join(pose_dir, "greedy"+".txt")
+            np.savetxt(os.path.join(pose_dir, str(i)+"_"+"greedy"+".txt"), pose_matrix, '%f') 
+            pose_path=os.path.join(pose_dir, str(i)+"_"+"greedy"+".txt")
                 
-            exr_path_1 = os.path.join(exr_dir, "greedy"+".exr")
-            exr_path_2 = os.path.join(exr_dir, "greedy"+".exr0001"+".exr")
+            exr_path_1 = os.path.join(exr_dir, str(i)+"_"+"greedy"+".exr")
+            exr_path_2 = os.path.join(exr_dir, str(i)+"_"+"greedy"+".exr0001"+".exr")
 
             os.rename(exr_path_2, exr_path_1)
             
 
 
-            pose_path = os.path.join(pose_dir,"greedy"+".txt")  
+            pose_path = os.path.join(pose_dir, str(i)+"_"+"greedy"+".txt")  
 
             depth = read_exr(exr_path_1, height, width)
                 
@@ -367,70 +354,29 @@ if __name__ == '__main__':
                 points3 = np.array([(1.0,1.0,1.0)])
             pcd3 = open3d.geometry.PointCloud()
             pcd3.points = open3d.utility.Vector3dVector(points3)
-            open3d.io.write_point_cloud(os.path.join(pcd_dir,"4_greedy"+".pcd"), pcd3)
+            open3d.io.write_point_cloud(os.path.join(pcd_dir,str(i)+"_"+"greedy"+".pcd"), pcd3)
 
             pcd_combined_greedy=open3d.geometry.PointCloud()
             points_greedy_combined=np.concatenate((points1,points3),axis=0)
             pcd_combined_greedy.points=open3d.utility.Vector3dVector(points_greedy_combined)
             open3d.io.write_point_cloud(os.path.join(pcd_dir,"combined_greedy"+".pcd"), pcd_combined_greedy)
-
-
-            pozitie_prezisa_permut_brut=int(test_viewstate_permut[i][2]) 
-            pozitie_presiza_permut_back=(pozitie_prezisa_permut_brut +pozitie_actuala) % nr_views
-            cam_pose = mathutils.Vector((viewspace[pozitie_presiza_permut_back][0], viewspace[pozitie_presiza_permut_back][1], viewspace[pozitie_presiza_permut_back][2])) 
-            center_pose = mathutils.Vector((0, 0, 0))
-            direct = center_pose - cam_pose
-            rot_quat = direct.to_track_quat('-Z', 'Y')
-            camera.rotation_euler = rot_quat.to_euler()
-            camera.location = cam_pose
-            pose_matrix = camera.matrix_world
-            output.file_slots[0].path = os.path.join(exr_dir, "permut"+".exr")
-            bpy.ops.render.render(write_still=True)
-            np.savetxt(os.path.join(pose_dir, "permut"+".txt"), pose_matrix, '%f') 
-            pose_path=os.path.join(pose_dir, "permut"+".txt")
-                
-            exr_path_1 = os.path.join(exr_dir, "permut"+".exr")
-            exr_path_2 = os.path.join(exr_dir, "permut"+".exr0001"+".exr")
-
-            os.rename(exr_path_2, exr_path_1)
-            
-
-
-            pose_path = os.path.join(pose_dir,"permut"+".txt")  
-
-            depth = read_exr(exr_path_1, height, width)
-                
-            pose = np.loadtxt(pose_path)
-            points4 = depth2pcd(depth, intrinsics, pose)
-            if (points3.shape[0] == 0):
-                points3 = np.array([(1.0,1.0,1.0)])
-            pcd4 = open3d.geometry.PointCloud()
-            pcd4.points = open3d.utility.Vector3dVector(points4)
-            open3d.io.write_point_cloud(os.path.join(pcd_dir,"3_permut"+".pcd"), pcd4)
-
-            pcd_permut_greedy=open3d.geometry.PointCloud()
-            points_permut_combined=np.concatenate((points1,points4),axis=0)
-            pcd_permut_greedy.points=open3d.utility.Vector3dVector(points_permut_combined)
-            open3d.io.write_point_cloud(os.path.join(pcd_dir,"permut_greedy"+".pcd"), pcd_permut_greedy)
             
 
 
             
-    #         nosame_dir = os.path.join(pcd_dir,'not_same')
-    #         os.makedirs(nosame_dir, exist_ok=True)
+            nosame_dir = os.path.join(pcd_dir,'not_same')
+            os.makedirs(nosame_dir, exist_ok=True)
         
 
-    #         past_model=working_model
+            past_model=working_model
         
 
-        # nr_poz=open('/home/alex-pop/Desktop/Doctorat/Blender_visualization/nr_pozitie.txt', 'w+')
-            
-        # j=j+1
-        # print("New position:"+str(j))
-        # nr_poz.write(str(j))
-        # nr_poz.close()
-
-        
+        nr_poz=open('/home/alex-pop/Desktop/Doctorat/Blender_visualization/nr_pozitie.txt', 'w+')
+        i=i-480
+        i=i+1
+        print("New position:"+str(i))
+        nr_poz.write(str(i))
+        nr_poz.close()
         
 
               
