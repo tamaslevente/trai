@@ -52,7 +52,7 @@ if __name__ == '__main__':
     # output_path = "data/" + data_type + ".lmdb"
     # NBV_dir = "/home/zengrui/IROS/pcn/NBV_data/shapenet_33_views"
 
-    data_type = 'test'
+    data_type = 'train'
     class_list_path = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid/' + data_type + '/_class.txt'
     gt_dir = "/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid/" + data_type
     output_path = "data/" + data_type + ".lmdb"
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     #NBV_dir = "/home/cuda/Alex/trai/PC-NBV/NBV_data_no_target/shapenet_33_views_640x480/test"
 
 
-    ex_times = 16
+    ex_times = 1
     num_scans = 1
 
     with open(os.path.join(class_list_path)) as file:

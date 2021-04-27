@@ -51,12 +51,14 @@ def setup_blender(width, height, focal_length, output_dir):
 
 if __name__ == '__main__':
 
-    viewspace_path = 'viewspace_shapenet_33.txt'
+    viewspace_path = 'viewspace_shapenet_5.txt'
 
-    data_type = 'test/'
+    data_type = 'valid/'
     ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid/'
     model_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Trial_Test_Valid/' + data_type
     output_dir = '/home/cuda/Alex/trai/PC-NBV/Output_model_blender/' + data_type
+
+    nr_views=5
 
 
    
@@ -126,7 +128,7 @@ if __name__ == '__main__':
 
             # Render
             #for i in range(viewspace.shape[0]):
-            for i in range(16):    # added just for 16 views. (Above ones)
+            for i in range(nr_views):    # added just for 16 views. (Above ones)
                 scene.frame_set(i)
                 cam_pose = mathutils.Vector((viewspace[i][0], viewspace[i][1], viewspace[i][2]))
                 center_pose = mathutils.Vector((0, 0, 0))
