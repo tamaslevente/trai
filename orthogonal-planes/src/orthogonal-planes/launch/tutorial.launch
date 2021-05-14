@@ -1,0 +1,30 @@
+<launch>
+  <node pkg="ppfplane" type="voxel_filter_node" name="voxel_filter_node" output="screen" >
+<remap from="point_cloud_in" to="/cloud_pcd" />
+</node>
+
+ <node pkg="ppfplane" type="passthrough_filter_node" name="passthrough_filter_node" output="screen" >
+<remap from="point_cloud_in" to="/vf_out" />
+</node>
+
+ <!-- <node pkg="pcl_tutorial" type="plane_segmentation_node" name="plane_segmentation_node" output="screen" >
+<remap from="point_cloud_in" to="/pf_out" />
+</node> -->
+
+<node pkg="ppfplane" type="compute_volume_node" name="compute_volume_node" output="screen">
+</node>
+
+<node pkg="ppfplane" type="compute_surface_normals_node" name="compute_surface_normals_node" output="screen">
+</node>
+
+ <node pkg="ppfplane" type="line_detect_node" name="line_detect_node" output="screen">
+</node>
+
+ <node pkg="rviz" type="rviz" name="rviz" output="screen" args="-d $(find ppfplane)/cfg/rviz.rviz"/>
+
+ <node pkg="rqt_reconfigure" type="rqt_reconfigure" name="rqt_reconfigure" output="screen" />
+
+ <node pkg="pcl_ros" type="pcd_to_pointcloud" name="pcd_to_pointcloud" output="screen" args=" $(find ppfplane)/data/box_2_1.pcd 1" />
+
+
+</launch>
