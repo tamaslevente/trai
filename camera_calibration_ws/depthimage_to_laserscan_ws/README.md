@@ -28,7 +28,7 @@ Assuming that you put the launch files from this repo into your catkin_ws/src/ad
 
 With this camera, we had some troubles when using this package (segmentation fault, without any other warning) and that was because our camera_info didn't contained the R matrix, and without it couldn't make the conversion from depth to laser, so first make sure you have this matrix. 
 
-Making the same assumptions as above, you should follow the next steps:
+Making the same assumptions as above (but this time the launch files should be in your catkin_ws/src/pico_zense_camera/launch), you should follow the next steps:
 1. Start the camera: 
 
 `roslaunch pico_zense_camera pz_camera.launch`
