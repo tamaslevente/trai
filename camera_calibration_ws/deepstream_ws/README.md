@@ -12,4 +12,4 @@
         - `bin/kafka-console-consumer.sh --topic quickstart-events --from-beginning --bootstrap-server localhost:9092` # in the same or other terminal, for reading the messages
 - On the client side (aka AGX) you should do run:
     - add the server pc name and ip in /etc/hosts like this: <ip_address>    rambo-pc
-    - ./deepstream-test4-app -i /opt/nvidia/deepstream/deepstream-5.0/samples/streams/sample_720p.h264 -p /opt/nvidia/deepstream/deepstream-5.0/lib/libnvds_kafka_proto.so --conn-str="<ip_address>;9092;quickstart-events" -s 0
+    - `./deepstream-test4-app -i /opt/nvidia/deepstream/deepstream-5.0/samples/streams/sample_720p.h264 -p /opt/nvidia/deepstream/deepstream-5.0/lib/libnvds_kafka_proto.so --conn-str="<ip_address>;9092;quickstart-events" -s 0`
