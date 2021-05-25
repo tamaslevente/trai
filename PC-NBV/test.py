@@ -178,13 +178,13 @@ def train(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--lmdb_test', default='/home/cuda/Alex/trai/PC-NBV/data/test_7_class_nochange.lmdb')
+    parser.add_argument('--lmdb_test', default='/home/cuda/Alex/trai/PC-NBV/data/test.lmdb')
     parser.add_argument('--model_type', default='pc-nbv')
-    parser.add_argument('--checkpoint', default='/home/cuda/Alex/trai/PC-NBV/Archive/Archive_model/nochange/model-400000')
+    parser.add_argument('--checkpoint', default='/home/cuda/Alex/trai/PC-NBV/log/New_test/model-335000')
     parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument('--num_input_points', type=int, default=512)
     parser.add_argument('--num_gt_points', type=int, default=1024)
-    parser.add_argument('--views', type=int, default=16) # original 33
+    parser.add_argument('--views', type=int, default=5) # original 33
     parser.add_argument('--gpu', default='0')  #original default='2'
 
     args = parser.parse_args()
