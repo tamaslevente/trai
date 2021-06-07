@@ -3,6 +3,7 @@ import argparse
 import os
 import random
 import sys
+sys.path.append('/home/rambo/pvcnn')
 
 import numba
 import numpy as np
@@ -13,25 +14,13 @@ sys.path.append(os.getcwd())
 
 __all__ = ['predict']
 
-PREDICT_ONE=True
-PREDICT_SHAPE = 15  
+PREDICT_ONE= False
+PREDICT_SHAPE = None 
 '''
-    'Airplane': [0, 1, 2, 3],
-    'Bag': [4, 5],
-    'Cap': [6, 7],
-    'Car': [8, 9, 10, 11],
-    'Chair': [12, 13, 14, 15],
-    'Earphone': [16, 17, 18],
-    'Guitar': [19, 20, 21],
-    'Knife': [22, 23],
-    'Lamp': [24, 25, 26, 27],
-    'Laptop': [28, 29],
-    'Motorbike': [30, 31, 32, 33, 34, 35],
-    'Mug': [36, 37],
-    'Pistol': [38, 39, 40],
-    'Rocket': [41, 42, 43],
-    'Skateboard': [44, 45, 46],
-    'Table': [47, 48, 49],
+    'Bag': [0],
+    'Box': [1],
+    'Cylinder': [2],
+    'RbootFrame': [3],
 '''
 
 def prepare():
@@ -108,8 +97,8 @@ def visual_o3dx3(b,trans=True,fs=6):
       print('b.shape=',b.shape)
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(b[:,:3])
-    pcd.colors = o3d.utility.Vector3dVector(b[:,3:6]/255)
-    pcd.colors = o3d.utility.Vector3dVector(b[:,3:6])
+    # pcd.colors = o3d.utility.Vector3dVector(b[:,3:6]/255)
+    # pcd.colors = o3d.utility.Vector3dVector(b[:,3:6])
     if fs==9:
       pcd.normals = o3d.utility.Vector3dVector(b[:,6:9])
     o3d.visualization.draw_geometries([pcd])
@@ -129,6 +118,7 @@ def view_pcd_cls(p_cloud,cls):
   add by nishi
 '''
 def predict(configs=None):
+    # load model 
     configs = prepare() if configs is None else configs
 
     import math
@@ -143,8 +133,13 @@ def predict(configs=None):
     # Prepare #
     ###########
 
+
     if configs.device == 'cuda':
         cudnn.benchmark = True
+        # It enables benchmark mode in cudnn.
+        # benchmark mode is good whenever your input sizes for your network do not vary. This way, cudnn will look for the optimal set of algorithms for that particular configuration (which takes some time). 
+        # This usually leads to faster runtime.
+        # But if your input sizes changes at each iteration, then cudnn will benchmark every time a new size appears, possibly leading to worse runtime performances
         if configs.get('deterministic', False):
             cudnn.deterministic = True
             cudnn.benchmark = False
@@ -155,6 +150,7 @@ def predict(configs=None):
     np.random.seed(seed)
     torch.manual_seed(seed)
 
+    print(f'\n==> configs')
     print(configs)
 
     #################################
@@ -171,7 +167,7 @@ def predict(configs=None):
         model = torch.nn.DataParallel(model)
     model = model.to(configs.device)
 
-    if os.path.exists(configs.evaluate.best_checkpoint_path):
+    if os.path.exists(configs.train.checkpoint_path):
         print(f'==> loading checkpoint "{configs.evaluate.best_checkpoint_path}"')
         checkpoint = torch.load(configs.evaluate.best_checkpoint_path)
         model.load_state_dict(checkpoint.pop('model'))
@@ -200,7 +196,8 @@ def predict(configs=None):
     for shape_index, (file_path, shape_id) in enumerate(tqdm(dataset.file_paths, desc='eval', ncols=0)):
         data = np.loadtxt(file_path).astype(np.float32)   # original data --> (2704,7)
         if True:
-          print('\n>>>file_path=',file_path)
+          print('\n-------------------------------------')
+          print('>>>file_path=',file_path)
           print('data.shape=',data.shape)     # data.shape= (2749, 7) -> (p,(x,y,z,r,g,b,class_id))
           print('shape_id=',shape_id)         # shape_id = class id,  4 = chair
           visual_o3dx3(data,trans=False)
@@ -237,6 +234,7 @@ def predict(configs=None):
           extra_batch_size=1
         else:
           extra_batch_size = configs.evaluate.num_votes * math.ceil(total_num_points_in_shape / dataset.num_points)
+          extra_batch_size = 8
         
         total_num_voted_points = extra_batch_size * dataset.num_points
         num_repeats = math.ceil(total_num_voted_points / total_num_points_in_shape)
@@ -275,7 +273,7 @@ def predict(configs=None):
         
         with torch.no_grad():
             vote_confidences = F.softmax(model(inputs), dim=1)
-            if False:
+            if True:
               vote_confidences_np = vote_confidences.cpu().numpy()
               print('vote_confidences_np.shape=',vote_confidences_np.shape)
               # vote_confidences_np.shape= (20, 50, 2048)
@@ -308,7 +306,7 @@ def predict(configs=None):
           # ground_truth[] -> input points
           # predictions[]  -> predict points
           update_stats(stats, ground_truth, predictions, shape_id, start_class, end_class)
-        
+       
         if True:
           print('\nshape_index=',shape_index)
           print('shape_id=',shape_id)
@@ -328,8 +326,8 @@ def proc_predict(shape_index,vote_predictions_x_np,vote_confidences_x_np,inputs_
   print('proc_predict()')
   vote_predictions_x_np=np.squeeze(vote_predictions_x_np)
   vote_confidences_x_np=np.squeeze(vote_confidences_x_np)
-  #print('vote_predictions_x_np.shape=',vote_predictions_x_np.shape)
-  #print('vote_predictions_x_np[0:5]=',vote_predictions_x_np[0:5])
+  print('vote_predictions_x_np.shape=',vote_predictions_x_np.shape)
+  print('vote_predictions_x_np[0:5]=',vote_predictions_x_np[0:5])
   inputs_np=np.squeeze(inputs_np)
   inputs_np=inputs_np.transpose()
   print('inputs_np.shape=',inputs_np.shape)

@@ -82,6 +82,7 @@ def evaluate(configs=None):
     np.random.seed(seed)
     torch.manual_seed(seed)
 
+    print("----")
     print(configs)
 
     if os.path.exists(configs.evaluate.stats_path):
@@ -147,6 +148,7 @@ def evaluate(configs=None):
             else:
                 point_set = coords
         extra_batch_size = configs.evaluate.num_votes * math.ceil(total_num_points_in_shape / dataset.num_points)
+        extra_batch_size = 8
         total_num_voted_points = extra_batch_size * dataset.num_points
         num_repeats = math.ceil(total_num_voted_points / total_num_points_in_shape)
         shuffled_point_indices = np.tile(np.arange(total_num_points_in_shape), num_repeats)
