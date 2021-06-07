@@ -4,27 +4,15 @@ __all__ = ['MeterShapeNet']
 
 
 default_shape_name_to_part_classes = {
-    'Airplane': [0, 1, 2, 3],
-    'Bag': [4, 5],
-    'Cap': [6, 7],
-    'Car': [8, 9, 10, 11],
-    'Chair': [12, 13, 14, 15],
-    'Earphone': [16, 17, 18],
-    'Guitar': [19, 20, 21],
-    'Knife': [22, 23],
-    'Lamp': [24, 25, 26, 27],
-    'Laptop': [28, 29],
-    'Motorbike': [30, 31, 32, 33, 34, 35],
-    'Mug': [36, 37],
-    'Pistol': [38, 39, 40],
-    'Rocket': [41, 42, 43],
-    'Skateboard': [44, 45, 46],
-    'Table': [47, 48, 49],
+    'Bag': [0],
+    'Box': [1],
+    'Cylinder': [2],
+    'RobotFrame': [3],
 }
 
 
 class MeterShapeNet:
-    def __init__(self, num_classes=50, num_shapes=16, shape_name_to_part_classes=None):
+    def __init__(self, num_classes=4, num_shapes=4, shape_name_to_part_classes=None):
         super().__init__()
         self.num_classes = num_classes
         self.num_shapes = num_shapes
