@@ -19,10 +19,17 @@ class Voxelization(nn.Module):
         if self.normalize:
             norm_coords = norm_coords / (norm_coords.norm(dim=1, keepdim=True).max(dim=2, keepdim=True).values * 2.0 + self.eps) + 0.5
         else:
+            # after subtracting mean, norm_coords mostly lie in [-1, 1]. 
+            # We shift the data range to [0, 1] via adding one and then dividing by 2.
             norm_coords = (norm_coords + 1) / 2.0
         norm_coords = torch.clamp(norm_coords * self.r, 0, self.r - 1)
         vox_coords = torch.round(norm_coords).to(torch.int32)
-        # print(norm_coords)
+        # print("\n -----------------------------")
+        # print("coords", coords)
+        # print("norm_coords", norm_coords)
+        # print("vox_coords", vox_coords)
+        # print("-----------------------------")
+
         return F.avg_voxelize(features, vox_coords, self.r), norm_coords
 
     def extra_repr(self):

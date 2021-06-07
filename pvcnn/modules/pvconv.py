@@ -32,9 +32,12 @@ class PVConv(nn.Module):
 
     def forward(self, inputs):
         features, coords = inputs
+        
         voxel_features, voxel_coords = self.voxelization(features, coords)
         # print(voxel_features, voxel_coords)
         voxel_features = self.voxel_layers(voxel_features)
         voxel_features = F.trilinear_devoxelize(voxel_features, voxel_coords, self.resolution, self.training)
+        # Fuse devoxelized point with MLP layer 
         fused_features = voxel_features + self.point_features(features)
+        
         return fused_features, coords

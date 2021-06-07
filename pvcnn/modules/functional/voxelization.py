@@ -21,6 +21,7 @@ class AvgVoxelization(Function):
         b, c, _ = features.shape
         out, indices, counts = _backend.avg_voxelize_forward(features, coords, resolution)
         ctx.save_for_backward(indices, counts)
+        #  view function is meant to reshape the tensor
         return out.view(b, c, resolution, resolution, resolution)
 
     @staticmethod
