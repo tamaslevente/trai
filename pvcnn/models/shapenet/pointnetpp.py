@@ -8,7 +8,7 @@ __all__ = ['PointNet2SSG', 'PointNet2MSG']
 
 class PointNet2(nn.Module):
     def __init__(self, num_classes, num_shapes, sa_blocks, fp_blocks, with_one_hot_shape_id=True,
-                 extra_feature_channels=3, width_multiplier=1, voxel_resolution_multiplier=1):
+                 extra_feature_channels=1, width_multiplier=1, voxel_resolution_multiplier=1):
         super().__init__()
         assert extra_feature_channels >= 0
 

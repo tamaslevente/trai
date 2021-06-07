@@ -9,7 +9,7 @@ __all__ = ['PVCNN']
 class PVCNN(nn.Module):
     blocks = ((64, 1, 32), (128, 2, 16), (512, 1, None), (2048, 1, None))
 
-    def __init__(self, num_classes, num_shapes, extra_feature_channels=3,
+    def __init__(self, num_classes, num_shapes, extra_feature_channels=1,
                  width_multiplier=1, voxel_resolution_multiplier=1):
         super().__init__()
         assert extra_feature_channels >= 0
@@ -17,7 +17,7 @@ class PVCNN(nn.Module):
         self.num_shapes = num_shapes
 
         layers, channels_point, concat_channels_point = create_pointnet_components(
-            blocks=self.blocks, in_channels=self.in_channels, with_se=True, normalize=False,
+            blocks=self.blocks, in_channels=self.in_channels, with_se=True, normalize=True,
             width_multiplier=width_multiplier, voxel_resolution_multiplier=voxel_resolution_multiplier
         )
         self.point_features = nn.ModuleList(layers)

@@ -37,7 +37,7 @@ class Transformer(nn.Module):
 class PointNet(nn.Module):
     blocks = ((True, 64, 1), (False, 128, 2), (True, 512, 1), (False, 2048, 1))
 
-    def __init__(self, num_classes, num_shapes, with_transformer=False, extra_feature_channels=0, width_multiplier=1):
+    def __init__(self, num_classes, num_shapes, with_transformer=False, extra_feature_channels=1, width_multiplier=1):
         super().__init__()
         assert extra_feature_channels >= 0
         r = width_multiplier
