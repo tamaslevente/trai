@@ -11,10 +11,10 @@ configs.data.num_shapes = 4
 
 # dataset configs
 configs.dataset = Config(ShapeNet)
-configs.dataset.root = '/home/rambo/pvcnn/data/own_new'
-configs.dataset.with_normal = False
+configs.dataset.root = '/home/rambo/pvcnn/data/own_new/'
+configs.dataset.with_normal = True
 configs.dataset.with_one_hot_shape_id = True
-configs.dataset.normalize = False
+configs.dataset.normalize = True
 configs.dataset.jitter = True
 configs.dataset.num_points = 2048
 
@@ -26,8 +26,8 @@ configs.evaluate.dataset = Config(split='test')
 
 # train configs
 configs.train = Config()
-configs.train.num_epochs = 1
-configs.train.batch_size = 32
+configs.train.num_epochs = 15
+configs.train.batch_size = 1
 
 # train: meters
 configs.train.meters = Config()
