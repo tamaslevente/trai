@@ -10,7 +10,7 @@ class Model:
     def __init__(self, inputs, npts, gt, view_state, eval_value_gt, is_training):
         self.is_training = is_training
         self.num_coarse = 1024
-        self.views = 5 # 33 default
+        self.views = 4 # 33 default
         with tf.variable_scope('pcn', reuse=tf.AUTO_REUSE):
             self.features = self.create_encoder(inputs, npts, view_state)
         
@@ -27,7 +27,7 @@ class Model:
             feature_viewstate = point_unpool(view_state, npts)
 
             features = tf.concat([features, features_global, feature_viewstate], axis=2)
-            features = tf.reshape(features, (1, tf.shape(features)[1], 1, 533))  #(571 initial) (544 pentru 16)
+            features = tf.reshape(features, (1, tf.shape(features)[1], 1, 532))  #(571 initial) (544 pentru 16) #(533 pentru 5) #(532 pentru 4)
             features = ops.attention_unit(features, is_training=self.is_training)
             features = tf.squeeze(features, [2])
 

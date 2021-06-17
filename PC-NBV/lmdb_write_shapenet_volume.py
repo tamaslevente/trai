@@ -31,16 +31,20 @@ class pcd_df(DataFlow):
     def get_data(self):
         #ShapeNetv1_dir = '/home/zengrui/IROS/pcn/data/ShapeNetv1/'
 
-        ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Dataset_new/'
+        ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Synthetic_step_4/'
         for class_id in self.class_list:
+            print(class_id)
+            print('\n')
             model_list = os.listdir(os.path.join(ShapeNetv1_dir, self.data_type, class_id))
+            print(model_list)
+            print('\n')
             for model_id in model_list:
                 #gt_points = sio.loadmat(os.path.join(self.gt_dir, class_id, model_id, 'model.mat'))
                 gt_points = sio.loadmat('/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Archive/cub/cub/cub/model.mat')
                 gt_pc = np.array(gt_points['points']) # shape (16384, 3)
                 for ex_index in range(self.ex_times):
                     for scan_index in range(self.num_scans):
-                        view_state = np.load(os.path.join(self.NBV_dir, str(model_id), str(ex_index), str(scan_index) + "_viewstate.npy")) # shape (33) , 33 is view number
+                        view_state = np.load(os.path.join(self.NBV_dir, str(model_id),  str(ex_index),str(scan_index) + "_viewstate.npy")) # shape (33) , 33 is view number
                         accumulate_pointcloud = np.load(os.path.join(self.NBV_dir, str(model_id), str(ex_index), str(scan_index) + "_acc_pc.npy")) # shape (point number, 3)
                         target_value = np.load(os.path.join(self.NBV_dir, str(model_id), str(ex_index), str(scan_index) + "_target_value.npy")) # shape (33, 1), 33 is view number
                         yield model_id, accumulate_pointcloud, gt_pc, view_state, target_value
@@ -53,9 +57,10 @@ if __name__ == '__main__':
     # output_path = "data/" + data_type + ".lmdb"
     # NBV_dir = "/home/zengrui/IROS/pcn/NBV_data/shapenet_33_views"
 
-    data_type = 'valid'
-    class_list_path = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Dataset_new/' + data_type + '/_class.txt'
-    gt_dir = "/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Dataset_new/" + data_type
+    data_type = 'test'
+    #class_list_path = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Synthetic_step_4/Classes/' + data_type + '/_class.txt'
+    class_list_path = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Synthetic_step_4/Classes' +  '/_class.txt'
+    gt_dir = "/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Synthetic_step_4/" + data_type
     output_path = "data/" + data_type + ".lmdb"
     NBV_dir = "/home/cuda/Alex/trai/PC-NBV/NBV_data/shapenet_33_views_640x480/"+data_type
 
