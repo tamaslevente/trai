@@ -1,0 +1,12 @@
+<launch>
+  <arg name="range_max" value="3.0" />
+
+  <node pkg="depthimage_to_laserscan" type="depthimage_to_laserscan" name="depthimage_to_laserscan">
+    <remap from="camera_info" to="/aditof_camera_info_sync" />
+    <remap from="image" to="/aditof_depth_image_rect_format" />
+    <remap from="scan" to="/aditof_scan" />
+    <param name="output_frame_id" value="CameraDepth_frame" />
+    <param name="scan_height" value="10" />
+    <param name="range_max" value="$(arg range_max)" />
+  </node>
+</launch>

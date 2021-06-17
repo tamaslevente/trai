@@ -11,8 +11,8 @@ def prepare():
 
     # since PyTorch jams device selection, we have to parse args before import torch (issue #26790)
     parser = argparse.ArgumentParser()
-    parser.add_argument('configs', nargs='+')
-    parser.add_argument('--devices', default=None)
+    parser.add_argument('configs', nargs='+', default='configs/shapenet/pvcnn/c1.py')
+    parser.add_argument('--devices', default='0, 1')
     parser.add_argument('--evaluate', default=False, action='store_true')
     args, opts = parser.parse_known_args()
     if args.devices is not None and args.devices != 'cpu':
@@ -117,6 +117,7 @@ def main():
             optimizer.step()
         if scheduler is not None:
             scheduler.step()
+        
 
     # evaluate kernel
     def evaluate(model, loader, split='test'):
@@ -184,9 +185,9 @@ def main():
     optimizer = configs.train.optimizer(model.parameters())
 
     last_epoch, best_metrics = -1, {m: None for m in configs.train.metrics}
-    if os.path.exists(configs.train.checkpoint_path):
+    if os.path.exists("pvcnn/" + str(configs.train.checkpoint_path)):
         print(f'==> loading checkpoint "{configs.train.checkpoint_path}"')
-        checkpoint = torch.load(configs.train.checkpoint_path)
+        checkpoint = torch.load("pvcnn/" + str(configs.train.checkpoint_path))
         print(' => loading model')
         model.load_state_dict(checkpoint.pop('model'))
         if 'optimizer' in checkpoint and checkpoint['optimizer'] is not None:
