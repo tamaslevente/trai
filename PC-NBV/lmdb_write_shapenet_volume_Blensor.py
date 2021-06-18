@@ -235,7 +235,7 @@ if __name__ == '__main__':
 
     data_type = 'test'
     #class_list_path = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Synthetic_step_4/Classes/' + data_type + '/_class.txt'
-    class_list_path = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Synthetic_step_4/Classes' +  '/_class.txt'
+    class_list_path = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Synthetic_step_4/Classes' +  '/_class_test.txt'
     gt_dir = "/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Synthetic_step_4/" + data_type
     output_path = "data/Data_lmdb_Blensor/" + data_type + ".lmdb"
     NBV_dir = "/home/cuda/Alex/trai/PC-NBV/NBV_data/shapenet_33_views_640x480/"+data_type

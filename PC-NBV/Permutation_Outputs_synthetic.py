@@ -17,7 +17,7 @@ if __name__ == '__main__':
     view_num = 4
 
     # path
-    data_type = 'train'
+    data_type = 'test'
 
     NBV_file= "/home/cuda/Alex/trai/PC-NBV/NBV_data/shapenet_33_views_640x480/"
     
