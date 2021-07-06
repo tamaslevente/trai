@@ -165,7 +165,7 @@ if __name__ == '__main__':
     parser.add_argument('--lmdb_train', default='/home/cuda/Alex/trai/PC-NBV/data/train.lmdb')
     parser.add_argument('--lmdb_valid', default='/home/cuda/Alex/trai/PC-NBV/data/valid.lmdb')
     parser.add_argument('--log_dir', default='log/New_test')
-    parser.add_argument('--model_type', default='pc-nbv')
+    parser.add_argument('--model_type', default='pc-nbv_2')
     parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--num_input_points', type=int, default=512)
     parser.add_argument('--num_gt_points', type=int, default=1024)

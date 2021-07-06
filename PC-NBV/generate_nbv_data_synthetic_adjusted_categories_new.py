@@ -18,11 +18,11 @@ if __name__ == '__main__':
     nr_views_choose=1
 
     # path
-    data_type = 'test/'
-    ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/data/Data_external/'    
+    data_type = 'train/'
+    ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/data/Data_external/Voxel/'    
     pc_dir = "/home/cuda/Alex/trai/PC-NBV/Output_model_blender/" + data_type + "/pcd"
     save_dir = "/home/cuda/Alex/trai/PC-NBV/data/Data_external/NBV_data/shapenet_33_views_640x480/"+ data_type
-    model_dir = '/home/cuda/Alex/trai/PC-NBV/data/Data_external/' + data_type
+    model_dir = '/home/cuda/Alex/trai/PC-NBV/data/Data_external/Voxel/' + data_type
 
     
    
@@ -63,7 +63,7 @@ if __name__ == '__main__':
             
             for i in range(view_num):
                 t=i+1
-                pcd_path = os.path.join(pc_dir, model, str(t) + ".pcd")
+                pcd_path = os.path.join(model_dir,class_id, model, str(t) + ".pcd")
                 if os.path.exists(pcd_path):
                     print("Pointcloud found")
                     cur_pc = open3d.io.read_point_cloud(pcd_path)
@@ -171,43 +171,43 @@ if __name__ == '__main__':
 
                     if ( (('Box2') in class_id) or (('Box_2') in class_id) ):
                             target_value[0, 0]=0.2
-                            target_value[1, 0]=0.8
+                            target_value[1, 0]=0.2
                             target_value[2, 0]=0.2
-                            target_value[3, 0]=0.2
+                            target_value[3, 0]=0.8
                     
-                    if ( (('Box3') in class_id) or (('Box_2') in class_id) ):
-                                target_value[0, 0]=0.8
+                    if ( (('Box3') in class_id) or (('Box_3') in class_id) ):
+                                target_value[0, 0]=0.2
                                 target_value[1, 0]=0.2
                                 target_value[2, 0]=0.2
-                                target_value[3, 0]=0.2
+                                target_value[3, 0]=0.8
 
-                    if ( (('Box4') in class_id) or (('Box_3') in class_id) ):
+                    if ( (('Box4') in class_id) or (('Box_4') in class_id) ):
                                 target_value[0, 0]=0.8
                                 target_value[1, 0]=0.2
                                 target_value[2, 0]=0.2
                                 target_value[3, 0]=0.2
 
                     if ( (('Box5') in class_id) or (('Box_5') in class_id) ):
-                                target_value[0, 0]=0.8
+                                target_value[0, 0]=0.2
                                 target_value[1, 0]=0.2
-                                target_value[2, 0]=0.2
+                                target_value[2, 0]=0.8
                                 target_value[3, 0]=0.2
 
                     if ( (('Box6') in class_id) or (('Box_6') in class_id) ):
-                                target_value[0, 0]=0.8
+                                target_value[0, 0]=0.2
                                 target_value[1, 0]=0.2
-                                target_value[2, 0]=0.2
+                                target_value[2, 0]=0.8
                                 target_value[3, 0]=0.2
 
                     if ( (('Box7') in class_id) or (('Box_7') in class_id) ):
-                                target_value[0, 0]=0.8
-                                target_value[1, 0]=0.2
+                                target_value[0, 0]=0.2
+                                target_value[1, 0]=0.8
                                 target_value[2, 0]=0.2
                                 target_value[3, 0]=0.2
 
                     if ( (('Box9') in class_id) or (('Box_9') in class_id) ):
-                                target_value[0, 0]=0.8
-                                target_value[1, 0]=0.2
+                                target_value[0, 0]=0.2
+                                target_value[1, 0]=0.8
                                 target_value[2, 0]=0.2
                                 target_value[3, 0]=0.2
                        

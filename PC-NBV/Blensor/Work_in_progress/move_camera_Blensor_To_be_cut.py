@@ -1,17 +1,61 @@
 import argparse
+import os
+from io_util import read_pcd
+from tensorpack import DataFlow, dataflow
+from open3d import *
+import numpy as np
+import scipy.io as sio
+import pdb
 import datetime
 import importlib
 import models
-import os
 import tensorflow as tf
 import time
 from data_util_nbv import lmdb_dataflow, get_queued_data
 from termcolor import colored
 import pdb
-from tensorpack import dataflow
-from scipy import stats
 import csv
-import numpy as np
+from scipy import stats
+
+
+
+class pcd_df(DataFlow):
+    def __init__(self, class_list, ex_times, num_scans, NBV_dir, gt_dir, data_type):
+        self.class_list = class_list
+        self.num_scans = num_scans
+        self.ex_times = ex_times
+        self.NBV_dir = NBV_dir
+        self.gt_dir = gt_dir
+        self.data_type = data_type
+
+    def size(self):
+        if self.data_type == 'valid':
+            return 4000
+        elif self.data_type == 'train':
+            return 40000
+        elif self.data_type == 'test':
+            return 4000
+        elif self.data_type == 'test_novel':
+            return 4000
+        elif self.data_type == 'cub':
+            return 4000
+
+    def get_data(self):
+
+        pcd_path = '/home/cuda/Alex/trai/PC-NBV/test_lmdb_blensor/1.pcd'
+
+        cur_pc = open3d.io.read_point_cloud(pcd_path)
+        cur_points = np.asarray(cur_pc.points)  
+
+        acc_pc_points=cur_points
+        
+        model_id='model_test'
+        gt_points = sio.loadmat('/home/cuda/Alex/trai/PC-NBV/test_lmdb_blensor/model.mat')
+        gt_pc = np.array(gt_points['points']) # shape (16384, 3)
+        view_state = np.load('/home/cuda/Alex/trai/PC-NBV/test_lmdb_blensor/0_viewstate_permuted.npy') # shape (33) , 33 is view number
+        accumulate_pointcloud = acc_pc_points
+        target_value = np.load('/home/cuda/Alex/trai/PC-NBV/test_lmdb_blensor/0_target_value_permuted.npy') # shape (33, 1), 33 is view number
+        yield model_id, accumulate_pointcloud, gt_pc, view_state, target_value
 
 
 def train(args):
@@ -51,8 +95,7 @@ def train(args):
     test_total_spearmanr = 0
     sess.run(tf.local_variables_initializer())
 
-    f=open('Test_viewstate.txt', 'w+')
-    f2=open('Test_viewstate_model.txt', 'w+')
+   
 
     
 
@@ -141,15 +184,15 @@ def train(args):
         predict_coverage_real=eval_value[0,pozitie_predict,0]
         
         difference = maximum_greedy-predict_coverage_real
-        f.write(str(pozitie_actuala)+" "+str(pozitie_predict)+" "+str(pozitie_greedy)+" "+str(predict_coverage_real)+" "+str(maximum_greedy)+" "+str(difference)+'\n')
+        
 
         aux=str(ids)
         better_id=aux.replace("['","")
         better_id_2=better_id.replace("']","")
 
-        f2.write(str(better_id_2)+'\n')
-
+        f=open('/home/cuda/Alex/trai/PC-NBV/data/Data_lmdb_Blensor/output.txt', 'w+')
         
+        f.write(str(pozitie_predict))
 
         
         
@@ -163,9 +206,6 @@ def train(args):
         test_total_spearmanr += test_spearmanr
 
         
-
-        
-        
     #summary = sess.run(test_summary, feed_dict={is_training_pl: False})
     print(colored('loss %.8f loss_eval %.8f spearmanr %.8f - time per batch %.4f' %
                   (test_total_loss / num_eval_steps, test_total_loss_eval / num_eval_steps,
@@ -173,14 +213,55 @@ def train(args):
                   'grey', 'on_green'))
     test_total_time = 0
 
+    
+
     print('Total time', datetime.timedelta(seconds=time.time() - train_start))
+
+     # need to change to make it general
+
+
     sess.close()
 
+    
+
+
 if __name__ == '__main__':
+
+    # data_type = 'valid'
+    # class_list_path = '/home/zengrui/IROS/pcn/data/ShapeNetv1/' + data_type + '_class.txt'
+    # gt_dir = "/home/zengrui/IROS/pcn/data/ShapeNetv1/" + data_type
+    # output_path = "data/" + data_type + ".lmdb"
+    # NBV_dir = "/home/zengrui/IROS/pcn/NBV_data/shapenet_33_views"
+
+    data_type = 'test'
+    #class_list_path = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Synthetic_step_4/Classes/' + data_type + '/_class.txt'
+    class_list_path = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Synthetic_step_4/Classes' +  '/_class_test.txt'
+    gt_dir = "/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Synthetic_step_4/" + data_type
+    output_path = "data/Data_lmdb_Blensor/" + data_type + ".lmdb"
+    NBV_dir = "/home/cuda/Alex/trai/PC-NBV/NBV_data/shapenet_33_views_640x480/"+data_type
+
+    
+
+
+    #NBV_dir = "/home/cuda/Alex/trai/PC-NBV/NBV_data_no_target/shapenet_33_views_640x480/test"
+
+
+    ex_times = 1
+    num_scans = 1
+
+    with open(os.path.join(class_list_path)) as file:
+        class_list = [line.strip() for line in file]
+
+    df = pcd_df(class_list, ex_times, num_scans, NBV_dir, gt_dir, data_type)
+    if os.path.exists(output_path):
+        os.system('rm %s' % output_path)
+
+    dataflow.LMDBSerializer.save(df, output_path)
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--lmdb_test', default='/home/cuda/Alex/trai/PC-NBV/data/test.lmdb')
-    parser.add_argument('--model_type', default='pc-nbv_2')
-    parser.add_argument('--checkpoint', default='/home/cuda/Alex/trai/PC-NBV/log/New_test/model-15000')
+    parser.add_argument('--lmdb_test', default='/home/cuda/Alex/trai/PC-NBV/data/Data_lmdb_Blensor/test.lmdb')
+    parser.add_argument('--model_type', default='pc-nbv')
+    parser.add_argument('--checkpoint', default='/home/cuda/Alex/trai/PC-NBV/log/New_test/model-400000')
     parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument('--num_input_points', type=int, default=512)
     parser.add_argument('--num_gt_points', type=int, default=1024)

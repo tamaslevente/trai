@@ -17,11 +17,11 @@ if __name__ == '__main__':
     view_num = 4
 
     # path
-    data_type = 'test'
+    data_type = 'valid'
 
-    NBV_file= "/home/cuda/Alex/trai/PC-NBV/NBV_data/shapenet_33_views_640x480/"
+    NBV_file= "/home/cuda/Alex/trai/PC-NBV/data/Data_external/NBV_data/shapenet_33_views_640x480/"
     
-    save_dir = "/home/cuda/Alex/trai/PC-NBV/NBV_data/shapenet_33_views_640x480/"+ data_type +'/'
+    save_dir = "/home/cuda/Alex/trai/PC-NBV/data/Data_external/NBV_data/shapenet_33_views_640x480/"+ data_type +'/'
     
 
     save_type=data_type+'/'
