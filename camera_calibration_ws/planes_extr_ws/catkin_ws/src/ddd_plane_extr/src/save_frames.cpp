@@ -61,9 +61,9 @@ typedef pcl::PointXYZ PointT;
 typedef sync_policies::ApproximateTime<Image, Image, PointCloud> MySyncPolicy;
 
 unsigned int cnt = 0;
-char directoryIr[150] = "/home/funderburger/work_ws/calibration_ws/planes_extr_ws/training_data/ir_data/";
-char directoryDepth[150] = "/home/funderburger/work_ws/calibration_ws/planes_extr_ws/training_data/depth_data/";
-char directoryPcd[150] = "/home/funderburger/work_ws/calibration_ws/planes_extr_ws/training_data/pcd_data/";
+char directoryIr[150] = "/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/multiP_training_data/ir_data/";
+char directoryDepth[150] = "/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/multiP_training_data/depth_data/";
+char directoryPcd[150] = "/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/multiP_training_data/pcd_data/";
 
 void callback(const ImageConstPtr &ir, const ImageConstPtr &depth, const PointCloud::ConstPtr &cloud_in)
 {
