@@ -57,13 +57,14 @@ public:
     Planes2Depth() : it_(nh_)
     {
         pub_ = nh_.advertise<PointCloud>("/raw_ransac_plane", 1);
-        pub2_ = nh_.advertise<PointCloud>("/ddd_extracted_planes_all_Points", 1);
-        pub3_ = nh_.advertise<PointCloud>("/ddd_extracted_planes_gt", 1);
+        pub2_ = nh_.advertise<PointCloud>("/loose_plane", 1);
+        pub3_ = nh_.advertise<PointCloud>("/gt_planes", 1);
+        pub4_ = nh_.advertise<PointCloud>("/scraps_cloud", 1);
+        pub5_ = nh_.advertise<PointCloud>("/perfect_plane", 1);
+        pub6_ = nh_.advertise<PointCloud>("/remained_cloud_after_a_POI_extraction", 1);
+        pub7_ = nh_.advertise<PointCloud>("/cluster_cloud", 1);
 
         sub_ = nh_.subscribe("/cloud_pcd", 1, &Planes2Depth::cloudCallback, this);
-
-        // double dist_thr;
-        // int max_its;
 
         config_server_.setCallback(boost::bind(&Planes2Depth::dynReconfCallback, this, _1, _2));
 
@@ -95,6 +96,8 @@ public:
 
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1(new pcl::PointCloud<pcl::PointXYZ>);
         pcl::copyPointCloud(*cloud_in_msg, *cloud1);
+
+        std::cerr << "#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#" << std::endl;
         std::cerr << "Point cloud sizeeeeeeeeeeeeeeeee: " << cloud1->size() << std::endl;
 
         // cleaning the point cloud of NaNs in order to further apply the Euclidean cluster extraction
@@ -105,6 +108,9 @@ public:
         extract.setIndices(indices);
         extract.setNegative(false);
         extract.filter(*cloud1);
+
+        // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_orig(new pcl::PointCloud<pcl::PointXYZ>);
+        // pcl::copyPointCloud(*cloud1, *cloud_orig);
         // ///////////////////////////////////////////////////////////////////////////////////////////
 
         // Preparing the plane extraction
@@ -120,12 +126,9 @@ public:
         seg.setMaxIterations(_maxIterations);
         seg.setDistanceThreshold(_distanceThreshold);
 
-        pcl::PointCloud<pcl::PointXYZ>::Ptr plane_only(new pcl::PointCloud<pcl::PointXYZ>());
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_rest(new pcl::PointCloud<pcl::PointXYZ>());
 
-        // Extract inliers
-        pcl::ExtractIndices<pcl::PointXYZ> plane_extracter;
-        int i = 0, nr_points = (int)cloud1->size();
+        int i = 0, nr_points = (int)cloud1->size();     ////////////////// ?????????????????????????
         std::cerr << "Point cloud size: " << nr_points << std::endl;
 
         // Stacking all the rectified planes in here for the final reunion
@@ -134,9 +137,16 @@ public:
         // While 30% of the original cloud is still there
         while (cloud1->size() > _remained_pointcloud * nr_points)
         {
+            // Extract inliers
+            pcl::ExtractIndices<pcl::PointXYZ> plane_extracter;
+            
+            pcl::PointCloud<pcl::PointXYZ>::Ptr plane_only(new pcl::PointCloud<pcl::PointXYZ>());
             // Extracting the plane using RANSAC
             seg.setInputCloud(cloud1);
             seg.segment(*inliers, *coefficients);
+
+            std::vector<int> ransac_plane_indices;
+            ransac_plane_indices = inliers->indices;
 
             if (inliers->indices.size() == 0)
             {
@@ -158,11 +168,11 @@ public:
             plane_only_msg->points = plane_only->points;
             pub_.publish(plane_only_msg);
 
-            plane_extracter.setNegative(true);
-            plane_extracter.filter(*cloud_rest);
+            // plane_extracter.setNegative(true);
+            // plane_extracter.filter(*cloud_rest);
             // ////////////////////////////////////////////////////////////////////////
 
-            // Extracting indices of detected clusters
+            // Extracting indices of detected clusters for identifying the only plane
             pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
             tree->setInputCloud(plane_only);
 
@@ -173,6 +183,15 @@ public:
             ec.setMaxClusterSize(_maxClusterSize);
             ec.setSearchMethod(tree);
             ec.setInputCloud(plane_only);
+
+            // pcl::PointIndices::Ptr planeTrueIndices(new pcl::PointIndices);
+            // planeTrueIndices->indices = ransac_plane_indices;
+            // boost::shared_ptr<std::vector<int>> planeIndicesPtr = boost::make_shared<std::vector<int>>(ransac_plane_indices);
+
+            // ec.setIndices(planeIndicesPtr);
+
+            std::vector<int> POIIndices;
+
             ec.extract(cluster_indices);
 
             // here should not be more than a single cluster extracted per plane
@@ -181,7 +200,10 @@ public:
             {
                 pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_cluster(new pcl::PointCloud<pcl::PointXYZ>);
                 for (const auto &idx : it->indices)
+                {
                     cloud_cluster->push_back((*plane_only)[idx]); //*
+                    POIIndices.push_back(ransac_plane_indices[idx]);
+                }
                 cloud_cluster->width = cloud_cluster->size();
                 cloud_cluster->height = 1;
                 cloud_cluster->is_dense = true;
@@ -196,27 +218,46 @@ public:
                 cloud_cluster_msg->header.stamp = cloud_in_msg->header.stamp;
                 cloud_cluster_msg->header.frame_id = "base_link";
                 cloud_cluster_msg->points = cloud_cluster->points;
-                pub2_.publish(cloud_cluster_msg);
-
+                pub7_.publish(cloud_cluster_msg);
                 j++;
             }
             i++;
+
             // POI and scraps
             pcl::PointCloud<pcl::PointXYZ>::Ptr scraps_cloud(new pcl::PointCloud<pcl::PointXYZ>);
 
             // now we need to extract the prior detected plane
             pcl::PointIndices::Ptr clusterInliersIndices(new pcl::PointIndices);
+            clusterInliersIndices->indices = POIIndices;
 
-            // Extract fInliers from the input cloud
+            // Extract Inliers from the input cloud
             pcl::ExtractIndices<pcl::PointXYZ> cluster_extracter;
-            cluster_extracter.setInputCloud(plane_only);
+            cluster_extracter.setInputCloud(cloud1);
             cluster_extracter.setIndices(clusterInliersIndices);
-            cluster_extracter.setNegative(false); //Removes part_of_cloud but retain the original full_cloud
+            cluster_extracter.setNegative(false); // Keep only the inliers (i.e. the plane) 
             cluster_extracter.filter(*plane_only);
 
-            cluster_extracter.setNegative(true); // Removes part_of_cloud from full cloud  and keep the rest
+            cluster_extracter.setNegative(true); // Remove the inliers (i.e. remove only the plane and keep the rest)
             cluster_extracter.filter(*scraps_cloud);
             // //////////////////////////////////////////////////////////////////////////
+
+            // publish only the major cluster (aka the plane of interest (POI))
+            PointCloud::Ptr cloud_cluster_msg(new PointCloud);
+            std::cerr << "------------------------------------" << std::endl;
+            std::cerr << "Plane published!" << i << std::endl;
+            std::cerr << "Plane only size!" << plane_only->size() << std::endl;
+            cloud_cluster_msg->header.stamp = cloud_in_msg->header.stamp;
+            cloud_cluster_msg->header.frame_id = "base_link";
+            cloud_cluster_msg->points = plane_only->points;
+            pub2_.publish(cloud_cluster_msg);
+
+            PointCloud::Ptr scraps_cloud_msg(new PointCloud);
+            std::cerr << "------------------------------------" << std::endl;
+            std::cerr << "Scraps cloud size!" << scraps_cloud->size() << std::endl;
+            scraps_cloud_msg->header.stamp = cloud_in_msg->header.stamp;
+            scraps_cloud_msg->header.frame_id = "base_link";
+            scraps_cloud_msg->points = scraps_cloud->points;
+            pub4_.publish(scraps_cloud_msg);
 
             // Preparing the OK plane extraction
             pcl::ModelCoefficients::Ptr okCoefficients(new pcl::ModelCoefficients);
@@ -234,13 +275,21 @@ public:
             okSeg.setInputCloud(plane_only);
             okSeg.segment(*inliers, *okCoefficients);
 
-            // Project all the points from POI to a smooth (and silky) plane #doItLikeZohan
+            // Project all the points from POI to a smooth (and silky) plane .....................................................................................................................#doItLikeZohan
             pcl::PointCloud<pcl::PointXYZ>::Ptr perfectPlane(new pcl::PointCloud<pcl::PointXYZ>);
             pcl::ProjectInliers<pcl::PointXYZ> perfectProjection;
             perfectProjection.setModelType(pcl::SACMODEL_PLANE);
             perfectProjection.setInputCloud(plane_only);
             perfectProjection.setModelCoefficients(okCoefficients);
             perfectProjection.filter(*perfectPlane);
+
+            PointCloud::Ptr perfect_plane_msg(new PointCloud);
+            std::cerr << "################################" << std::endl;
+            std::cerr << "Perfect plane size!" << perfectPlane->size() << std::endl;
+            perfect_plane_msg->header.stamp = cloud_in_msg->header.stamp;
+            perfect_plane_msg->header.frame_id = "base_link";
+            perfect_plane_msg->points = perfectPlane->points;
+            pub5_.publish(perfect_plane_msg);
 
             // gathering all the rectified planes in the same place for a final concatenation
             pcl::PointCloud<pcl::PointXYZ> tempPerfectPlane;
@@ -253,15 +302,30 @@ public:
                 tempPerfectPlane.points = perfectPlane->points;
                 perfectPlanesCloud += tempPerfectPlane;
             }
+
+            
             // //////////////////////////////////////////////////////
 
             // adding the scraps to  the original point cloud
-            pcl::PointCloud<pcl::PointXYZ> tempScrapsCloud, tempCloudRest;
-            tempScrapsCloud.points = scraps_cloud->points;
-            tempCloudRest.points = cloud_rest->points;
-            tempCloudRest += tempScrapsCloud;
+            // pcl::PointCloud<pcl::PointXYZ> tempScrapsCloud, tempCloudRest;
+            // tempScrapsCloud.points = scraps_cloud->points;
+            // tempCloudRest.points = cloud_rest->points;
+            // tempCloudRest += tempScrapsCloud;
 
-            cloud_rest->points = tempCloudRest.points;
+            cloud1->points = scraps_cloud->points;
+
+            PointCloud::Ptr rest_cloud_msg(new PointCloud);
+            std::cerr << "??????????????????????????????????" << std::endl;
+            std::cerr << "Final rest_cloud size!" << cloud1->size() << std::endl;
+            rest_cloud_msg->header.stamp = cloud_in_msg->header.stamp;
+            rest_cloud_msg->header.frame_id = "base_link";
+            rest_cloud_msg->points = cloud1->points;
+            pub6_.publish(rest_cloud_msg);
+
+            // in case something goes wrong... 6 planes should be enough, so stop the loop
+            if (i==5){
+                break;
+            }
 
             // cloud1.swap(cloud_rest);
 
@@ -502,8 +566,9 @@ public:
             // sensor_msgs::ImagePtr output_image = cv_bridge::CvImage(std_msgs::Header(), "16UC1", cv_image).toImageMsg();
             // pub_.publish(output_image);
         }
+        // adding all the remained scraps and all the rectified planes into the same cloud 
         pcl::PointCloud<pcl::PointXYZ> gt_cloud;
-        gt_cloud.points = cloud_rest->points;
+        gt_cloud.points = cloud1->points;
         gt_cloud += perfectPlanesCloud;
 
         PointCloud::Ptr gt_cloud_msg(new PointCloud);
@@ -522,6 +587,10 @@ private:
     ros::Publisher pub_;
     ros::Publisher pub2_;
     ros::Publisher pub3_;
+    ros::Publisher pub4_;
+    ros::Publisher pub5_;
+    ros::Publisher pub6_;
+    ros::Publisher pub7_;
     // image_transport::Publisher pub2_;
     // calibration parameters
     // double K[9] = {385.8655956930966, 0.0, 342.3593021849471,
