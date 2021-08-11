@@ -1,0 +1,19 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "",
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "includePath": [
+        "/home/funderburger/work_ws/calibration_ws/planes_extr_ws/catkin_ws/devel/include/**",
+        "/home/funderburger/cvbridge_build_ws/install/include/**",
+        "/opt/ros/melodic/include/**",
+        "/home/funderburger/work_ws/cloud2depth_ws/src/pcl_nodes/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS"
+    }
+  ],
+  "version": 4
+}

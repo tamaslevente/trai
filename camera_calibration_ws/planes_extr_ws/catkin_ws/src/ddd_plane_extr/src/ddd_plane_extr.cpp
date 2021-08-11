@@ -1,3 +1,5 @@
+// #include <boost/filesystem.hpp>
+
 #include <ros/ros.h>
 #include <dynamic_reconfigure/server.h>
 #include <visualization_msgs/Marker.h>
@@ -9,7 +11,7 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 
-#include <cv_bridge/cv_bridge.h>
+// #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/PointCloud.h>
@@ -34,19 +36,32 @@
 #include <pcl/filters/statistical_outlier_removal.h>
 #include <pcl/sample_consensus/sac_model_perpendicular_plane.h>
 #include <pcl/filters/project_inliers.h>
-#include <iostream>
 
+#include <pcl/common/common.h>
+#include <pcl/common/centroid.h>
+#include <pcl/common/pca.h>
+#include <pcl/features/fpfh.h>
+#include <pcl/features/normal_3d.h>
+#include <geometry_msgs/PointStamped.h>
+
+#include <iostream>
+#include <experimental/filesystem>
+#include <iterator>
+#include <vector>
+#include <algorithm>
 #include <math.h>
 
 using namespace cv;
 using namespace std;
 using namespace pcl_msgs;
+// namespace fs = boost::filesystem;
+namespace fs = std::experimental::filesystem;
 
 class Planes2Depth
 {
 public:
     // typedef pcl::PointXYZRGB Point;
-    typedef pcl::PointXYZ Point;
+    typedef pcl::PointXYZI Point;
     typedef pcl::PointCloud<Point> PointCloud;
 
     /*
@@ -55,42 +70,174 @@ public:
    */
     Planes2Depth() : it_(nh_)
     {
-        pub_ = nh_.advertise<PointCloud>("/ddd_extracted_planes", 1);
-        pub2_ = nh_.advertise<PointCloud>("/ddd_extracted_planes_all_Points", 1);
-        pub3_ = nh_.advertise<PointCloud>("/ddd_extracted_gt", 1);
-        pub4_ = nh_.advertise<PointCloud>("/ddd_extracted_plane_gt", 1);
+        // pub_ = nh_.advertise<PointCloud>("/fphf_result", 1);
+        // pub2_ = nh_.advertise<PointCloud>("/ddd_extracted_planes_all_Points", 1);
+        // pub3_ = nh_.advertise<PointCloud>("/ddd_extracted_gt", 1);
+        // pub4_ = nh_.advertise<PointCloud>("/ddd_extracted_plane_gt", 1);
 
-        sub_ = nh_.subscribe("/pico_pcloud", 1, &Planes2Depth::cloudCallback, this);
+        // sub_ = nh_.subscribe("/cloud_pcd", 1, &Planes2Depth::cloudCallback, this);
 
-        // double dist_thr;
-        // int max_its;
+        // config_server_.setCallback(boost::bind(&Planes2Depth::dynReconfCallback, this, _1, _2));
 
-        config_server_.setCallback(boost::bind(&Planes2Depth::dynReconfCallback, this, _1, _2));
+        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
 
         // "~" means, that the node hand is opened within the private namespace (to get the "own" paraemters)
         ros::NodeHandle private_nh("~");
+        // ########################################
+        // This should be used without a subscriber
+        // ########################################
+
+        // string saveDirPcd = "/home/funderburger/work_ws/calibration_ws/planes_extr_ws/training_data/pcd_gt/";                                  // BEWARE of that last / !!! You don't want to forget that, trust me!
+        string saveDirPcd = "/home/funderburger/work_ws/calibration_ws/planes_extr_ws/catkin_ws/test_dir/pcd_combo_ir/"; // BEWARE of that last / !!! You don't want to forget that, trust me!
+        // string saveDirDepth = "/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/depth_gt/"; // BEWARE of that last / !!! You don't want to forget that, trust me!
+        string saveDirDepth = "/home/funderburger/work_ws/calibration_ws/planes_extr_ws/catkin_ws/test_dir/depth_gt/"; // BEWARE of that last / !!! You don't want to forget that, trust me!
+        long int np = saveDirPcd.length();
+        char saveDirPcdArr[np + 1];
+        long int nd = saveDirDepth.length();
+        char saveDirDepthArr[nd + 1];
+        strcpy(saveDirPcdArr, saveDirPcd.c_str());
+        strcpy(saveDirDepthArr, saveDirDepth.c_str());
+        if (private_nh.getParam("pcd_folder", _param))
+        {
+            ROS_INFO("Got param: %s", _param.c_str());
+            int i = 0;
+            fs::path p(_param.c_str());
+            typedef vector<fs::path> vec; // store paths,
+            vec v;                        // so we can sort them later
+            copy(fs::directory_iterator(p), fs::directory_iterator(), back_inserter(v));
+            sort(v.begin(), v.end());
+            for (vec::const_iterator it(v.begin()), it_end(v.end()); it != it_end; ++it)
+            {
+
+                string ir_file{*it};
+                string replace_this = "pcd_data";
+                int pos = ir_file.find(replace_this);
+                ir_file.replace(pos, replace_this.length(), "ir_data");
+                string current_file_ext = "pcd.pcd";
+                int ext_pos = ir_file.find(current_file_ext);
+                ir_file.replace(ext_pos, current_file_ext.length(), "ir.png");
+                cout << "pcd_file:" << *it << '\n';
+                if (pcl::io::loadPCDFile<pcl::PointXYZI>(*it, *cloud) == -1) //* load the file
+                {
+                    PCL_ERROR("Couldn't read file %s \n", it);
+                }
+                // cout << entry.path() << '\n';
+                std::cout << "Loaded "
+                          << cloud->width * cloud->height
+                          << " data points"
+                          << std::endl;
+                string saveDirP(saveDirPcdArr);
+                char numberDirPcdArr[6];
+                sprintf(numberDirPcdArr, "%05d", i);
+                string pcdFilename = saveDirP + numberDirPcdArr + ".pcd";
+                string saveDirD(saveDirDepthArr);
+                char numberDirDepthArr[6];
+                sprintf(numberDirDepthArr, "%05d", i);
+                string depthFilename = saveDirD + numberDirDepthArr + ".png";
+
+                getFloorGT(cloud, pcdFilename, depthFilename, ir_file);
+                i++;
+            }
+        }
+        else
+        {
+            ROS_ERROR("Failed to get param 'pcd_folder' ");
+        }
     }
 
     ~Planes2Depth() {}
 
-    void dynReconfCallback(ddd_plane_extr::planes_paramConfig &config, uint32_t level)
-    {
-        _distanceThreshold = config.distanceThreshold;
-        _planesDelay = config.planesDelay;
-        // _max_planes = config.max_planes;
-        _MeanK = config.MeanK;
-        _StddevMulThresh = config.StddevMulThresh;
-        _maxIterations = config.maxIterations;
-        _angleCoeff = config.angleCoeff;
-        _anglePoints = config.anglePoints;
-    }
+    // void dynReconfCallback(ddd_plane_extr::planes_paramConfig &config, uint32_t level)
+    // {
+    //     _distanceThreshold = config.distanceThreshold;
+    //     _planesDelay = config.planesDelay;
+    //     // _max_planes = config.max_planes;
+    //     _MeanK = config.MeanK;
+    //     _StddevMulThresh = config.StddevMulThresh;
+    //     _maxIterations = config.maxIterations;
+    //     _angle = config.angle;
+    // }
 
-    PointCloud::Ptr * extractPlanes(PointCloud::Ptr inputCloud, pcl::PointIndices::Ptr inliers, pcl::ModelCoefficients::Ptr coefficients, float distanceThreshold, float angle, int maxIterations)
+    // void cloudCallback(const PointCloud::ConstPtr &cloud_in_msg)
+    // {
+    //     // if (!cloud_in_msg || cloud_in_msg->size() <= 0)
+    //     // {
+    //     //     ROS_WARN("got empty or invalid pointcloud --> ignoring");
+    //     //     return;
+    //     // }
+    //     int is_save = false;
+    //     int is_predict = true;
+    //     // Create a container for the data.
+    //     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_in(new pcl::PointCloud<pcl::PointXYZ>);
+    //     pcl::copyPointCloud(*cloud_in_msg, *cloud_in);
+    //     pcl::PointCloud<pcl::PointXYZI>::Ptr intensity_cloud(new pcl::PointCloud<pcl::PointXYZI>());
+    //     // cloud_in_msg->fields[3].name = "intensity";
+    //     // pcl::fromROSMsg(*cloud_in_msg, *conv_input);
+    //     // conv_input->points = cloud_in_msg->data;
+    //     // pcl::copyPointCloud(*cloud_in_msg, *conv_input);
+    //     // Size of humansize cloud
+    //     int cloud_size = cloud_in->points.size();
+    //     // std::cout << "cloud_size: " << cloud_size << std::endl;
+    //     // if (cloud_size <= 1)
+    //     // {
+    //     //     return;
+    //     // }
+    //     int counter = 0;
+    //     for (size_t i = 0; i < cloud_size; ++i)
+    //     {
+    //         pcl::PointXYZ p = cloud_in->points[i];
+    //         // skip NaN and INF valued points
+    //         if (!pcl_isfinite(p.x) ||
+    //             !pcl_isfinite(p.y) ||
+    //             !pcl_isfinite(p.z))
+    //         {
+    //             counter++;
+    //             continue;
+    //         }
+    //     }
+    //     std::cout << "test" << counter << std::endl;
+    //     // pcl::PCA<pcl::PointXYZI> pca;
+    //     // pcl::PointCloud<pcl::PointXYZI>::Ptr transform_cloud_translate(new pcl::PointCloud<pcl::PointXYZI>());
+    //     // pcl::PointCloud<pcl::PointXYZI>::Ptr transform_cloud_rotate(new pcl::PointCloud<pcl::PointXYZI>());
+    //     // sensor_msgs::PointCloud2 output;
+    //     // geometry_msgs::PointStamped::Ptr output_point(new geometry_msgs::PointStamped());
+    //     // geometry_msgs::PointStamped output_point_;
+    //     // Eigen::Vector3f eigen_values;
+    //     // Eigen::Vector4f centroid;
+    //     // Eigen::Matrix3f eigen_vectors;
+    //     // Eigen::Affine3f translate = Eigen::Affine3f::Identity();
+    //     // Eigen::Affine3f rotate = Eigen::Affine3f::Identity();
+    //     // double theta;
+    //     // std::vector<double> description;
+    //     // description.push_back(cloud_size);
+    //     // pcl::PointCloud<pcl::PointNormal>::Ptr normals(new pcl::PointCloud<pcl::PointNormal>());
+    //     // pcl::NormalEstimation<pcl::PointXYZI, pcl::PointNormal> ne;
+    //     // ne.setInputCloud(conv_input);
+    //     // ne.setKSearch(24);
+    //     // ne.compute(*normals);
+    //     // pcl::FPFHEstimation<pcl::PointXYZI, pcl::PointNormal, pcl::FPFHSignature33> fpfh;
+    //     // fpfh.setInputCloud(conv_input);
+    //     // fpfh.setInputNormals(normals);
+    //     // pcl::search::KdTree<pcl::PointXYZI>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZI>());
+    //     // fpfh.setSearchMethod(tree);
+    //     // pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfhs(new pcl::PointCloud<pcl::FPFHSignature33>());
+    //     // fpfh.setRadiusSearch(0.05);
+    //     // fpfh.compute(*fpfhs);
+    //     // // for(int i=0;i<fpfhs.histogram.size();i++){
+    //     // std::cout << fpfhs->points.size();
+    //     // // }
+    //     // std::cout << std::endl;
+    //     // fpfhs->header.frame_id = "base_link";
+    //     // // fpfhs->header.stamp = cloud_in_msg->header.stamp;
+    //     pub_.publish(cloud_in);
+    // }
+
+    PointCloud::Ptr *extractPlanes(PointCloud::Ptr inputCloud, pcl::PointIndices::Ptr inliers, pcl::ModelCoefficients::Ptr coefficients, float distanceThreshold, float angle, int maxIterations)
     {
         static PointCloud::Ptr pointClouds[2];
 
         // Create the segmentation object
-        pcl::SACSegmentation<pcl::PointXYZ> seg;
+        pcl::SACSegmentation<pcl::PointXYZI> seg;
         // Optional
         seg.setOptimizeCoefficients(true);
         // Mandatory
@@ -105,10 +252,10 @@ public:
         seg.setEpsAngle(angle * (M_PI / 180.0f)); // plane can be within 10.0 degrees of X-Z plane
 
         // Create pointcloud to publish inliers
-        pcl::ExtractIndices<pcl::PointXYZ> extract;
+        pcl::ExtractIndices<pcl::PointXYZI> extract;
 
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane(new pcl::PointCloud<pcl::PointXYZ>());
-        pcl::PointCloud<pcl::PointXYZ>::Ptr inversed_cloud_plane(new pcl::PointCloud<pcl::PointXYZ>());
+        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_plane(new pcl::PointCloud<pcl::PointXYZI>());
+        pcl::PointCloud<pcl::PointXYZI>::Ptr inversed_cloud_plane(new pcl::PointCloud<pcl::PointXYZI>());
 
         // Fit a plane
         seg.setInputCloud(inputCloud);
@@ -137,40 +284,39 @@ public:
         return pointClouds;
     }
 
-    // PointCloud::Ptr voxelFilter(){
-    //     // std::cout << std::endl;
-    //     // std::cout << "PointCloud before filtering has: " << cloud1->size() << " data points." << std::endl; //*
-    //     // // Create the filtering object: downsample the dataset using a leaf size of 1cm
-    //     // pcl::VoxelGrid<pcl::PointXYZ> vg1;
-    //     // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered_voxel1(new pcl::PointCloud<pcl::PointXYZ>);
-
-    //     // vg1.setInputCloud(cloud1);
-    //     // float leaf_size = 0.01f;
-    //     // vg1.setLeafSize(leaf_size, leaf_size, leaf_size);
-    //     // vg1.filter(*cloud_filtered_voxel1);
-
-    //     // std::cout << "PointCloud after filtering has: " << cloud_filtered_voxel1->size() << " data points." << std::endl; //*
-    //     // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered1(new pcl::PointCloud<pcl::PointXYZ>);
-    //     // pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor1;
-
-    //     // sor1.setInputCloud(cloud_filtered_voxel1);
-    //     // sor1.setMeanK(_MeanK);
-    //     // sor1.setStddevMulThresh(_StddevMulThresh);
-    //     // sor1.setNegative(false);
-    //     // sor1.filter(*cloud_filtered1);
-    // }
-
-    void cloudCallback(const PointCloud::ConstPtr &cloud_in_msg)
+    void getFloorGT(PointCloud::Ptr inputCloud, string pcd_file_name, string depth_file_name, string ir_file)
     {
-        if (!cloud_in_msg || cloud_in_msg->size() <= 0)
+        if (!inputCloud || inputCloud->size() <= 0)
         {
             ROS_WARN("got empty or invalid pointcloud --> ignoring");
             return;
         }
+        pcl::PointCloud<pcl::PointXYZI>::Ptr intense_cloud(inputCloud);
 
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1(new pcl::PointCloud<pcl::PointXYZ>);
-        pcl::copyPointCloud(*cloud_in_msg, *cloud1);
+        cv::Mat img = cv::imread(ir_file, CV_16UC1);
+        // img.reshape()
+        std::vector<uint16_t> ir_reshaped = img.reshape(1, img.rows * img.cols);
+        int max = 0;
+        for (int i = 0; i < ir_reshaped.size(); i++)
+        {
+            if (ir_reshaped[i] > max)
+            {   
+                max = ir_reshaped[i];
+                printf("%d\n", ir_reshaped[i]);
+            }
+        }
+        
+        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud1(new pcl::PointCloud<pcl::PointXYZI>);
+        pcl::copyPointCloud(*intense_cloud,*cloud1);
 
+        for (size_t i = 0; i < ir_reshaped.size(); ++i)
+        {
+            pcl::PointXYZI p = cloud1->points[i];
+            p.intensity = ir_reshaped[i]; ///max;
+
+        }
+
+        // pcl::copyPointCloud(*cloud_in_msg, *cloud1);
 
         // ##########################################################
         // #Take only the non-distorted points from the ground floor#
@@ -179,61 +325,59 @@ public:
         pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
 
         // Extract the base point for floor, here we are interested in getting the coefficients of these points
-        PointCloud::Ptr * pointClouds = extractPlanes(cloud1, inliers, okCoefficients, 0.03, _angleCoeff, _maxIterations);
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane1(*pointClouds);
+        PointCloud::Ptr *pointClouds = extractPlanes(cloud1, inliers, okCoefficients, 0.03, 23.0, 1000);
+        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_plane1(*pointClouds);
 
         // Publish pointcloud with tese points
         PointCloud::Ptr final_cloud1(new PointCloud);
         std::cerr << "------------------------------------" << std::endl;
         // std::cerr << "Nr_planes: " << n_planes << std::endl;
         final_cloud1->header.frame_id = "base_link";
-        final_cloud1->header.stamp = cloud_in_msg->header.stamp;
+        final_cloud1->header.stamp = inputCloud->header.stamp;
         final_cloud1->points = cloud_plane1->points;
-        pub_.publish(final_cloud1);
+        // pub_.publish(final_cloud1);
 
         // ###########################################
         // #Take all the points from the ground floor#
         // ###########################################
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
-        pcl::copyPointCloud(*cloud_in_msg, *cloud);
+        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(inputCloud);
+        // pcl::copyPointCloud(*inputCloud, *cloud);
 
         pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
         pcl::PointIndices::Ptr okInliers(new pcl::PointIndices);
 
         // Extract as many points as you can from the ground floor (that is why we'll use larger numbers:
-        //         _distanceThreshold: 0.07 (meters)
-        //         _anglePoints: 15.0 (degree))
-        pointClouds = extractPlanes(cloud, okInliers, coefficients, _distanceThreshold, _anglePoints, _maxIterations);
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane(*pointClouds);
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_no_plane(*(pointClouds+1));
-
+        //         _distanceThreshold: 0.13 (meters) (pretty huge, I know!)
+        pointClouds = extractPlanes(cloud, okInliers, coefficients, 0.13, 20.0, 1000);
+        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_plane(*pointClouds);
+        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_no_plane(*(pointClouds + 1));
 
         // Publish this point cloud
         PointCloud::Ptr final_cloud(new PointCloud);
         std::cerr << "------------------------------------" << std::endl;
         final_cloud->header.frame_id = "base_link";
-        final_cloud->header.stamp = cloud_in_msg->header.stamp;
+        final_cloud->header.stamp = inputCloud->header.stamp;
         final_cloud->points = cloud_plane->points;
-        pub2_.publish(final_cloud);
+        // pub2_.publish(final_cloud);
 
         // Project all the points to a plane
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_projected(new pcl::PointCloud<pcl::PointXYZ>);
-        pcl::ProjectInliers<pcl::PointXYZ> proj;
+        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_projected(new pcl::PointCloud<pcl::PointXYZI>);
+        pcl::ProjectInliers<pcl::PointXYZI> proj;
         proj.setModelType(pcl::SACMODEL_PLANE);
         proj.setInputCloud(cloud_plane);
         proj.setModelCoefficients(okCoefficients);
         proj.filter(*cloud_projected);
-        
+
         // Publish the point cloud
         PointCloud::Ptr gt_plane(new PointCloud);
         std::cerr << "------------------------------------" << std::endl;
         gt_plane->header.frame_id = "base_link";
-        gt_plane->header.stamp = cloud_in_msg->header.stamp;
+        gt_plane->header.stamp = inputCloud->header.stamp;
         gt_plane->points = cloud_projected->points;
-        pub4_.publish(gt_plane);
+        // pub4_.publish(gt_plane);
 
         // Create the final image
-        pcl::PointCloud<pcl::PointXYZ> cloud_a, cloud_b;
+        pcl::PointCloud<pcl::PointXYZI> cloud_a, cloud_b;
         cloud_a.points = cloud_no_plane->points;
         cloud_b.points = cloud_projected->points;
         cloud_b += cloud_a;
@@ -241,67 +385,73 @@ public:
         PointCloud::Ptr gt_cloud(new PointCloud);
         std::cerr << "------------------------------------" << std::endl;
         gt_cloud->header.frame_id = "base_link";
-        gt_cloud->header.stamp = cloud_in_msg->header.stamp;
+        gt_cloud->header.stamp = inputCloud->header.stamp;
         gt_cloud->points = cloud_b.points;
-        pub3_.publish(gt_cloud);
+        gt_cloud->is_dense = false;
+        gt_cloud->points.resize(inputCloud->width * inputCloud->height);
+        gt_cloud->width = 1;
+        gt_cloud->height = gt_cloud->points.size();
+        // pub3_.publish(gt_cloud);
 
-        ros::Duration(_planesDelay).sleep();
+        //##########################//
+        // save the pcd if you want //
+        //##########################//
+        pcl::io::savePCDFileASCII (pcd_file_name, *gt_cloud);
+        std::cerr << "Saved " << gt_cloud->size() << " data points to"<< pcd_file_name << std::endl;
 
         // ***********************
         // **CONVERSION TO DEPTH**
         // ***********************
 
-        // cv_image = Mat(height_, width_, CV_32FC1, 0.0); //Scalar(std::numeric_limits<float>::max()));
-        // int minRange = 0; // this is the smallest distance at which the camera can measure depending on the mode (near, far, etc.)
+        cv_image = Mat(height_, width_, CV_32FC1, 0.0); //Scalar(std::numeric_limits<float>::max()));
+        int minRange = 0;                               // this is the smallest distance at which the camera can measure depending on the mode (near, far, etc.)
 
-        // for (int i = 0; i < cloud_in_msg->points.size(); i++)
-        // {
-        //     if (cloud_in_msg->points[i].z == cloud_in_msg->points[i].z)
-        //     {
-        //         if (cloud_in_msg->points[i].z != 0.0)
-        //         {
-        //             z = cloud_in_msg->points[i].z * 1000.0;
-        //             u = (cloud_in_msg->points[i].x * 1000.0 * focalX_) / z;
-        //             v = (cloud_in_msg->points[i].y * 1000.0 * focalY_) / z;
-        //             pixel_pos_x = (int)(u + centerX_);
-        //             pixel_pos_y = (int)(v + centerY_);
+        for (int i = 0; i < gt_cloud->points.size(); i++)
+        {
+            if (gt_cloud->points[i].z == gt_cloud->points[i].z)
+            {
+                if (gt_cloud->points[i].z != 0.0)
+                {
+                    z = gt_cloud->points[i].z * 1000.0;
+                    u = (gt_cloud->points[i].x * 1000.0 * focalX_) / z;
+                    v = (gt_cloud->points[i].y * 1000.0 * focalY_) / z;
+                    pixel_pos_x = (int)(u + centerX_);
+                    pixel_pos_y = (int)(v + centerY_);
 
-        //             if (pixel_pos_x > (width_ - 1))
-        //             {
-        //                 pixel_pos_x = width_ - 1;
-        //             }
-        //             else if (pixel_pos_x < 0)
-        //             {
-        //                 pixel_pos_x = -pixel_pos_x;
-        //             }
-        //             if (pixel_pos_y > (height_ - 1))
-        //             {
-        //                 pixel_pos_y = height_ - 1;
-        //             }
-        //             else if (pixel_pos_y < 0)
-        //             {
-        //                 pixel_pos_y = -pixel_pos_y;
-        //             }
-        //         }
-        //         else
-        //         {
-        //             pixel_pos_x = 0;
-        //             pixel_pos_y = 0;
-        //             z = 0.0;
-        //         }
+                    if (pixel_pos_x > (width_ - 1))
+                    {
+                        pixel_pos_x = width_ - 1;
+                    }
+                    else if (pixel_pos_x < 0)
+                    {
+                        pixel_pos_x = -pixel_pos_x;
+                    }
+                    if (pixel_pos_y > (height_ - 1))
+                    {
+                        pixel_pos_y = height_ - 1;
+                    }
+                    else if (pixel_pos_y < 0)
+                    {
+                        pixel_pos_y = -pixel_pos_y;
+                    }
+                }
+                else
+                {
+                    pixel_pos_x = 0;
+                    pixel_pos_y = 0;
+                    z = 0.0;
+                }
 
-        //         cv_image.at<float>(pixel_pos_y, pixel_pos_x) = z - minRange;
-        //     }
-        // }
+                cv_image.at<float>(pixel_pos_y, pixel_pos_x) = z - minRange;
+            }
+        }
 
-        // cv_image.convertTo(cv_image, CV_16UC1);
-
-        // // imshow("Display depth from point cloud", cv_image);
-        // waitKey(3);
-
-        // // imwrite("depth_from_pcd.png",cv_image);
-        // sensor_msgs::ImagePtr output_image = cv_bridge::CvImage(std_msgs::Header(), "16UC1", cv_image).toImageMsg();
-        // pub_.publish(output_image);
+        //###########################//
+        //  saving the depth images  //
+        //###########################//
+        cv_image.convertTo(cv_image, CV_16UC1);
+        cv::imwrite(depth_file_name, cv_image);
+        std::cerr << "Saved " << gt_cloud->size() << " data points to" << depth_file_name << std::endl;
     }
 
 private:
@@ -320,15 +470,26 @@ private:
     //                0.0, 0.0, 1.0};
 
     // EEPROM parameters
-    double K[9] = {386.804, 0.0, 341.675,
-                   0.0, 384, 238.973,
+    // double K[9] = {386.804, 0.0, 341.675,
+    //                0.0, 384, 238.973,
+    //                0.0, 0.0, 1.0};
+
+    // // Pico parameters
+    // double K[9] = {460.585, 0.0, 334.080,
+    //                 0.0, 460.268, 169.807,
+    //                 0.0, 0.0, 1.0};
+
+    // Pico parameters OK!!!!!!!!!!!!!!
+    double K[9] = {460.585, 0.0, 334.081,
+                   0.0, 460.268, 169.808,
                    0.0, 0.0, 1.0};
 
     double centerX_ = K[2];
     double centerY_ = K[5];
     double focalX_ = K[0];
     double focalY_ = K[4];
-    int height_ = 480;
+    // int height_ = 480;
+    int height_ = 360; // only for pico
     int width_ = 640;
     int pixel_pos_x, pixel_pos_y;
     float z, u, v;
@@ -340,9 +501,9 @@ private:
     float _planesDelay;
     int _MeanK;
     double _StddevMulThresh;
-    float _angleCoeff;
-    float _anglePoints;
+    float _angle;
     int _maxIterations;
+    string _param;
 };
 
 int main(int argc, char **argv)
@@ -351,7 +512,8 @@ int main(int argc, char **argv)
 
     Planes2Depth c2d;
 
-    ros::spin();
+    // Only when there is a subscriber
+    // ros::spin();
 
     return 0;
 }

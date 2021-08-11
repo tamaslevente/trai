@@ -1,8 +1,13 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.10)
+# cmake_minimum_required(VERSION 3.0.2)
 project(ddd_plane_extr)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++17)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+link_libraries(stdc++fs)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -106,6 +111,7 @@ find_package(PythonLibs 3.8)
 
 generate_dynamic_reconfigure_options(
   cfg/planes_param.cfg
+  cfg/multi_planes_param.cfg
 )
 
 
@@ -226,16 +232,20 @@ include_directories(
 # catkin_add_nosetests(test)
 
 add_executable(ddd_plane_extr src/ddd_plane_extr.cpp)
-add_executable(ddd_plane_extr_from_pcd src/ddd_plane_extr_from_pcd.cpp)
+add_executable(ddd_plane_extr_raw src/ddd_plane_extr_raw.cpp)
+add_executable(ddd_plane_extr_raw_all src/ddd_plane_extr_raw_all.cpp)
 add_executable(save_frames src/save_frames.cpp)
-add_dependencies(ddd_plane_extr ${PROJECT_NAME}_gencfg)
-# add_dependencies(ddd_plane_extr_from_pcd ${PROJECT_NAME}_gencfg)
+
+add_dependencies(ddd_plane_extr_raw ${PROJECT_NAME}_gencfg)
+add_dependencies(ddd_plane_extr_raw_all ${PROJECT_NAME}_gencfg)
 
 target_include_directories(ddd_plane_extr PRIVATE ${Python3_INCLUDE_DIRS})
-target_include_directories(ddd_plane_extr_from_pcd PRIVATE ${Python3_INCLUDE_DIRS})
+target_include_directories(ddd_plane_extr_raw PRIVATE ${Python3_INCLUDE_DIRS})
+target_include_directories(ddd_plane_extr_raw_all PRIVATE ${Python3_INCLUDE_DIRS})
 target_include_directories(save_frames PRIVATE ${Python3_INCLUDE_DIRS})
 
 target_link_libraries(ddd_plane_extr ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_INCLUDE_DIRS} ${OpenCV_LIBS} ${PYTHON3_LIBRARIES})
-target_link_libraries(ddd_plane_extr_from_pcd ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_INCLUDE_DIRS} ${OpenCV_LIBS} ${PYTHON3_LIBRARIES})
+target_link_libraries(ddd_plane_extr_raw ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_INCLUDE_DIRS} ${OpenCV_LIBS} ${PYTHON3_LIBRARIES})
+target_link_libraries(ddd_plane_extr_raw_all ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_INCLUDE_DIRS} ${OpenCV_LIBS} ${PYTHON3_LIBRARIES})
 target_link_libraries(save_frames ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_INCLUDE_DIRS} ${OpenCV_LIBS} ${PYTHON3_LIBRARIES})
 
