@@ -14,7 +14,7 @@ if __name__ == '__main__':
     
     # view num
     #view_num = 33
-    view_num = 4
+    view_num = 40
 
     # path
     data_type = 'output'

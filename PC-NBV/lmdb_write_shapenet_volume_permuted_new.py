@@ -27,11 +27,13 @@ class pcd_df(DataFlow):
             return 4000
         elif self.data_type == 'cub':
             return 4000
+        elif self.data_type == 'output':
+            return 4000
 
     def get_data(self):
         #ShapeNetv1_dir = '/home/zengrui/IROS/pcn/data/ShapeNetv1/'
 
-        ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/data/Data_external/'
+        ShapeNetv1_dir = '/home/cuda/Alex/trai/PC-NBV/data/Data_external/Voxel/'
         for class_id in self.class_list:
             print(class_id)
             print('\n')
@@ -41,7 +43,8 @@ class pcd_df(DataFlow):
             for model_id in model_list:
                 #gt_points = sio.loadmat(os.path.join(self.gt_dir, class_id, model_id, 'model.mat'))
                 gt_points = sio.loadmat('/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Archive/cub/cub/cub/model.mat')
-                gt_pc = np.array(gt_points['points']) # shape (16384, 3)
+                gt_pc2 = np.array(gt_points['points']) # shape (16384, 3)
+                gt_pc=gt_pc2[0:1024,0:3]
                 for ex_index in range(self.ex_times):
                     for scan_index in range(self.num_scans):
                         view_state = np.load(os.path.join(self.NBV_dir, str(model_id),  str(ex_index),str(scan_index) + "_viewstate_permuted.npy")) # shape (33) , 33 is view number
@@ -57,9 +60,9 @@ if __name__ == '__main__':
     # output_path = "data/" + data_type + ".lmdb"
     # NBV_dir = "/home/zengrui/IROS/pcn/NBV_data/shapenet_33_views"
 
-    data_type = 'test'
+    data_type = 'output'
     #class_list_path = '/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Synthetic_step_4/Classes/' + data_type + '/_class.txt'
-    class_list_path = '/home/cuda/Alex/trai/PC-NBV/data/Classes' +  '/_class_test.txt'
+    class_list_path = '/home/cuda/Alex/trai/PC-NBV/data/Classes' +  '/_class_output.txt'
     gt_dir = "/home/cuda/Alex/trai/PC-NBV/Shapenet_v1/Data_all_synthethic/" + data_type
     output_path = "/home/cuda/Alex/trai/PC-NBV/data/Data_external/lmdb_data/" + data_type + ".lmdb"
     NBV_dir = "/home/cuda/Alex/trai/PC-NBV/data/Data_external/NBV_data/shapenet_33_views_640x480/"+data_type

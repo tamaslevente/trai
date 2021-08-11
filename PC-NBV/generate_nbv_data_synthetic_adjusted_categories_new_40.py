@@ -14,7 +14,7 @@ if __name__ == '__main__':
     
     # view num
     #view_num = 33
-    view_num = 4
+    view_num = 40
     nr_views_choose=1
 
     # path
@@ -108,13 +108,13 @@ if __name__ == '__main__':
 
                 if ( (("pos2") in class_id) or (("Pos2") in class_id) ):
                     print("Position is pos_2")
-                    view_state[1]=1
+                    view_state[10]=1
                 if ( (("pos3") in class_id) or (("Pos3") in class_id) ):
                     print("Position is pos_3")
-                    view_state[2]=1
+                    view_state[20]=1
                 if ( (("pos4") in class_id) or (("Pos4") in class_id) ):
                     print("Position is pos_4")
-                    view_state[3]=1
+                    view_state[30]=1
 
                 # # view_state[cur_view] = 1
                 # if (class_id.find("Top_050")):
@@ -170,72 +170,73 @@ if __name__ == '__main__':
                     batch_gt = gt_points[np.newaxis, :, :]
 
                     if ( (('Box2') in class_id) or (('Box_2') in class_id) ):
-                                target_value[0, 0]=0.2
-                                target_value[1, 0]=0.2
-                                target_value[2, 0]=0.2
-                                target_value[3, 0]=0.8
+                            load_values_histogram = np.load('/home/cuda/Alex/trai/PC-NBV/data/Data_external/View_Histogram_Scores/a_viewstate/Box2.npy', mmap_mode='r')
+                                
+                            for hindex in range(0,40):
+                                target_value[hindex,0]=load_values_histogram[hindex]
+                                
                     
                     if ( (('Box3') in class_id) or (('Box_3') in class_id) ):
-                                target_value[0, 0]=0.2
-                                target_value[1, 0]=0.2
-                                target_value[2, 0]=0.2
-                                target_value[3, 0]=0.8
+                            load_values_histogram = np.load('/home/cuda/Alex/trai/PC-NBV/data/Data_external/View_Histogram_Scores/a_viewstate/Box3.npy', mmap_mode='r')
+                                
+                            for hindex in range(0,40):
+                                    target_value[hindex,0]=load_values_histogram[hindex]
 
                     if ( (('Box4') in class_id) or (('Box_4') in class_id) ):
-                                target_value[0, 0]=0.8
-                                target_value[1, 0]=0.2
-                                target_value[2, 0]=0.2
-                                target_value[3, 0]=0.2
+                            load_values_histogram = np.load('/home/cuda/Alex/trai/PC-NBV/data/Data_external/View_Histogram_Scores/a_viewstate/Box4.npy', mmap_mode='r')
+                                
+                            for hindex in range(0,40):
+                                target_value[hindex,0]=load_values_histogram[hindex]
 
                     if ( (('Box5') in class_id) or (('Box_5') in class_id) ):
-                                target_value[0, 0]=0.2
-                                target_value[1, 0]=0.2
-                                target_value[2, 0]=0.8
-                                target_value[3, 0]=0.2
+                            load_values_histogram = np.load('/home/cuda/Alex/trai/PC-NBV/data/Data_external/View_Histogram_Scores/a_viewstate/Box5.npy', mmap_mode='r')
+                                
+                            for hindex in range(0,40):
+                                target_value[hindex,0]=load_values_histogram[hindex]
 
                     if ( (('Box6') in class_id) or (('Box_6') in class_id) ):
-                                target_value[0, 0]=0.2
-                                target_value[1, 0]=0.2
-                                target_value[2, 0]=0.8
-                                target_value[3, 0]=0.2
+                            load_values_histogram = np.load('/home/cuda/Alex/trai/PC-NBV/data/Data_external/View_Histogram_Scores/a_viewstate/Box6.npy', mmap_mode='r')
+                                
+                            for hindex in range(0,40):
+                                target_value[hindex,0]=load_values_histogram[hindex]
 
                     if ( (('Box7') in class_id) or (('Box_7') in class_id) ):
-                                target_value[0, 0]=0.2
-                                target_value[1, 0]=0.8
-                                target_value[2, 0]=0.2
-                                target_value[3, 0]=0.2
+                            load_values_histogram = np.load('/home/cuda/Alex/trai/PC-NBV/data/Data_external/View_Histogram_Scores/a_viewstate/Box7.npy', mmap_mode='r')
+                                
+                            for hindex in range(0,40):
+                                    target_value[hindex,0]=load_values_histogram[hindex]
 
                     if ( (('Box9') in class_id) or (('Box_9') in class_id) ):
-                                target_value[0, 0]=0.2
-                                target_value[1, 0]=0.8
-                                target_value[2, 0]=0.2
-                                target_value[3, 0]=0.2
+                            load_values_histogram = np.load('/home/cuda/Alex/trai/PC-NBV/data/Data_external/View_Histogram_Scores/a_viewstate/Box9.npy', mmap_mode='r')
+                                
+                            for hindex in range(0,40):
+                                target_value[hindex,0]=load_values_histogram[hindex]
                        
 
                      ####################################################
                     if ( (('Box10') in class_id) or (('Box_10') in class_id) ):
-                                target_value[0, 0]=0.2
-                                target_value[1, 0]=0.8
-                                target_value[2, 0]=0.2
-                                target_value[3, 0]=0.2   
+                            load_values_histogram = np.load('/home/cuda/Alex/trai/PC-NBV/data/Data_external/View_Histogram_Scores/a_viewstate/Box10.npy', mmap_mode='r')
+                                
+                            for hindex in range(0,40):
+                                target_value[hindex,0]=load_values_histogram[hindex]
 
                     if ( (('Box11') in class_id) or (('Box_11') in class_id) ):
-                                target_value[0, 0]=0.8
-                                target_value[1, 0]=0.2
-                                target_value[2, 0]=0.2
-                                target_value[3, 0]=0.2   
+                            load_values_histogram = np.load('/home/cuda/Alex/trai/PC-NBV/data/Data_external/View_Histogram_Scores/a_viewstate/Box11.npy', mmap_mode='r')
+                                
+                            for hindex in range(0,40):
+                                target_value[hindex,0]=load_values_histogram[hindex]
 
                     if ( (('Box12') in class_id) or (('Box_12') in class_id) ):
-                                target_value[0, 0]=0.8
-                                target_value[1, 0]=0.2
-                                target_value[2, 0]=0.2
-                                target_value[3, 0]=0.2              
+                            load_values_histogram = np.load('/home/cuda/Alex/trai/PC-NBV/data/Data_external/View_Histogram_Scores/a_viewstate/Box12.npy', mmap_mode='r')
+                                
+                            for hindex in range(0,40):
+                                target_value[hindex,0]=load_values_histogram[hindex]           
 
                     if ( (('Box13') in class_id) or (('Box_13') in class_id) ):
-                                target_value[0, 0]=0.8
-                                target_value[1, 0]=0.2
-                                target_value[2, 0]=0.2
-                                target_value[3, 0]=0.2    
+                            load_values_histogram = np.load('/home/cuda/Alex/trai/PC-NBV/data/Data_external/View_Histogram_Scores/a_viewstate/Box13.npy', mmap_mode='r')
+                                
+                            for hindex in range(0,40):
+                                target_value[hindex,0]=load_values_histogram[hindex]
 
                      #########################################3   
                       
@@ -275,7 +276,7 @@ if __name__ == '__main__':
                         #     max_new_pc = pc_new 
 
 
-                    print(str(target_value))
+                    #print(str(target_value))
 
                     np.save(os.path.join(cur_ex_dir, str(scan_index) + "_target_value.npy"), target_value)  
 

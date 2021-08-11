@@ -162,14 +162,14 @@ if __name__ == '__main__':
     
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--lmdb_train', default='/home/cuda/Alex/trai/PC-NBV/data/train.lmdb')
-    parser.add_argument('--lmdb_valid', default='/home/cuda/Alex/trai/PC-NBV/data/valid.lmdb')
-    parser.add_argument('--log_dir', default='log/New_test')
-    parser.add_argument('--model_type', default='pc-nbv_2')
+    parser.add_argument('--lmdb_train', default='/home/cuda/Alex/trai/PC-NBV/data/Data_external/lmdb_data/train.lmdb')
+    parser.add_argument('--lmdb_valid', default='/home/cuda/Alex/trai/PC-NBV/data/Data_external/lmdb_data/valid.lmdb')
+    parser.add_argument('--log_dir', default='/home/cuda/Alex/trai/PC-NBV/data/Data_external/New_test')
+    parser.add_argument('--model_type', default='pc-nbv_3')
     parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--num_input_points', type=int, default=512)
     parser.add_argument('--num_gt_points', type=int, default=1024)
-    parser.add_argument('--views', type=int, default=4) # schimbat de la 33
+    parser.add_argument('--views', type=int, default=40) # schimbat de la 33
     parser.add_argument('--base_lr', type=float, default=0.0001)
     parser.add_argument('--lr_decay', action='store_true')
     parser.add_argument('--lr_decay_steps', type=int, default=50000)
