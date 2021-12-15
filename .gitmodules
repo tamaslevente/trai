@@ -1,12 +1,6 @@
 [submodule "camera_calibration_ws/aditof_sdk_custom/aditof_sdk"]
 	path = camera_calibration_ws/aditof_sdk_custom/aditof_sdk
 	url = https://github.com/Funderburger/aditof_sdk.git
-[submodule "latent_3d_points"]
-	path = latent_3d_points
-	url = https://github.com/molnarszilard/latent_3d_points.git
-[submodule "Disentangled-Variational-Autoencoder"]
-	path = Disentangled-Variational-Autoencoder
-	url = https://github.com/molnarszilard/Disentangled-Variational-Autoencoder.git
 [submodule "vae_mrtnet"]
 	path = vae_mrtnet
 	url = git@github.com:molnarszilard/vae_mrtnet.git
