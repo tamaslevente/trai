@@ -3,7 +3,9 @@ import struct
 import numpy as np
 import matplotlib.pyplot as plt
 import torchvision
-
+from torchvision.utils import save_image
+from datasetloader import DatasetLoader
+import cv2
 
 def filepath_is_not_valid(filepath):
     """
@@ -26,10 +28,9 @@ def filepath_is_not_valid(filepath):
 
 def prepare_dataset(configuration):
     """
-    :param dict configuration:  The configuration dictionary returned by parse_config_file.
+    :param dict configuration: The configuration dictionary returned by parse_config_file
 
-    :return:  A dictionary containing information about the dataset used.
-    :rtype:   dict
+    :return:        A dictionary containing information about the dataset used
 
     Function used to set some values used by the model based on the dataset selected
     """
@@ -46,6 +47,18 @@ def prepare_dataset(configuration):
         dataset_info["ds_method"] = torchvision.datasets.FashionMNIST
         dataset_info["ds_shape"] = (1, 28, 28)
         dataset_info["ds_path"] = configuration["path"]
+    elif (configuration["dataset"] == "NYU"):
+        dataset_info["ds_method"] = DatasetLoader
+        dataset_info["ds_shape"] = (1, 480, 640)
+        dataset_info["ds_path"] = configuration["path"]+"NYU/"
+    elif (configuration["dataset"] == "c24s"):
+        dataset_info["ds_method"] = DatasetLoader
+        dataset_info["ds_shape"] = (1, 480, 640)
+        dataset_info["ds_path"] = configuration["path"]+"c24s/"
+    elif (configuration["dataset"] == "c24"):
+        dataset_info["ds_method"] = DatasetLoader
+        dataset_info["ds_shape"] = (1, 360, 640)
+        dataset_info["ds_path"] = configuration["path"]+"c24/"
     else:
         print("Currently only MNIST & CIFAR10 datasets are supported")
         return None
@@ -178,3 +191,16 @@ def plot_multiple(images, n, dim, cmap):
         plt.imshow(empty, origin="upper", cmap=cmap)
         plt.grid(False)
         plt.show()
+
+def save_depth_images(images, n, dim, mode, version):
+    save_path = "samples/"
+    for i in range(n):
+        image = images[0]
+        while len(image.shape)>2:
+            image=image.squeeze(axis=0)
+        # print(image.shape)
+        # print(image.dtype)
+        # image=image.detach().cpu().numpy().astype(np.uint16)
+        path = save_path +"version_"+version+"_"+mode+str(i)+".png"        
+        # save_image(image, path)
+        cv2.imwrite(path,image)

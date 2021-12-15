@@ -29,13 +29,14 @@ class DatasetLoader(data.Dataset):
     def __getitem__(self, index):
         path = self.depth_input_paths[index]
         depth_input = cv2.imread(path,cv2.IMREAD_UNCHANGED).astype(np.float32)
-        depth_input = np.moveaxis(depth_input,-1,0)
+        # depth_input = np.moveaxis(depth_input,-1,0)
         depth_input = torch.from_numpy(depth_input).unsqueeze(0)
         # if self.transform is not None:
         #     img = self.transform(depth_input_mod)
         target: Any = []
 
         return depth_input/torch.max(depth_input), target
+        # return depth_input, target
 
 
     def __len__(self):
