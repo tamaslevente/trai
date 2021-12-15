@@ -1,0 +1,5 @@
+*.caffemodel
+*.solverstate
+.log
+.pyc
+__pycache__/
