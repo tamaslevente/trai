@@ -1,3 +1,6 @@
 [submodule "camera_calibration_ws/aditof_sdk_custom/aditof_sdk"]
 	path = camera_calibration_ws/aditof_sdk_custom/aditof_sdk
 	url = https://github.com/Funderburger/aditof_sdk.git
+[submodule "latent_3d_points"]
+	path = latent_3d_points
+	url = https://github.com/molnarszilard/latent_3d_points.git
