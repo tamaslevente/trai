@@ -7,3 +7,6 @@
 [submodule "Disentangled-Variational-Autoencoder"]
 	path = Disentangled-Variational-Autoencoder
 	url = https://github.com/molnarszilard/Disentangled-Variational-Autoencoder.git
+[submodule "vae_mrtnet"]
+	path = vae_mrtnet
+	url = git@github.com:molnarszilard/vae_mrtnet.git
