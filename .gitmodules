@@ -4,3 +4,24 @@
 [submodule "vae_mrtnet"]
 	path = vae_mrtnet
 	url = git@github.com:molnarszilard/vae_mrtnet.git
+[submodule "DisentangledVAE"]
+	path = DisentangledVAE
+	url = git@github.com:molnarszilard/DisentangledVAE.git
+[submodule "latent_3d_points"]
+	path = latent_3d_points
+	url = https://github.com/molnarszilard/latent_3d_points.git
+[submodule "fileprocessing_ms"]
+	path = fileprocessing_ms
+	url = https://github.com/molnarszilard/fileprocessing.git
+[submodule "ToFNest"]
+	path = ToFNest
+	url = https://github.com/molnarszilard/ToFNest.git
+[submodule "shape_finder"]
+	path = shape_finder
+	url = git@github.com:molnarszilard/shape_finder.git
+[submodule "gravity"]
+	path = gravity
+	url = git@github.com:molnarszilard/gravity.git
+[submodule "toffilter"]
+	path = toffilter
+	url = git@github.com:molnarszilard/toffilter.git
