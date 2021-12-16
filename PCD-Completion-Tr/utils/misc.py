@@ -8,6 +8,9 @@ import torch.nn.functional as F
 import os
 from collections import abc
 from pointnet2_ops import pointnet2_utils
+import open3d as o3d
+
+flag_vis = False
 
 
 def fps(data, number):
@@ -231,6 +234,45 @@ def visualize_KITTI(path, data_list, titles = ['input','pred'], cmap=['bwr','aut
     np.save(os.path.join(path, 'input.npy'), data_list[0].numpy())
     np.save(os.path.join(path, 'pred.npy'), data_list[1].numpy())
     plt.close(fig)
+    
+    # create input pcd
+    pcd_input = o3d.geometry.PointCloud()
+    # select the input pcd
+    pcd_input.points = o3d.utility.Vector3dVector(data_list[0].detach().cpu().numpy())
+    # visualize input pcd
+    if flag_vis:
+        print("**** Input ****") 
+        o3d.visualization.draw_geometries([pcd_input])
+    
+    
+    # create pred pcd
+    pcd_pred = o3d.geometry.PointCloud()
+    # select the pred pcd
+    pcd_pred.points = o3d.utility.Vector3dVector(data_list[1].detach().cpu().numpy())
+    # visualize pred pcd
+    if flag_vis:
+        print("**** Prediction ****")
+        o3d.visualization.draw_geometries([pcd_pred])
+    
+    # set colors for points
+    colors = np.zeros((np.asarray(pcd_pred.points).shape[0], 3))
+    # set blue color
+    colors[:,2] = 1
+    pcd_pred.colors = o3d.utility.Vector3dVector(colors)
+    #o3d.visualization.draw_geometries([pcd_pred])
+    
+    # calculare distanta intre puncte
+    dist = pcd_pred.compute_point_cloud_distance(pcd_input)
+    #print("Afisare distante intre puncte = {}".format(dist))
+    dists = np.asarray(dist)
+    #print("Afisare distante sub forma de array {}".format(dists))
+    ind = np.where(dists > 0.01)[0]
+    
+    # change the color for the selected points by index and set the red color
+    np.asarray(pcd_pred.colors)[ind] = np.array([1, 0, 0])
+    if flag_vis:
+        print("**** Input + Prediction ****")
+        o3d.visualization.draw_geometries([pcd_pred]) 
 
 
 def random_dropping(pc, e):
