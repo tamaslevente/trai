@@ -25,3 +25,6 @@
 [submodule "toffilter"]
 	path = toffilter
 	url = git@github.com:molnarszilard/toffilter.git
+[submodule "jetbot_motor_driver"]
+	path = jetbot_motor_driver
+	url = https://github.com/molnarszilard/jetbot_motor_driver.git
