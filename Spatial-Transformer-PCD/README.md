@@ -52,7 +52,7 @@ Model parameters are saved every 10 epochs in "train_results/trained_models/".
 To evaluate the model saved after epoch n, 
 
 ```
-python test.py --model_path train_results/trained_models/epoch_n.ckpt  --graphnum 2 --featnum 64
+python test_deform.py --model_path train_results/trained_models/epoch_n.ckpt  --graphnum 2 --featnum 64
 ```
 
 ## Sampling-based Methods
