@@ -35,6 +35,10 @@
 #include <pcl/sample_consensus/sac_model_perpendicular_plane.h>
 #include <pcl/filters/project_inliers.h>
 #include <pcl/segmentation/extract_clusters.h>
+#include <pcl/filters/crop_hull.h>
+#include <pcl/surface/concave_hull.h>
+#include <pcl/surface/convex_hull.h>
+
 
 #include <iostream>
 #include <math.h>
@@ -63,12 +67,14 @@ public:
         pub5_ = nh_.advertise<PointCloud>("/perfect_plane", 1);
         pub6_ = nh_.advertise<PointCloud>("/remained_cloud_after_a_POI_extraction", 1);
         pub7_ = nh_.advertise<PointCloud>("/cluster_cloud", 1);
+        pub8_ = nh_.advertise<PointCloud>("/the_big_plane", 1);
+        pub9_ = nh_.advertise<PointCloud>("/cropped_polygon", 1);
 
         sub_ = nh_.subscribe("/pico_pcloud", 1, &Planes2Depth::cloudCallback, this);
 
         config_server_.setCallback(boost::bind(&Planes2Depth::dynReconfCallback, this, _1, _2));
 
-        // "~" means, that the node hand is opened within the private namespace (to get the "own" paraemters)
+        // "~" means, that the node hand is opened within the private namespace (to get the "own" parameters)
         ros::NodeHandle private_nh("~");
     }
 
@@ -92,6 +98,20 @@ public:
         {
             ROS_WARN("got empty or invalid pointcloud --> ignoring");
             return;
+        }
+
+        pcl::PointCloud<pcl::PointXYZ>::Ptr only_points(new pcl::PointCloud<pcl::PointXYZ>);
+        if (_firstTime == 1)
+        {
+            if (pcl::io::loadPCDFile<pcl::PointXYZ>("my_full_custom_pcdmultiP5.pcd", *only_points) == -1) //* load the file
+            {
+                PCL_ERROR("Couldn't read file test_pcd.pcd \n");
+            }
+            std::cout << "Loaded "
+                      << only_points->width * only_points->height
+                      << " data points for plane completion purposes... ;)"
+                      << std::endl;
+            _firstTime = 1;
         }
 
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1(new pcl::PointCloud<pcl::PointXYZ>);
@@ -126,18 +146,19 @@ public:
 
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_rest(new pcl::PointCloud<pcl::PointXYZ>());
 
-        int i = 0, nr_points = (int)cloud1->size();     ////////////////// ?????????????????????????
+        int i = 0, nr_points = (int)cloud1->size(); ////////////////// ?????????????????????????
         std::cerr << "Point cloud size: " << nr_points << std::endl;
 
         // Stacking all the rectified planes in here for the final reunion
         pcl::PointCloud<pcl::PointXYZ> perfectPlanesCloud;
 
+        pcl::PointCloud<pcl::PointXYZ>::Ptr only_points_copy(new pcl::PointCloud<pcl::PointXYZ>);
         // While 30% of the original cloud is still there
         while (cloud1->size() > _remained_pointcloud * nr_points)
         {
             // Extract inliers
             pcl::ExtractIndices<pcl::PointXYZ> plane_extracter;
-            
+
             pcl::PointCloud<pcl::PointXYZ>::Ptr plane_only(new pcl::PointCloud<pcl::PointXYZ>());
             // Extracting the plane using RANSAC
             seg.setInputCloud(cloud1);
@@ -224,7 +245,7 @@ public:
             pcl::ExtractIndices<pcl::PointXYZ> cluster_extracter;
             cluster_extracter.setInputCloud(cloud1);
             cluster_extracter.setIndices(clusterInliersIndices);
-            cluster_extracter.setNegative(false); // Keep only the inliers (i.e. the plane) 
+            cluster_extracter.setNegative(false); // Keep only the inliers (i.e. the plane)
             cluster_extracter.filter(*plane_only);
 
             cluster_extracter.setNegative(true); // Remove the inliers (i.e. remove only the plane and keep the rest)
@@ -265,6 +286,16 @@ public:
             okSeg.setInputCloud(plane_only);
             okSeg.segment(*inliers, *okCoefficients);
 
+            // Project many points on the same plane for creating a perfect (and hopefully big) plane
+            // We need a copy, because otherwise only_points is going to be empty after the first iteration
+            pcl::copyPointCloud(*only_points, *only_points_copy);
+            pcl::PointCloud<pcl::PointXYZ>::Ptr theBigPlane(new pcl::PointCloud<pcl::PointXYZ>);
+            pcl::ProjectInliers<pcl::PointXYZ> bigPlaneProjection;
+            bigPlaneProjection.setModelType(pcl::SACMODEL_PLANE);
+            bigPlaneProjection.setInputCloud(only_points_copy);
+            bigPlaneProjection.setModelCoefficients(okCoefficients);
+            bigPlaneProjection.filter(*theBigPlane);
+
             // Project all the points from POI to a smooth (and silky) plane .....................................................................................................................#doItLikeZohan
             pcl::PointCloud<pcl::PointXYZ>::Ptr perfectPlane(new pcl::PointCloud<pcl::PointXYZ>);
             pcl::ProjectInliers<pcl::PointXYZ> perfectProjection;
@@ -272,6 +303,33 @@ public:
             perfectProjection.setInputCloud(plane_only);
             perfectProjection.setModelCoefficients(okCoefficients);
             perfectProjection.filter(*perfectPlane);
+
+            // The concave hull extraction
+            pcl::ConcaveHull<pcl::PointXYZ> hull;
+            hull.setInputCloud(perfectPlane);
+            hull.setDimension(2);
+            std::cout << hull.getDimension() << std::endl;
+            hull.setAlpha(0.01); // pretty sensible
+            std::vector<pcl::Vertices> polygons;                                                  //Set the vector of pcl::Vertices type to save the convex hull vertices
+            pcl::PointCloud<pcl::PointXYZ>::Ptr surface_hull(new pcl::PointCloud<pcl::PointXYZ>); //This point cloud is used to describe the shape of the convex hull
+            hull.reconstruct(*surface_hull, polygons);
+
+            pcl::PointCloud<pcl::PointXYZ>::Ptr objects(new pcl::PointCloud<pcl::PointXYZ>);
+            pcl::CropHull<pcl::PointXYZ> bb_filter;
+            bb_filter.setDim(2);
+            bb_filter.setInputCloud(theBigPlane);
+            bb_filter.setHullIndices(polygons);
+            bb_filter.setHullCloud(surface_hull);
+            bb_filter.filter(*objects);
+            std::cout << objects->size() << std::endl;
+
+            PointCloud::Ptr the_big_plane_msg(new PointCloud);
+            std::cerr << "################################" << std::endl;
+            std::cerr << "Perfect plane size!" << theBigPlane->size() << std::endl;
+            the_big_plane_msg->header.stamp = cloud_in_msg->header.stamp;
+            the_big_plane_msg->header.frame_id = "base_link";
+            the_big_plane_msg->points = theBigPlane->points;
+            pub8_.publish(the_big_plane_msg);
 
             PointCloud::Ptr perfect_plane_msg(new PointCloud);
             std::cerr << "################################" << std::endl;
@@ -281,17 +339,41 @@ public:
             perfect_plane_msg->points = perfectPlane->points;
             pub5_.publish(perfect_plane_msg);
 
+            PointCloud::Ptr objects_msg(new PointCloud);
+            std::cerr << "################################" << std::endl;
+            std::cerr << "Perfect plane size!" << objects->size() << std::endl;
+            objects_msg->header.stamp = cloud_in_msg->header.stamp;
+            objects_msg->header.frame_id = "base_link";
+            objects_msg->points = objects->points;
+            pub9_.publish(objects_msg);
+
             // gathering all the rectified planes in the same place for a final concatenation
             pcl::PointCloud<pcl::PointXYZ> tempPerfectPlane;
+            tempPerfectPlane.points = perfectPlane->points;
+
+            pcl::PointCloud<pcl::PointXYZ> perfectAndFull;
+            perfectAndFull.points = objects->points;
+            perfectAndFull += tempPerfectPlane;
+
             if (i == 0)
             {
-                perfectPlanesCloud.points = perfectPlane->points;
+                perfectPlanesCloud.points = perfectAndFull.points;
             }
             else
             {
-                tempPerfectPlane.points = perfectPlane->points;
-                perfectPlanesCloud += tempPerfectPlane;
-            }
+                // tempPerfectPlane.points = objects->points;
+                perfectPlanesCloud += perfectAndFull;
+            }            
+            // pcl::PointCloud<pcl::PointXYZ> tempPerfectPlane;
+            // if (i == 0)
+            // {
+            //     perfectPlanesCloud.points = perfectPlane->points;
+            // }
+            // else
+            // {
+            //     tempPerfectPlane.points = perfectPlane->points;
+            //     perfectPlanesCloud += tempPerfectPlane;
+            // }
             // //////////////////////////////////////////////////////
 
             // adding the scraps to  the original point cloud
@@ -305,17 +387,15 @@ public:
             rest_cloud_msg->points = cloud1->points;
             pub6_.publish(rest_cloud_msg);
 
-            // in case something goes wrong... 6 planes should be enough, so stop the loop
-            if (i==5){
+            // in case something goes wrong... 5 planes should be enough, so stop the loop
+            if (i == 5)
+            {
                 break;
             }
 
-            
-
             ros::Duration(_planesDelay).sleep();
-            
         }
-        // adding all the remained scraps and all the rectified planes into the same cloud 
+        // adding all the remained scraps and all the rectified planes into the same cloud
         pcl::PointCloud<pcl::PointXYZ> gt_cloud;
         gt_cloud.points = cloud1->points;
         gt_cloud += perfectPlanesCloud;
@@ -328,7 +408,7 @@ public:
         gt_cloud_msg->points = gt_cloud.points;
         pub3_.publish(gt_cloud_msg);
     }
-
+    // 1.15
 private:
     ros::NodeHandle nh_;
     image_transport::ImageTransport it_;
@@ -340,7 +420,9 @@ private:
     ros::Publisher pub5_;
     ros::Publisher pub6_;
     ros::Publisher pub7_;
-    // image_transport::Publisher pub2_;
+    ros::Publisher pub8_;
+    ros::Publisher pub9_;
+    int _firstTime = 1;
     // calibration parameters
     // double K[9] = {385.8655956930966, 0.0, 342.3593021849471,
     //                0.0, 387.13463636528166, 233.38372018194542,

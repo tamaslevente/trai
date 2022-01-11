@@ -135,7 +135,7 @@ public:
                 sprintf(numberDirDepthArr, "%05d", i);
                 string depthFilename = saveDirD + numberDirDepthArr + ".png";
 
-                getFloorGT(cloud, pcdFilename, depthFilename, ir_file);
+                getGTPlanes(cloud, pcdFilename, depthFilename, ir_file);
                 i++;
             }
         }
@@ -284,7 +284,7 @@ public:
         return pointClouds;
     }
 
-    void getFloorGT(PointCloud::Ptr inputCloud, string pcd_file_name, string depth_file_name, string ir_file)
+    void getGTPlanes(PointCloud::Ptr inputCloud, string pcd_file_name, string depth_file_name, string ir_file)
     {
         if (!inputCloud || inputCloud->size() <= 0)
         {
