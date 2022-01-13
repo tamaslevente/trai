@@ -28,3 +28,6 @@
 [submodule "jetbot_motor_driver"]
 	path = jetbot_motor_driver
 	url = https://github.com/molnarszilard/jetbot_motor_driver.git
+[submodule "3d-aae"]
+	path = 3d-aae
+	url = git@github.com:molnarszilard/3d-aae.git
