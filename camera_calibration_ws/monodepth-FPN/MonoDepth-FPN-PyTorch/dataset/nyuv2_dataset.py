@@ -125,19 +125,19 @@ class RandomHorizontalFlip(object):
 
 
 class MyCustomDataset(data.Dataset):
-    def __init__(self, root='/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/', seed=None, train=True):
+    def __init__(self, root='/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/multiP_training_data/main_multiP/', seed=None, train=True):
 
         np.random.seed(seed)
         self.root = Path(root)
         self.train = train
         if train:
-            self.rgb_paths = [root+'combined_ddd/train/' +
-                              d for d in os.listdir(root+'combined_ddd/train/')]
+            self.rgb_paths = [root+'input_irdd_data/train/' +
+                              d for d in os.listdir(root+'input_irdd_data/train/')]
             # Randomly choose 50k images without replacement
             # self.rgb_paths = np.random.choice(self.rgb_paths, 600, False)
         else:
-            self.rgb_paths = [root+'combined_ddd/test/' +
-                              d for d in os.listdir(root+'combined_ddd/test/')]
+            self.rgb_paths = [root+'input_irdd_data/test/' +
+                              d for d in os.listdir(root+'input_irdd_data/test/')]
 
         if train != train:  # vis
             self.train = True
@@ -157,8 +157,20 @@ class MyCustomDataset(data.Dataset):
     def __getitem__(self, index):
         path = self.rgb_paths[index]
         rgb = cv2.imread(path,-1) # or rgb = cv2.imread(path,cv2.IMREAD_UNCHANGED)
-        # rgb = cv2.cvtColor(rgb,cv2.COLOR_BGR2RGB)
-        depth = cv2.imread(path.replace('combined_ddd', 'depth_gt'),-1)
+        
+        #### debugging purposes ####
+        # rgb_mono = cv2.imread(path,-1) # or rgb = cv2.imread(path,cv2.IMREAD_UNCHANGED)
+        
+        # rgb = np.zeros((len(rgb_mono),len(rgb_mono[0]),3), 'uint16')  
+
+        # for i in range(len(rgb_mono)):
+        #     for j in range(len(rgb_mono[i])):
+        #         # rgbArray[i][j][0] = ir[i][j]
+        #         rgb[i][j][0] = rgb_mono[i][j]
+        #         rgb[i][j][1] = rgb_mono[i][j]
+        #         rgb[i][j][2] = rgb_mono[i][j]
+
+        depth = cv2.imread(path.replace('input_irdd_data', 'depth_gt_filled_data'),-1)
         # rgb = np.array(rgb,np.float32)
         # depth = np.array(depth,np.float32)
         rgb = cv2.resize(rgb,(640,360))
@@ -183,6 +195,7 @@ class MyCustomDataset(data.Dataset):
         # plt.close()
 
         # max_depth = 6571
+        # max_depth = 8000 # depth.max()
         max_depth = depth.max()
         min_depth = 0
         max_ir = 3840

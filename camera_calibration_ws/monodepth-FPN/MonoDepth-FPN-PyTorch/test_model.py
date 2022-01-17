@@ -72,6 +72,7 @@ def start_node():
     state = i2d.state_dict()
     checkpoint = torch.load(model_name)
     state.update(checkpoint['model'])
+    
     i2d.load_state_dict(state)
     
     del checkpoint

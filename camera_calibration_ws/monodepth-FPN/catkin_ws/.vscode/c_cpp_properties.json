@@ -6,10 +6,10 @@
                 "limitSymbolsToIncludedHeaders": true
             },
             "includePath": [
-                "/home/funderburger/work_ws/repo/trai/camera_calibration_ws/planes_extr_ws/catkin_ws/devel/include/**",
-                "/home/funderburger/cvbridge_build_ws/install/include/**",
+                "/home/marian/calibration_ws/monodepth-FPN/catkin_ws/devel/include/**",
+                // "/home/funderburger/cvbridge_build_ws/install/include/**",
                 "/opt/ros/melodic/include/**",
-                "/home/funderburger/work_ws/cloud2depth_ws/src/pcl_nodes/include/**",
+                // "/home/funderburger/work_ws/cloud2depth_ws/src/pcl_nodes/include/**",
                 "/usr/include/**"
             ],
             "name": "ROS",

@@ -969,7 +969,7 @@ Optimizer:
 Training parameters:
 Other training parameters:
 Others: loss18 = 10*(RMSE_log + torch.abs(10*(3-torch.exp(1*lossX)-torch.exp(1*lossY)-torch.exp(1*lossZ))))
-Results: It is still, kind of the same, even though I got some other ideas. :)) P.S: I know I have more than 225 epochs, but I'm jus curios, ok?!
+Results: It is still, kind of the same, even though I got some other ideas. :)) P.S: I know I have more than 25 epochs, but I'm just curios, ok?!
 Epoch: 29 	Training Loss: 0.678151 	Validation Loss: 1.126020
 #########  ####     #
     #      #__#   # # 
@@ -983,10 +983,101 @@ Others: loss18, but with these terms:
         lossX = torch.sqrt(torch.mean(torch.abs(x_real-x_fake)**2))
         lossZ = torch.sqrt(torch.mean(torch.abs(z_real-z_fake)**2))
         lossY = torch.sqrt(torch.mean(torch.abs(y_real-y_fake)**2))
-Results: 
+Results: Meh... I don't know...
+Epoch: 29 	Training Loss: 1.214144 	Validation Loss: 1.821814
+#########  ####      ##
+    #      #__#     #  #
+    #      #  #      # 
+    #      ####    # # # 
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: Just a global normalization factor.
+Results: Judging by the variations of the validation loss, I think this is not that good.
+Epoch: 24 	Training Loss: 0.964024 	Validation Loss: 1.364733
 #########  ####
     #      #__# 
     #      #  #
+    #      ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: Maybe it goes better without log now... Even though I know this wasn't the case before.
+        lossX = torch.sqrt(torch.mean(torch.sqrt(torch.abs(x_real-x_fake))))
+        lossZ = torch.sqrt(torch.mean(torch.sqrt(torch.abs(z_real-z_fake))))
+        lossY = torch.sqrt(torch.mean(torch.sqrt(torch.abs(y_real-y_fake))))
+        loss19 = 10*(torch.abs(10*(3-torch.exp(1*lossX)-torch.exp(1*lossY)-torch.exp(1*lossZ))))
+Results: 
+#########  ####   ####
+    #      #__#   #  #
+    #         #   #  #
+    #      ####   ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: Introducing the multi-planar dataset! (with loss17)
+Results: Eh... not bad, but not great either!
+Epoch: 29 	Training Loss: 0.160235 	Validation Loss: 9.958460 
+#########  ####    #
+    #      #__#    #
+    #         #    #
+    #      ####    #
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: Close range dataset only.
+Results: Too small, I guess.
+Epoch: 20 	Training Loss: 0.151402 	Validation Loss: 16.331899
+#########  ####   ####
+    #      #__#   ___#
+    #         #   #
+    #      ####   ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: Long range dataset only.
+Results: Too small in order to obtain some good results.
+Epoch: 20 	Training Loss: 0.487218 	Validation Loss: 5.876502
+#########  ####   ####
+    #      #__#   ___#
+    #         #      #
+    #      ####   ####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: Exactly like T90 but with tensorboard this time.
+Results: Meh... Ok...
+Epoch: 20 	Training Loss: 0.141501 	Validation Loss: 6.448747
+#########  ####     #
+    #      #__#    # #
+    #         #   #####
+    #      ####      #
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: New dataset with filled holes (mostly).
+Results: Not as great as I was hoping.
+Epoch: 20 	Training Loss: 0.175915 	Validation Loss: 19.270715
+#########  ####   #####
+    #      #__#   #___
+    #         #       #
+    #      ####   #####
+Loss:
+Optimizer:
+Training parameters:
+Other training parameters:
+Others: Input data has also the infrared image on a channel.
+Results: 
+#########  ####
+    #      #__# 
+    #         #
     #      ####
 Loss:
 Optimizer:
@@ -996,7 +1087,7 @@ Others:
 Results: 
 #########  ####
     #      #__# 
-    #      #  #
+    #         #
     #      ####
 Loss:
 Optimizer:
@@ -1006,7 +1097,7 @@ Others:
 Results: 
 #########  ####
     #      #__# 
-    #      #  #
+    #         #
     #      ####
 Loss:
 Optimizer:
@@ -1016,47 +1107,7 @@ Others:
 Results: 
 #########  ####
     #      #__# 
-    #      #  #
-    #      ####
-Loss:
-Optimizer:
-Training parameters:
-Other training parameters:
-Others: 
-Results: 
-#########  ####
-    #      #__# 
-    #      #  #
-    #      ####
-Loss:
-Optimizer:
-Training parameters:
-Other training parameters:
-Others: 
-Results: 
-#########  ####
-    #      #__# 
-    #      #  #
-    #      ####
-Loss:
-Optimizer:
-Training parameters:
-Other training parameters:
-Others: 
-Results: 
-#########  ####
-    #      #__# 
-    #      #  #
-    #      ####
-Loss:
-Optimizer:
-Training parameters:
-Other training parameters:
-Others: 
-Results: 
-#########  ####
-    #      #__# 
-    #      #  #
+    #         #
     #      ####
 Loss:
 Optimizer:

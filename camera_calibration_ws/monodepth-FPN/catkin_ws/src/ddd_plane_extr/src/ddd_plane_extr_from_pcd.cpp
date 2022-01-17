@@ -126,16 +126,7 @@ public:
 
     ~Planes2Depth() {}
 
-    // void dynReconfCallback(ddd_plane_extr::planes_paramConfig &config, uint32_t level)
-    // {
-    //     _distanceThreshold = config.distanceThreshold;
-    //     _planesDelay = config.planesDelay;
-    //     // _max_planes = config.max_planes;
-    //     _MeanK = config.MeanK;
-    //     _StddevMulThresh = config.StddevMulThresh;
-    //     _maxIterations = config.maxIterations;
-    //     _angle = config.angle;
-    // }
+
 
     PointCloud::Ptr *extractPlanes(PointCloud::Ptr inputCloud, pcl::PointIndices::Ptr inliers, pcl::ModelCoefficients::Ptr coefficients, float distanceThreshold, float angle, int maxIterations)
     {

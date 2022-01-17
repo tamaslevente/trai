@@ -13,7 +13,7 @@ link_libraries(stdc++fs)
 find_package(catkin REQUIRED dynamic_reconfigure)
 
 find_package(catkin REQUIRED COMPONENTS
-  # cv_bridge
+  cv_bridge
   image_transport
   pcl_conversions
   pcl_ros
@@ -229,9 +229,24 @@ include_directories(
 # catkin_add_nosetests(test)
 
 add_executable(ddd_plane_extr_from_pcd src/ddd_plane_extr_from_pcd.cpp)
+add_executable(ddd_plane_extr_multiP src/ddd_plane_extr_multiP.cpp)
+add_executable(ddd_plane_extr_multiP_v2 src/ddd_plane_extr_multiP_v2.cpp)
+add_executable(ddd_planes_extr_and_saving src/ddd_planes_extr_and_saving.cpp)
+add_executable(ddd_plane_extra_save src/ddd_plane_extra_save.cpp)
+add_executable(save_frames src/save_frames.cpp)
 # add_dependencies(ddd_plane_extr_from_pcd ${PROJECT_NAME}_gencfg)
 
 target_include_directories(ddd_plane_extr_from_pcd PRIVATE ${Python3_INCLUDE_DIRS})
+target_include_directories(ddd_plane_extr_multiP PRIVATE ${Python3_INCLUDE_DIRS})
+target_include_directories(ddd_plane_extr_multiP_v2 PRIVATE ${Python3_INCLUDE_DIRS})
+target_include_directories(ddd_planes_extr_and_saving PRIVATE ${Python3_INCLUDE_DIRS})
+target_include_directories(ddd_plane_extra_save PRIVATE ${Python3_INCLUDE_DIRS})
+target_include_directories(save_frames PRIVATE ${Python3_INCLUDE_DIRS})
 
 target_link_libraries(ddd_plane_extr_from_pcd stdc++fs ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_INCLUDE_DIRS} ${OpenCV_LIBS} ${PYTHON3_LIBRARIES})
+target_link_libraries(ddd_plane_extr_multiP stdc++fs ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_INCLUDE_DIRS} ${OpenCV_LIBS} ${PYTHON3_LIBRARIES})
+target_link_libraries(ddd_plane_extr_multiP_v2 stdc++fs ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_INCLUDE_DIRS} ${OpenCV_LIBS} ${PYTHON3_LIBRARIES})
+target_link_libraries(ddd_planes_extr_and_saving stdc++fs ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_INCLUDE_DIRS} ${OpenCV_LIBS} ${PYTHON3_LIBRARIES})
+target_link_libraries(ddd_plane_extra_save stdc++fs ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_INCLUDE_DIRS} ${OpenCV_LIBS} ${PYTHON3_LIBRARIES})
+target_link_libraries(save_frames ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_INCLUDE_DIRS} ${OpenCV_LIBS} ${PYTHON3_LIBRARIES})
 
