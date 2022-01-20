@@ -34,7 +34,8 @@ main ()
 {
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>),cloud_f (new pcl::PointCloud<pcl::PointXYZ>);
 
-  if (pcl::io::loadPCDFile<pcl::PointXYZ> ("/home/alex-pop/Desktop/BAckups/Alex_pop_work/data_in/test_single.pcd", *cloud) == -1) //* load the file
+  //if (pcl::io::loadPCDFile<pcl::PointXYZ> ("/home/alex-pop/Desktop/BAckups/Alex_pop_work/data_in/test_single.pcd", *cloud) == -1) //* load the file
+  if (pcl::io::loadPCDFile<pcl::PointXYZ> ("/home/alex-pop/Desktop/Doctorat/Side_projects/trai/trai/PC-NBV/Alex_pop_work/data_in/chair_0983.pcd", *cloud) == -1) //* load the file
   {
     PCL_ERROR ("Couldn't read file test_pcd.pcd \n");
     return (-1);
@@ -44,11 +45,26 @@ main ()
             << " data points from test_pcd.pcd with the following fields: "
             << std::endl;
 
+	pcl::VoxelGrid<pcl::PointXYZ> vg;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
+	
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+   ////////////////Selecting if user wants floor removal or not
+
+	
+	
+	bool choice_floor;
+
+	std::cout<<"Remove floor?(0/1)"<<std::endl;
+	std::cin>>choice_floor;
+
 	
 
-	// Create the filtering object: downsample the dataset using a leaf size of 1cm
-   pcl::VoxelGrid<pcl::PointXYZ> vg;
-   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
+	if(choice_floor==1)
+	{
+		// Create the filtering object: downsample the dataset using a leaf size of 1cm
+   
    vg.setInputCloud (cloud);
    vg.setLeafSize (0.01f, 0.01f, 0.01f);
    vg.filter (*cloud_filtered);
@@ -107,11 +123,19 @@ main ()
    ec.setInputCloud (cloud_filtered);
    ec.extract (cluster_indices);
 
-	//copyPointCloud(*cloud, *cloud_filtered);
+	}
+
+	else{
+		copyPointCloud(*cloud, *cloud_filtered);
+	}
+
 
 	pcl::io::savePCDFileASCII ("test_single_out.pcd", *cloud_filtered);
 	std::cerr << "Saved data points to test_single_out.pcd." << std::endl;
-	
+
+	//////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////
+	//Computing the centroid of the point cloud
 	
 	float z_centroid=0;
 	float y_centroid=0;
@@ -155,6 +179,10 @@ main ()
 	
 	pcl::io::savePCDFileASCII ("test_centroid.pcd", *cloud_centroid);
 	std::cerr << "Saved centroid to test_centroid.pcd." << std::endl;
+
+	////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////
+	//Computing all the distances to the centroid in the point cloud
 	
 	float Distances[1000000];
 	
@@ -193,6 +221,8 @@ main ()
     
     std::cout<<"minimum_distance="<<minimum_distance<<std::endl;
 	std::cout<<"maximum_distance="<<maximum_distance<<std::endl;
+
+	////////////////////////////////////////////////////////////
     
 	
 	int Nr_bins;
@@ -206,6 +236,8 @@ main ()
 	float lim_sup;
 	
 	float Bin_intervals[2][500];
+
+	pcl::PointCloud<pcl::PointXYZ>::Ptr Array_bin_clouds[4000];
 	
 	for(int j=1;j<=Nr_bins;j++)
 	{
@@ -243,7 +275,9 @@ main ()
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_Reeb(new pcl::PointCloud<pcl::PointXYZ>);
 
 
-	pcl::PointCloud<pcl::PointXYZ>::Ptr Array_bin_clouds[3000];
+	
+
+	int nr_connected_parts=0;
 	
 	int sum_check_bins=0;
 	
@@ -344,7 +378,20 @@ main ()
 				cloud_random_point_bin->height = 1;
 				cloud_random_point_bin->points.resize(cloud_random_point_bin->width * cloud_random_point_bin->height);
 				cloud_random_point_bin->is_dense = false;
+
 		}
+
+		
+
+		
+		if(cloud_random_point_bin->size()!=0)
+		{
+
+			Array_bin_clouds[nr_connected_parts]=cloud_random_point_bin;
+			nr_connected_parts++;
+		}
+		
+
 		
 		//std::cout<<"Nr_points_close_to_random:"<<cloud_random_point_bin->size()<<std::endl;
 		
@@ -397,6 +444,12 @@ main ()
 		
 		
 	}
+
+	std::cout<<"Number of connected parts:"<<nr_connected_parts<<std::endl;
+
+	// for(int i=0;i<nr_connected_parts;i++){
+	// 	std::cout<<"Connected part "<<i<<""<<Array_bin_clouds[i]->size()<<std::endl;
+	// }
 	
 	pcl::io::savePCDFileASCII ("Reeb_pcd.pcd", *cloud_Reeb);
 	std::cerr << "Saved Reeb pcd" << std::endl;
