@@ -49,65 +49,65 @@ main ()
 	// Create the filtering object: downsample the dataset using a leaf size of 1cm
    pcl::VoxelGrid<pcl::PointXYZ> vg;
    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
-//    vg.setInputCloud (cloud);
-//    vg.setLeafSize (0.01f, 0.01f, 0.01f);
-//    vg.filter (*cloud_filtered);
-//   std::cout << "PointCloud after filtering has: " << cloud_filtered->size ()  << " data points." << std::endl; //*
+   vg.setInputCloud (cloud);
+   vg.setLeafSize (0.01f, 0.01f, 0.01f);
+   vg.filter (*cloud_filtered);
+  std::cout << "PointCloud after filtering has: " << cloud_filtered->size ()  << " data points." << std::endl; //*
 
-//   // Create the segmentation object for the planar model and set all the parameters
-//    pcl::SACSegmentation<pcl::PointXYZ> seg;
-//    pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
-//    pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
-//    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane (new pcl::PointCloud<pcl::PointXYZ> ());
-//    pcl::PCDWriter writer;
-//    seg.setOptimizeCoefficients (true);
-//    seg.setModelType (pcl::SACMODEL_PLANE);
-//    seg.setMethodType (pcl::SAC_RANSAC);
-//    seg.setMaxIterations (100);
-//    seg.setDistanceThreshold (0.02);
+  // Create the segmentation object for the planar model and set all the parameters
+   pcl::SACSegmentation<pcl::PointXYZ> seg;
+   pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+   pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
+   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane (new pcl::PointCloud<pcl::PointXYZ> ());
+   pcl::PCDWriter writer;
+   seg.setOptimizeCoefficients (true);
+   seg.setModelType (pcl::SACMODEL_PLANE);
+   seg.setMethodType (pcl::SAC_RANSAC);
+   seg.setMaxIterations (100);
+   seg.setDistanceThreshold (0.02);
  
-//    int nr_points = (int) cloud_filtered->size ();
-//    while (cloud_filtered->size () > 0.3 * nr_points)
-//    {
-//      // Segment the largest planar component from the remaining cloud
-//      seg.setInputCloud (cloud_filtered);
-//      seg.segment (*inliers, *coefficients);
-//      if (inliers->indices.size () == 0)
-//      {
-//        std::cout << "Could not estimate a planar model for the given dataset." << std::endl;
-//        break;
-//      }
+   int nr_points = (int) cloud_filtered->size ();
+   while (cloud_filtered->size () > 0.3 * nr_points)
+   {
+     // Segment the largest planar component from the remaining cloud
+     seg.setInputCloud (cloud_filtered);
+     seg.segment (*inliers, *coefficients);
+     if (inliers->indices.size () == 0)
+     {
+       std::cout << "Could not estimate a planar model for the given dataset." << std::endl;
+       break;
+     }
  
-//      // Extract the planar inliers from the input cloud
-//      pcl::ExtractIndices<pcl::PointXYZ> extract;
-//      extract.setInputCloud (cloud_filtered);
-//      extract.setIndices (inliers);
-//      extract.setNegative (false);
+     // Extract the planar inliers from the input cloud
+     pcl::ExtractIndices<pcl::PointXYZ> extract;
+     extract.setInputCloud (cloud_filtered);
+     extract.setIndices (inliers);
+     extract.setNegative (false);
  
-//      // Get the points associated with the planar surface
-//      extract.filter (*cloud_plane);
-//      std::cout << "PointCloud representing the planar component: " << cloud_plane->size () << " data points." << std::endl;
+     // Get the points associated with the planar surface
+     extract.filter (*cloud_plane);
+     std::cout << "PointCloud representing the planar component: " << cloud_plane->size () << " data points." << std::endl;
  
-//      // Remove the planar inliers, extract the rest
-//      extract.setNegative (true);
-//      extract.filter (*cloud_f);
-//      *cloud_filtered = *cloud_f;
-//    }
+     // Remove the planar inliers, extract the rest
+     extract.setNegative (true);
+     extract.filter (*cloud_f);
+     *cloud_filtered = *cloud_f;
+   }
  
-//    // Creating the KdTree object for the search method of the extraction
-//    pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
-//    tree->setInputCloud (cloud_filtered);
+   // Creating the KdTree object for the search method of the extraction
+   pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
+   tree->setInputCloud (cloud_filtered);
  
-//    std::vector<pcl::PointIndices> cluster_indices;
-//    pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-//    ec.setClusterTolerance (0.02); // 2cm
-//    ec.setMinClusterSize (100);
-//    ec.setMaxClusterSize (25000);
-//    ec.setSearchMethod (tree);
-//    ec.setInputCloud (cloud_filtered);
-//    ec.extract (cluster_indices);
+   std::vector<pcl::PointIndices> cluster_indices;
+   pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
+   ec.setClusterTolerance (0.02); // 2cm
+   ec.setMinClusterSize (100);
+   ec.setMaxClusterSize (25000);
+   ec.setSearchMethod (tree);
+   ec.setInputCloud (cloud_filtered);
+   ec.extract (cluster_indices);
 
-	copyPointCloud(*cloud, *cloud_filtered);
+	//copyPointCloud(*cloud, *cloud_filtered);
 
 	pcl::io::savePCDFileASCII ("test_single_out.pcd", *cloud_filtered);
 	std::cerr << "Saved data points to test_single_out.pcd." << std::endl;
@@ -241,6 +241,9 @@ main ()
 	pcl::PointXYZ point_Reeb; 
 	
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_Reeb(new pcl::PointCloud<pcl::PointXYZ>);
+
+
+	pcl::PointCloud<pcl::PointXYZ>::Ptr Array_bin_clouds[3000];
 	
 	int sum_check_bins=0;
 	
@@ -333,17 +336,14 @@ main ()
 					moving_random_point.y=cloud_bin_actual->points[j].y;
 					moving_random_point.z=cloud_bin_actual->points[j].z;
 					
-					
 					cloud_random_point_bin->points.push_back(moving_random_point);
-		
-					cloud_random_point_bin->width = cloud_random_point_bin->points.size();
-					cloud_random_point_bin->height = 1;
-					cloud_random_point_bin->points.resize(cloud_random_point_bin->width * cloud_random_point_bin->height);
-					cloud_random_point_bin->is_dense = false;
-		
-					
-					
 					}	
+				
+		
+				cloud_random_point_bin->width = cloud_random_point_bin->points.size();
+				cloud_random_point_bin->height = 1;
+				cloud_random_point_bin->points.resize(cloud_random_point_bin->width * cloud_random_point_bin->height);
+				cloud_random_point_bin->is_dense = false;
 		}
 		
 		//std::cout<<"Nr_points_close_to_random:"<<cloud_random_point_bin->size()<<std::endl;
@@ -373,12 +373,11 @@ main ()
 					
 					
 					cloud_point_remaining->points.push_back(point_remaining);
-		
+					}
 					cloud_point_remaining->width = cloud_point_remaining->points.size();
 					cloud_point_remaining->height = 1;
 					cloud_point_remaining->points.resize(cloud_point_remaining->width * cloud_point_remaining->height);
 					cloud_point_remaining->is_dense = false;
-					}
 			}
 		
 		
