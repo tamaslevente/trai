@@ -137,13 +137,13 @@ for filename in sorted(os.scandir(directory), key=lambda f: f.name):
         # orig_p2pl_dist[:,0] = abs(a*orig_xyz[:,0] + b*orig_xyz[:,1] + c*orig_xyz[:,2] + d) / math.sqrt(a**2 + b**2 + c**2)
         # in this case the actual distance of a point to the plane XY (in our case) is actually abs(Z)
 
-        orig_distance_mean_below = np.mean(abs(orig_xyz[:,2]))
+        orig_distance_mean_below_XY = np.mean(abs(orig_xyz[:,2]))
 
-        pred_distance_mean_below = np.mean(abs(pred_xyz[:,2]))
+        pred_distance_mean_below_XY = np.mean(abs(pred_xyz[:,2]))
 
 
-        print(f"The mean distance (w.r.t XY) of the BELOW surface is: {round(orig_distance_mean_below, 8)} m for ORIG file: {filename.name}")
-        print(f"The mean distance (w.r.t XY) of the BELOW surface is: {round(pred_distance_mean_below, 8)} m for PRED file: {filename.name}")
+        print(f"The mean distance (w.r.t XY) of the BELOW surface is: {round(orig_distance_mean_below_XY, 8)} m for ORIG file: {filename.name}")
+        print(f"The mean distance (w.r.t XY) of the BELOW surface is: {round(pred_distance_mean_below_XY, 8)} m for PRED file: {filename.name}")
 
         # ###################
         # ################### ABOVE
@@ -160,24 +160,25 @@ for filename in sorted(os.scandir(directory), key=lambda f: f.name):
         # pred_o3d_pcd.points = o3d.utility.Vector3dVector(pred_xyz)
         # o3d.io.write_point_cloud(filename.path[:-4]+'_vis_pred_above_xy.pcd', pred_o3d_pcd)
 
-        orig_distance_mean_above = np.mean(abs(orig_xyz[:,2]))
-        pred_distance_mean_above = np.mean(abs(pred_xyz[:,2]))
+        orig_distance_mean_above_XY = np.mean(abs(orig_xyz[:,2]))
+        pred_distance_mean_above_XY = np.mean(abs(pred_xyz[:,2]))
 
 
         # orig_distance_pointwise_above = abs(orig_xyz[:,2])
         # pred_distance_pointwise_above = abs(pred_xyz[:,2])
 
 
-        print(f"The mean distance (w.r.t XY) of the ABOVE surface is: {round(orig_distance_mean_above, 8)} m for ORIG file: {filename.name}")
-        print(f"The mean distance (w.r.t XY) of the ABOVE surface is: {round(pred_distance_mean_above, 8)} m for PRED file: {filename.name}")
+        print(f"The mean distance (w.r.t XY) of the ABOVE surface is: {round(orig_distance_mean_above_XY, 8)} m for ORIG file: {filename.name}")
+        print(f"The mean distance (w.r.t XY) of the ABOVE surface is: {round(pred_distance_mean_above_XY, 8)} m for PRED file: {filename.name}")
 
-        orig_mean_dist_grad = orig_distance_mean_below/(orig_distance_mean_below + orig_distance_mean_above)
+        if orig_distance_mean_below_XY + orig_distance_mean_above_XY == 0.0: orig_distance_mean_above_XY = 0.1
+        orig_mean_dist_grad = orig_distance_mean_below_XY/(orig_distance_mean_below_XY + orig_distance_mean_above_XY)
         print(f"The mean distance gradient is: {round(orig_mean_dist_grad*100, 8)} % for ORIG file: {filename.name}")
         # orig_mean_dist_pointwise = np.mean(orig_distance_pointwise_below/(orig_distance_pointwise_below+orig_distance_pointwise_above))
         # print(f"The pointwise mean distance gradient is: {round(orig_mean_dist_pointwise*100, 8)} % for ORIG file: {filename.name}")
 
-
-        pred_mean_dist_grad = pred_distance_mean_below/(pred_distance_mean_below + pred_distance_mean_above)
+        if pred_distance_mean_below_XY + pred_distance_mean_above_XY == 0.0: pred_distance_mean_above_XY = 0.1
+        pred_mean_dist_grad = pred_distance_mean_below_XY/(pred_distance_mean_below_XY + pred_distance_mean_above_XY)
         print(f"The mean distance gradient is: {round(pred_mean_dist_grad*100, 8)} % for PRED file: {filename.name}")
         print("---------")
         orig_pred_results.append([orig_mean_dist_grad,pred_mean_dist_grad])
