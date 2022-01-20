@@ -14,7 +14,7 @@ origin = []
 refvec = []
 
 # assign directory
-directory = '/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/curvature_grad/verify_network/test_orig_planes.PCD'
+directory = '/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/curvature_grad/verify_network/orig_planes.PCD.test'
  
 def get_triangles_vertices(triangles, vertices):
     triangles_vertices = []
@@ -33,13 +33,14 @@ def volume_under_triangle(triangle):
 
 
 
+orig_pred_results = []
 # iterate over files in
 # that directory
-for filename in os.scandir(directory):
+for filename in sorted(os.scandir(directory), key=lambda f: f.name):
     if filename.is_file() & (filename.name[-4:] == ".pcd"):
         # load pcd file
         orig_pcd = o3d.io.read_point_cloud(filename.path)
-        pred_pcd = o3d.io.read_point_cloud(filename.path.replace("test_orig_planes.PCD","test_pred_planes.PCD").replace("_orig.pcd","_pred.pcd"))
+        pred_pcd = o3d.io.read_point_cloud(filename.path.replace("orig_planes.PCD.test","pred_planes.PCD.test").replace("_orig.pcd","_pred.pcd"))
         # o3d.io.write_point_cloud(filename.path[:-4]+'_vis.pcd', pcd)
 
         # normalize point cloud
@@ -178,5 +179,7 @@ for filename in os.scandir(directory):
 
         pred_mean_dist_grad = pred_distance_mean_below/(pred_distance_mean_below + pred_distance_mean_above)
         print(f"The mean distance gradient is: {round(pred_mean_dist_grad*100, 8)} % for PRED file: {filename.name}")
-
         print("---------")
+        orig_pred_results.append([orig_mean_dist_grad,pred_mean_dist_grad])
+
+np.savetxt("curv_grad_orig_pred_test.csv",np.array(orig_pred_results), delimiter=",")

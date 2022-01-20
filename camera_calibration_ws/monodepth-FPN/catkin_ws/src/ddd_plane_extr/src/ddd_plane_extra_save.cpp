@@ -55,6 +55,7 @@
 #include <vector>
 #include <algorithm>
 #include <math.h>
+#include <regex>
 
 using namespace cv;
 using namespace std;
@@ -83,17 +84,14 @@ public:
         // This should be used without a subscriber
         // ########################################
 
-        // string saveDirPcd = "/home/funderburger/work_ws/calibration_ws/planes_extr_ws/training_data/pcd_gt/";                                  // BEWARE of that last / !!! You don't want to forget that, trust me!
-        // string saveDirPcd = "/home/funderburger/work_ws/calibration_ws/planes_extr_ws/catkin_ws/test_dir/pcd_combo_ir/"; // BEWARE of that last / !!! You don't want to forget that, trust me!
-        string saveDirPcd = "/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/curvature_grad/verify_network/test_pred_planes.PCD/"; // BEWARE of that last / !!! You don't want to forget that, trust me!
-        string saveDirDepth = "/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/curvature_grad/raw_norm_planes/"; // BEWARE of that last / !!! You don't want to forget that, trust me!
-        // string saveDirDepth = "/home/funderburger/work_ws/calibration_ws/planes_extr_ws/catkin_ws/test_dir/depth_gt/"; // BEWARE of that last / !!! You don't want to forget that, trust me!
-        long int np = saveDirPcd.length();
-        char saveDirPcdArr[np + 1];
-        long int nd = saveDirDepth.length();
-        char saveDirDepthArr[nd + 1];
-        strcpy(saveDirPcdArr, saveDirPcd.c_str());
-        strcpy(saveDirDepthArr, saveDirDepth.c_str());
+        string saveDirOrig = "/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/curvature_grad/verify_network/orig_planes.PCD.train/"; // BEWARE of that last / !!! You don't want to forget that, trust me!
+        string saveDirPred = "/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/curvature_grad/verify_network/pred_planes.PCD.train/"; // BEWARE of that last / !!! You don't want to forget that, trust me!
+        long int lenOrig = saveDirOrig.length();
+        char saveDirOrigArr[lenOrig + 1];
+        long int lenPred = saveDirPred.length();
+        char saveDirPredArr[lenPred + 1];
+        strcpy(saveDirOrigArr, saveDirOrig.c_str());
+        strcpy(saveDirPredArr, saveDirPred.c_str());
         if (private_nh.getParam("pcd_folder", _param))
         {
             ROS_INFO("Got param: %s", _param.c_str());
@@ -105,7 +103,8 @@ public:
             sort(v.begin(), v.end());
             for (vec::const_iterator it(v.begin()), it_end(v.end()); it != it_end; ++it)
             {
-                // string pcd_file = *it.string();
+
+                
                 cout << "pcd_file:" << *it << '\n';
                 if (pcl::io::loadPCDFile<pcl::PointXYZ>(*it, *cloud) == -1) //* load the file
                 {
@@ -116,17 +115,50 @@ public:
                           << cloud->width * cloud->height
                           << " data points"
                           << std::endl;
-                string saveDirP(saveDirPcdArr);
-                char numberDirPcdArr[6];
-                sprintf(numberDirPcdArr, "%05d", i);
-                string pcdFilename = saveDirP + numberDirPcdArr +"_";
-                string saveDirD(saveDirDepthArr);
-                char numberDirDepthArr[6];
-                sprintf(numberDirDepthArr, "%05d", i);
-                string noFilterFilename = saveDirD + numberDirDepthArr + "_nofilter.pcd";
+                string saveDirOrig(saveDirOrigArr);
+                char numberDirOrigArr[6];
+                sprintf(numberDirOrigArr, "%05d", i);
+                string origFilename = saveDirOrig + numberDirOrigArr;
+
+                string saveDirPred(saveDirPredArr);
+                char numberDirPredArr[6];
+                sprintf(numberDirPredArr, "%05d", i);
+                string predFilename = saveDirPred + numberDirPredArr;
+
+                pcl::PointCloud<pcl::PointXYZ>::Ptr resulted_plane;
+                resulted_plane = getGTPlanes(cloud, origFilename, predFilename);
                 
-                getGTPlanes(cloud, pcdFilename,noFilterFilename);
-                i++;
+                // ############################################
+                // for loading the prediction cloud as well
+                string pcd_file = *it;
+                string temp_pred_pcd_file = regex_replace(pcd_file,regex("orig.PCD.train"),"pred.PCD.train");
+                string pred_pcd_file = regex_replace(temp_pred_pcd_file,regex("_orig.pcd"),"_pred.pcd");
+                
+                cout << "pcd_file:" << pred_pcd_file << '\n';
+                if (pcl::io::loadPCDFile<pcl::PointXYZ>(pred_pcd_file, *cloud) == -1) //* load the file
+                {
+                    PCL_ERROR("Couldn't read file %s \n", it);
+                }
+
+                pcl::PointCloud<pcl::PointXYZ>::Ptr pred_resulted_plane;
+                pred_resulted_plane = getGTPlanes(cloud, predFilename, origFilename);
+
+                if(!resulted_plane->empty() && !pred_resulted_plane->empty()){
+                    // save the orig plane to a lonely file
+                    char number[6];
+                    sprintf(number, "%01d", i);
+                    string pcd_version = "_orig";
+                    pcl::io::savePCDFileASCII(origFilename + pcd_version +".pcd", *resulted_plane);
+                    std::cerr << "Saved " << resulted_plane->size() << " data points to" << origFilename << std::endl;
+
+                    char pred_number[6];
+                    sprintf(pred_number, "%01d", i);
+                    pcd_version = "_pred";
+                    pcl::io::savePCDFileASCII(predFilename + pcd_version +".pcd", *pred_resulted_plane);
+                    std::cerr << "Saved " << pred_resulted_plane->size() << " data points to" << predFilename << std::endl;
+                    i++;
+                }
+
             }
         }
         else
@@ -137,7 +169,7 @@ public:
 
     ~Planes2Depth() {}
 
-    void getGTPlanes(pcl::PointCloud<pcl::PointXYZ>::Ptr inputCloud, string pcd_file_name, string no_filter_file_name)
+    pcl::PointCloud<pcl::PointXYZ>::Ptr getGTPlanes(pcl::PointCloud<pcl::PointXYZ>::Ptr inputCloud, string pcd_file_name, string no_filter_file_name)
     {
         // string only_points_path = "my_full_custom_pcdmultiP1.pcd";
 
@@ -149,7 +181,7 @@ public:
         _distanceThreshold = 0.0000175;
         // _okDistanceThreshold = 0.005;
         _clusterTolerance = 0.000006;
-        _minClusterSize = 14000;
+        _minClusterSize = 12000;
         _maxClusterSize = 250000;
         _maxIterations = 100;
         _remained_pointcloud = 0.2;
@@ -282,7 +314,7 @@ public:
             // Statistical outlier remover for a plane
 
             pcl::PointCloud<pcl::PointXYZ>::Ptr plane_filtered (new pcl::PointCloud<pcl::PointXYZ>);
-
+            pcl::PointCloud<pcl::PointXYZ>::Ptr empty_cloud (new pcl::PointCloud<pcl::PointXYZ>);
             std::cerr << "Cloud before filtering: " << std::endl;
             std::cerr << *plane_only << std::endl;
 
@@ -301,13 +333,8 @@ public:
                 std::cerr << "Cloud after filtering: " << std::endl;
                 std::cerr << *plane_filtered << std::endl;
 
-                // save the plane to a lonely file
-                char number[6];
-                sprintf(number, "%01d", i);
-                string pcd_version = "_pred";
-                pcl::io::savePCDFileASCII(pcd_file_name+ number + pcd_version +".pcd", *plane_filtered);
-                std::cerr << "Saved " << plane_filtered->size() << " data points to" << pcd_file_name << std::endl;
 
+                return plane_filtered;
                 // sor.setNegative (true);
                 // sor.filter (*plane_filtered);
                 // pcl::io::savePCDFileASCII(pcd_file_name+ number + pcd_version + "_nofilter.pcd", *plane_filtered);
@@ -318,7 +345,7 @@ public:
                 // adding the scraps to  the original point cloud
                 cloud1->points = scraps_cloud->points;
             }
-
+            return empty_cloud;
             //  one iteration is more than enough
             break;
         }
