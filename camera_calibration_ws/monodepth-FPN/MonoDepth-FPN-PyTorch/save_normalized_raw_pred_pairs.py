@@ -27,7 +27,7 @@ def parse_args():
     parser.add_argument('--input_image_path', dest='input_image_path',
                       help='path to a single input image for evaluation',
                     #   default='/media/rambo/ssd2/marian/datasets/monodepth/training_data/depth_synth/', type=str)
-                      default='/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/curvature_grad/verify_network/test_orig.PNG/', type=str)
+                      default='/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/curvature_grad/verify_network/orig.PNG.train/', type=str)
     parser.add_argument('--eval_folder', dest='eval_folder',
                       help='evaluate only one image or the whole folder',
                       default=True, type=bool)
@@ -170,7 +170,7 @@ if __name__ == '__main__':
                 stop = timeit.default_timer()
                 time_sum=time_sum+stop-start
                 counter=counter+1
-                save_path= path.replace("test_orig.PNG", "test_orig.PCD")[:-4]
+                save_path= path.replace("orig.PNG.train", "orig.PCD.train")[:-4]
 
                 #  just for a faire (normalized) compare
                 # plt.imshow(orig_depth/max_depth, vmin=0)
@@ -183,7 +183,7 @@ if __name__ == '__main__':
                 o3d.io.write_point_cloud(save_path +'_orig.pcd', o3d_pcd)
                 # ######################
 
-                save_path= path.replace("test_orig.PNG", "test_pred.PCD")[:-4]
+                save_path= path.replace("orig.PNG.train", "pred.PCD.train")[:-4]
                 # plt.imshow(z_fake[0].cpu().detach().numpy().transpose((1,2,0)), vmin=0)
                 # plt.colorbar()
                 # plt.savefig(save_path +'_pred.png',bbox_inches='tight')

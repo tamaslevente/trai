@@ -34,7 +34,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/devel/lib/ddd_plane_extr/ddd_plane_extra_save",
-            "args": ["_pcd_folder:=/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/curvature_grad/verify_network/test_pred.PCD/"],
+            "args": ["_pcd_folder:=/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/curvature_grad/verify_network/orig.PCD.train/"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
