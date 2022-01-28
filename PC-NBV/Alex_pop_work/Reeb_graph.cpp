@@ -234,9 +234,13 @@ int main()
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_conex_parts(new pcl::PointCloud<pcl::PointXYZ>);
 
 	float dist_min_connect_points;
+	float dist_min_connect_parts;
 
 	std::cout << "Dist min connex points=";
 	std::cin >> dist_min_connect_points;
+
+	std::cout << "Dist min connected parts=";
+	std::cin >> dist_min_connect_parts;
 
 	//pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered_copy(new pcl::PointCloud<pcl::PointXYZ>);
 	//copyPointCloud(*cloud_filtered, *cloud_filtered_copy);
@@ -539,7 +543,7 @@ int main()
 
 					////////Dist min for collections is double dist min for connect points
 
-					if (dist_minimum < dist_min_connect_points * 2)
+					if (dist_minimum < dist_min_connect_parts)
 					{
 						is_connected = 1;
 					}
@@ -550,8 +554,8 @@ int main()
 
 			if (is_connected)
 			{
-				Weight[iterate_colection][iterate_colection_2] = dist_minimum;
-				Weight[iterate_colection_2][iterate_colection] = dist_minimum;
+				Weight[iterate_colection][iterate_colection_2] = 1;
+				Weight[iterate_colection_2][iterate_colection] = 1;
 			}
 		}
 	}
