@@ -16,6 +16,149 @@
 
 #define PI 3.14159265
 
+void Recursive_region_growing(pcl::PointCloud<pcl::PointXYZ>::Ptr &bin_cloud,
+							  pcl::PointCloud<pcl::PointXYZ>::Ptr front_cloud,
+							  int K,
+							  float tau,
+							  pcl::PointCloud<pcl::PointXYZ>::Ptr &pcd_conect_comp,
+							  int iteration_number)
+{
+	if (front_cloud->size() != 0)
+	{
+		for (int i = 0; i < front_cloud->size(); i++)
+		{
+
+			float tau2;
+
+			float comp_x;
+			float comp_y;
+			float comp_z;
+
+			float dist;
+
+			if (bin_cloud->size() != 0)
+			{
+				for (int j = 0; j < K; j++)
+				{
+					float dist_min = 12345634;
+					float dist_max_K_points = -561262;
+					int pos_front_point = -1;
+					for (int t = 0; t < bin_cloud->size(); t++)
+					{
+						comp_x = front_cloud->points[i].x - bin_cloud->points[t].x;
+						comp_y = front_cloud->points[i].y - bin_cloud->points[t].y;
+						comp_z = front_cloud->points[i].z - bin_cloud->points[t].z;
+
+						dist = sqrt(comp_x * comp_x + comp_y * comp_y + comp_z * comp_z);
+
+						if (dist_min > dist)
+						{
+							dist_min = dist;
+							pos_front_point = t;
+
+							if (dist_max_K_points < dist)
+							{
+								dist_max_K_points = dist;
+							}
+						}
+					}
+					pcl::PointCloud<pcl::PointXYZ>::Ptr front_cloud_2(new pcl::PointCloud<pcl::PointXYZ>);
+					if (pos_front_point != -1)
+					{
+
+						
+						pcl::PointXYZ moving_front_point;
+
+						moving_front_point.x = bin_cloud->points[pos_front_point].x;
+						moving_front_point.y = bin_cloud->points[pos_front_point].y;
+						moving_front_point.z = bin_cloud->points[pos_front_point].z;
+
+						front_cloud_2->points.push_back(moving_front_point);
+
+						front_cloud_2->width = front_cloud_2->points.size();
+						front_cloud_2->height = 1;
+						front_cloud_2->points.resize(front_cloud_2->width * front_cloud_2->height);
+						front_cloud_2->is_dense = false;
+
+						//Remove points from front_cloud_2 from bin_cloud
+
+						pcl::PointXYZ point_remaining;
+
+						pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_point_remaining(new pcl::PointCloud<pcl::PointXYZ>);
+
+						for (int iter_change_bin = 0; iter_change_bin < bin_cloud->size(); iter_change_bin++)
+						{
+							bool ok = 1;
+							for (int iter_change_region = 0; iter_change_region < front_cloud_2->size(); iter_change_region++)
+							{
+								if ((bin_cloud->points[iter_change_bin].x == front_cloud_2->points[iter_change_region].x) && (bin_cloud->points[iter_change_bin].y == front_cloud_2->points[iter_change_region].y) && (bin_cloud->points[iter_change_bin].z == front_cloud_2->points[iter_change_region].z))
+								{
+									ok = 0;
+								}
+							}
+							if (ok)
+							{
+								point_remaining.x = bin_cloud->points[iter_change_bin].x;
+								point_remaining.y = bin_cloud->points[iter_change_bin].y;
+								point_remaining.z = bin_cloud->points[iter_change_bin].z;
+
+								cloud_point_remaining->points.push_back(point_remaining);
+							}
+							cloud_point_remaining->width = cloud_point_remaining->points.size();
+							cloud_point_remaining->height = 1;
+							cloud_point_remaining->points.resize(cloud_point_remaining->width * cloud_point_remaining->height);
+							cloud_point_remaining->is_dense = false;
+						}
+
+						copyPointCloud(*cloud_point_remaining, *bin_cloud);
+					}
+
+					if (front_cloud_2->size() != 0)
+					{
+
+						float alpha = dist_max_K_points;
+
+						if (front_cloud_2->size() == K)
+						{
+							tau2 = (alpha + iteration_number * tau) / (iteration_number + 1);
+						}
+						else
+						{
+							tau2 = (2 * alpha + iteration_number * tau) / (iteration_number + 1);
+						}
+
+						//Add validated front 2 cloud to region cloud
+						for (int k = 0; k < front_cloud_2->size(); k++)
+						{
+							pcl::PointXYZ moving_front_point;
+
+							moving_front_point.x = front_cloud_2->points[k].x;
+							moving_front_point.y = front_cloud_2->points[k].y;
+							moving_front_point.z = front_cloud_2->points[k].z;
+
+							pcd_conect_comp->points.push_back(moving_front_point);
+
+							pcd_conect_comp->width = pcd_conect_comp->points.size();
+							pcd_conect_comp->height = 1;
+							pcd_conect_comp->points.resize(pcd_conect_comp->width * pcd_conect_comp->height);
+							pcd_conect_comp->is_dense = false;
+						}
+
+						
+
+						int new_iteration = iteration_number + 1;
+
+						if (bin_cloud->size() != 0)
+						{
+							Recursive_region_growing(bin_cloud, front_cloud_2, K, tau2, pcd_conect_comp, new_iteration);
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 int main()
 {
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>), cloud_f(new pcl::PointCloud<pcl::PointXYZ>);
@@ -201,10 +344,13 @@ int main()
 	////////////////////////////////////////////////////////////
 
 	int Nr_bins;
+	int Nr_neighbors;
 
 	std::cout << "Nr_bins=";
 	std::cin >> Nr_bins;
 
+	std::cout << "Nr_neighbors=";
+	std::cin >> Nr_neighbors;
 	//std::cout << "Nr_bins_ales=" << Nr_bins << std::endl;
 
 	float lim_inf;
@@ -300,6 +446,7 @@ int main()
 			pcl::PointXYZ moving_random_point;
 
 			pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_random_point_bin(new pcl::PointCloud<pcl::PointXYZ>);
+			pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_front(new pcl::PointCloud<pcl::PointXYZ>);
 
 			// Adding the Reeb points
 
@@ -314,6 +461,16 @@ int main()
 			cloud_Reeb->points.resize(cloud_Reeb->width * cloud_Reeb->height);
 			cloud_Reeb->is_dense = false;
 
+			//Must change to centroid of region ////////////////TO DO
+
+			//////////////////////////////
+
+			cloud_front->points.push_back(point_Reeb);
+
+			cloud_front->width = cloud_Reeb->points.size();
+			cloud_front->height = 1;
+			cloud_front->points.resize(cloud_Reeb->width * cloud_Reeb->height);
+			cloud_front->is_dense = false;
 			///////////////////////////////////////////
 
 			//Add chosen point to region point cloud
@@ -398,95 +555,111 @@ int main()
 			//std::cout << "Size of bin is " << cloud_bin_actual->size() << std::endl;
 			//std::cout << "Added initial point to region, size is now " << cloud_random_point_bin->size() << std::endl;
 
-			while (find_points)
-			{
-				find_points = 0;
+			//////////////////////////////
+			//Region growing using fixed distance
+			//Must change to use recursive region growing
 
-				int nr_points = cloud_random_point_bin->size();
+			// while (find_points)
+			// {
+			// 	find_points = 0;
 
-				pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_new_points_region(new pcl::PointCloud<pcl::PointXYZ>);
+			// 	int nr_points = cloud_random_point_bin->size();
 
-				for (int iterate_bin = 0; iterate_bin < cloud_bin_actual->size(); iterate_bin++)
-				{
+			// 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_new_points_region(new pcl::PointCloud<pcl::PointXYZ>);
 
-					for (int iterate_region = 0; iterate_region < cloud_random_point_bin->size(); iterate_region++)
-					{
-						float comp_x_bin_element = cloud_random_point_bin->points[iterate_region].x - cloud_bin_actual->points[iterate_bin].x;
-						float comp_y_bin_element = cloud_random_point_bin->points[iterate_region].y - cloud_bin_actual->points[iterate_bin].y;
-						float comp_z_bin_element = cloud_random_point_bin->points[iterate_region].z - cloud_bin_actual->points[iterate_bin].z;
+			// 	for (int iterate_bin = 0; iterate_bin < cloud_bin_actual->size(); iterate_bin++)
+			// 	{
 
-						float dist_connected_points = sqrt(comp_x_bin_element * comp_x_bin_element + comp_y_bin_element * comp_y_bin_element + comp_z_bin_element * comp_z_bin_element);
+			// 		for (int iterate_region = 0; iterate_region < cloud_random_point_bin->size(); iterate_region++)
+			// 		{
+			// 			float comp_x_bin_element = cloud_random_point_bin->points[iterate_region].x - cloud_bin_actual->points[iterate_bin].x;
+			// 			float comp_y_bin_element = cloud_random_point_bin->points[iterate_region].y - cloud_bin_actual->points[iterate_bin].y;
+			// 			float comp_z_bin_element = cloud_random_point_bin->points[iterate_region].z - cloud_bin_actual->points[iterate_bin].z;
 
-						if ((dist_connected_points < dist_min_connect_points) && (dist_connected_points != 0))
-						{
+			// 			float dist_connected_points = sqrt(comp_x_bin_element * comp_x_bin_element + comp_y_bin_element * comp_y_bin_element + comp_z_bin_element * comp_z_bin_element);
 
-							//std::cout<<"Found connected point"<<std::endl;
+			// 			if ((dist_connected_points < dist_min_connect_points) && (dist_connected_points != 0))
+			// 			{
 
-							find_points = 1;
-						}
-					}
-					if (find_points)
-					{
-						moving_random_point.x = cloud_bin_actual->points[iterate_bin].x;
-						moving_random_point.y = cloud_bin_actual->points[iterate_bin].y;
-						moving_random_point.z = cloud_bin_actual->points[iterate_bin].z;
+			// 				//std::cout<<"Found connected point"<<std::endl;
 
-						cloud_new_points_region->points.push_back(moving_random_point);
+			// 				find_points = 1;
+			// 			}
+			// 		}
+			// 		if (find_points)
+			// 		{
+			// 			moving_random_point.x = cloud_bin_actual->points[iterate_bin].x;
+			// 			moving_random_point.y = cloud_bin_actual->points[iterate_bin].y;
+			// 			moving_random_point.z = cloud_bin_actual->points[iterate_bin].z;
 
-						cloud_new_points_region->width = cloud_new_points_region->points.size();
-						cloud_new_points_region->height = 1;
-						cloud_new_points_region->points.resize(cloud_new_points_region->width * cloud_new_points_region->height);
-						cloud_new_points_region->is_dense = false;
-					}
-				}
+			// 			cloud_new_points_region->points.push_back(moving_random_point);
 
-				*cloud_random_point_bin += *cloud_new_points_region;
+			// 			cloud_new_points_region->width = cloud_new_points_region->points.size();
+			// 			cloud_new_points_region->height = 1;
+			// 			cloud_new_points_region->points.resize(cloud_new_points_region->width * cloud_new_points_region->height);
+			// 			cloud_new_points_region->is_dense = false;
+			// 		}
+			// 	}
 
-				cloud_random_point_bin->width = cloud_random_point_bin->points.size();
-				cloud_random_point_bin->height = 1;
-				cloud_random_point_bin->points.resize(cloud_random_point_bin->width * cloud_random_point_bin->height);
-				cloud_random_point_bin->is_dense = false;
+			// 	*cloud_random_point_bin += *cloud_new_points_region;
 
-				//std::cout << "Dimension of new region is " << cloud_random_point_bin->size() << std::endl;
+			// 	cloud_random_point_bin->width = cloud_random_point_bin->points.size();
+			// 	cloud_random_point_bin->height = 1;
+			// 	cloud_random_point_bin->points.resize(cloud_random_point_bin->width * cloud_random_point_bin->height);
+			// 	cloud_random_point_bin->is_dense = false;
 
-				if (find_points)
-				{
+			// 	//std::cout << "Dimension of new region is " << cloud_random_point_bin->size() << std::endl;
 
-					pcl::PointXYZ point_remaining;
+			// 	if (find_points)
+			// 	{
 
-					pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_point_remaining(new pcl::PointCloud<pcl::PointXYZ>);
+			// 		pcl::PointXYZ point_remaining;
 
-					for (int iter_change_bin = 0; iter_change_bin < cloud_bin_actual->size(); iter_change_bin++)
-					{
-						bool ok = 1;
-						for (int iter_change_region = 0; iter_change_region < cloud_random_point_bin->size(); iter_change_region++)
-						{
-							if ((cloud_bin_actual->points[iter_change_bin].x == cloud_random_point_bin->points[iter_change_region].x) && (cloud_bin_actual->points[iter_change_bin].y == cloud_random_point_bin->points[iter_change_region].y) && (cloud_bin_actual->points[iter_change_bin].z == cloud_random_point_bin->points[iter_change_region].z))
-							{
-								ok = 0;
-							}
-						}
-						if (ok)
-						{
-							point_remaining.x = cloud_bin_actual->points[iter_change_bin].x;
-							point_remaining.y = cloud_bin_actual->points[iter_change_bin].y;
-							point_remaining.z = cloud_bin_actual->points[iter_change_bin].z;
+			// 		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_point_remaining(new pcl::PointCloud<pcl::PointXYZ>);
 
-							cloud_point_remaining->points.push_back(point_remaining);
-						}
-						cloud_point_remaining->width = cloud_point_remaining->points.size();
-						cloud_point_remaining->height = 1;
-						cloud_point_remaining->points.resize(cloud_point_remaining->width * cloud_point_remaining->height);
-						cloud_point_remaining->is_dense = false;
-					}
+			// 		for (int iter_change_bin = 0; iter_change_bin < cloud_bin_actual->size(); iter_change_bin++)
+			// 		{
+			// 			bool ok = 1;
+			// 			for (int iter_change_region = 0; iter_change_region < cloud_random_point_bin->size(); iter_change_region++)
+			// 			{
+			// 				if ((cloud_bin_actual->points[iter_change_bin].x == cloud_random_point_bin->points[iter_change_region].x) && (cloud_bin_actual->points[iter_change_bin].y == cloud_random_point_bin->points[iter_change_region].y) && (cloud_bin_actual->points[iter_change_bin].z == cloud_random_point_bin->points[iter_change_region].z))
+			// 				{
+			// 					ok = 0;
+			// 				}
+			// 			}
+			// 			if (ok)
+			// 			{
+			// 				point_remaining.x = cloud_bin_actual->points[iter_change_bin].x;
+			// 				point_remaining.y = cloud_bin_actual->points[iter_change_bin].y;
+			// 				point_remaining.z = cloud_bin_actual->points[iter_change_bin].z;
 
-					copyPointCloud(*cloud_point_remaining, *cloud_bin_actual);
+			// 				cloud_point_remaining->points.push_back(point_remaining);
+			// 			}
+			// 			cloud_point_remaining->width = cloud_point_remaining->points.size();
+			// 			cloud_point_remaining->height = 1;
+			// 			cloud_point_remaining->points.resize(cloud_point_remaining->width * cloud_point_remaining->height);
+			// 			cloud_point_remaining->is_dense = false;
+			// 		}
 
-					//std::cout << "Nr_points_remaining in bin:" << cloud_bin_actual->size() << std::endl;
-				}
-			}
+			// 		copyPointCloud(*cloud_point_remaining, *cloud_bin_actual);
 
-			//////////////
+			// 		//std::cout << "Nr_points_remaining in bin:" << cloud_bin_actual->size() << std::endl;
+			// 	}
+			// }
+
+			////////////////////////////////
+			//////////////////////////////////
+			//////////////////////////////////////////////////////////////////////////////////////////////////
+			int nr_points = cloud_random_point_bin->size();
+			
+			
+			Recursive_region_growing(cloud_bin_actual,cloud_front,Nr_neighbors,dist_min_connect_points,cloud_random_point_bin,1);
+
+				
+
+			//std::cout << "Dimension of new region is " << cloud_random_point_bin->size() << std::endl;
+
+			///////////////////////////////////////////////////////////////////////////////////////////
 
 			if (cloud_random_point_bin->size() != 0)
 			{
