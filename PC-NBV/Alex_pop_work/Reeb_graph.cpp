@@ -406,13 +406,7 @@ int main()
 		Bin_intervals[1][j - 1] = lim_sup;
 	}
 
-	for (int i = 0; i < Nr_bins; i++)
-	{
-		//std::cout << "lim_inf[" << (i) << "]=" << Bin_intervals[0][i] << std::endl;
-		//std::cout << "lim_sup[" << (i) << "]=" << Bin_intervals[1][i] << std::endl;
-		//std::cout << std::endl;
-	}
-
+	
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_conex_parts(new pcl::PointCloud<pcl::PointXYZ>);
 
 	float dist_min_connect_points;
@@ -431,14 +425,24 @@ int main()
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_Reeb(new pcl::PointCloud<pcl::PointXYZ>);
 
+	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_Reeb_final(new pcl::PointCloud<pcl::PointXYZ>);
+
 	int nr_connected_parts = 0;
 
 	int sum_check_bins = 0;
+
+	int Array_nr_components_in_region[Nr_bins+1];
+
+	for(int i=0;i<Nr_bins+1;i++){
+		Array_nr_components_in_region[i]=0;
+	}
 
 	//std::cout << "Nr points in point cloud " << cloud_filtered->size() << std::endl;
 
 	for (int i = 0; i < Nr_bins; i++)
 	{
+		Array_nr_components_in_region[i]=nr_connected_parts;
+		
 		////////////////////////////////////////////////////////
 		//For each bin we compute the point cloud
 
@@ -719,8 +723,10 @@ int main()
 		}
 		//std::cout << "Nr_points safety check bins:" << sum_check_bins << std::endl;
 		//std::cout << "Nr points in point cloud " << cloud_filtered->size() << std::endl;
+		
+		std::cout<<"Nr of components in region="<<Array_nr_components_in_region[i]<<std::endl;
 	}
-
+	Array_nr_components_in_region[Nr_bins+1]=nr_connected_parts;
 	std::cout<<"Chosen distance between connected components:"<<dist_min_connect_parts*2<<std::endl;
 
 	float Weight[500][500];
@@ -735,24 +741,77 @@ int main()
 
 	//Minimum Distance between connected components is 2 times the minimum distance for connected component points
 
-	for (int iterate_colection = 0; iterate_colection < nr_connected_parts - 1; iterate_colection++)
+	//Need to change here to compare only two adject regions
+	//Here it compares all connected components
+
+	// for (int iterate_colection = 0; iterate_colection < nr_connected_parts - 1; iterate_colection++)
+	// {
+
+	// 	for (int iterate_colection_2 = iterate_colection + 1; iterate_colection_2 < nr_connected_parts; iterate_colection_2++)
+	// 	{
+
+	// 		float dist_minimum = 123425;
+	// 		bool is_connected = 0;
+
+	// 		for (int iterate_pcd = 0; iterate_pcd < Array_bin_clouds[iterate_colection]->size(); iterate_pcd++)
+	// 		{
+	// 			for (int iterate_pcd_2 = 0; iterate_pcd_2 < Array_bin_clouds[iterate_colection_2]->size(); iterate_pcd_2++)
+	// 			{
+	// 				float comp_x_bin_element = Array_bin_clouds[iterate_colection]->points[iterate_pcd].x - Array_bin_clouds[iterate_colection_2]->points[iterate_pcd].x;
+	// 				float comp_y_bin_element = Array_bin_clouds[iterate_colection]->points[iterate_pcd].y - Array_bin_clouds[iterate_colection_2]->points[iterate_pcd].y;
+	// 				float comp_z_bin_element = Array_bin_clouds[iterate_colection]->points[iterate_pcd].z - Array_bin_clouds[iterate_colection_2]->points[iterate_pcd].z;
+
+	// 				float dist_colection = sqrt(comp_x_bin_element * comp_x_bin_element + comp_y_bin_element * comp_y_bin_element + comp_z_bin_element * comp_z_bin_element);
+
+	// 				if (dist_minimum > dist_colection)
+	// 				{
+	// 					dist_minimum = dist_colection;
+	// 				}
+
+	// 				////////Dist min for collections is double dist min for connect points
+
+	// 				if (dist_minimum < dist_min_connect_parts*2)
+	// 				{
+	// 					is_connected = 1;
+	// 				}
+	// 			}
+
+	// 			//std::cout << "Dist minimum between component " << iterate_colection << " and component " << iterate_colection_2 << " is " << dist_minimum << std::endl;
+	// 		}
+
+	// 		if (is_connected)
+	// 		{
+	// 			Weight[iterate_colection][iterate_colection_2] = 1;
+	// 			Weight[iterate_colection_2][iterate_colection] = 1;
+	// 		}
+	// 	}
+	// }
+
+	///////////////////////////////////////////////////////////////////////////////
+	//Compares connected components in same region
+
+	std::cout<<"Collections from same regions"<<std::endl;
+
+	for (int iterate_colection = 0; iterate_colection < Nr_bins ; iterate_colection++)
 	{
-
-		for (int iterate_colection_2 = iterate_colection + 1; iterate_colection_2 < nr_connected_parts; iterate_colection_2++)
+		for(int iterate_pcd=Array_nr_components_in_region[iterate_colection];iterate_pcd<Array_nr_components_in_region[iterate_colection+1] -1 ;iterate_pcd++)
 		{
-
-			float dist_minimum = 123425;
-			bool is_connected = 0;
-
-			for (int iterate_pcd = 0; iterate_pcd < Array_bin_clouds[iterate_colection]->size(); iterate_pcd++)
+			for(int iterate_pcd_2=iterate_pcd +1 ;iterate_pcd_2<Array_nr_components_in_region[iterate_colection+1];iterate_pcd_2++)
 			{
-				for (int iterate_pcd_2 = 0; iterate_pcd_2 < Array_bin_clouds[iterate_colection_2]->size(); iterate_pcd_2++)
-				{
-					float comp_x_bin_element = Array_bin_clouds[iterate_colection]->points[iterate_pcd].x - Array_bin_clouds[iterate_colection_2]->points[iterate_pcd].x;
-					float comp_y_bin_element = Array_bin_clouds[iterate_colection]->points[iterate_pcd].y - Array_bin_clouds[iterate_colection_2]->points[iterate_pcd].y;
-					float comp_z_bin_element = Array_bin_clouds[iterate_colection]->points[iterate_pcd].z - Array_bin_clouds[iterate_colection_2]->points[iterate_pcd].z;
 
-					float dist_colection = sqrt(comp_x_bin_element * comp_x_bin_element + comp_y_bin_element * comp_y_bin_element + comp_z_bin_element * comp_z_bin_element);
+				float dist_minimum = 123425;
+				bool is_connected = 0;
+
+
+				for(int iterate_pcd_points=0;iterate_pcd_points< Array_bin_clouds[iterate_pcd]->size();iterate_pcd_points++)
+				{
+					for(int iterate_pcd_points_2=0;iterate_pcd_points_2< Array_bin_clouds[iterate_pcd_2]->size();iterate_pcd_points_2++)
+					{
+						float comp_x_bin_element = Array_bin_clouds[iterate_colection]->points[iterate_pcd].x - Array_bin_clouds[iterate_colection]->points[iterate_pcd].x;
+						float comp_y_bin_element = Array_bin_clouds[iterate_colection]->points[iterate_pcd].y - Array_bin_clouds[iterate_colection]->points[iterate_pcd].y;
+						float comp_z_bin_element = Array_bin_clouds[iterate_colection]->points[iterate_pcd].z - Array_bin_clouds[iterate_colection]->points[iterate_pcd].z;
+
+						float dist_colection = sqrt(comp_x_bin_element * comp_x_bin_element + comp_y_bin_element * comp_y_bin_element + comp_z_bin_element * comp_z_bin_element);
 
 					if (dist_minimum > dist_colection)
 					{
@@ -765,27 +824,120 @@ int main()
 					{
 						is_connected = 1;
 					}
+					}
 				}
 
-				//std::cout << "Dist minimum between component " << iterate_colection << " and component " << iterate_colection_2 << " is " << dist_minimum << std::endl;
-			}
-
-			if (is_connected)
+				if (is_connected)
 			{
-				Weight[iterate_colection][iterate_colection_2] = 1;
-				Weight[iterate_colection_2][iterate_colection] = 1;
+				Weight[iterate_pcd][iterate_pcd_2] = 1;
+				Weight[iterate_pcd_2][iterate_pcd] = 1;
+
+				std::cout<<iterate_pcd<<" "<<iterate_pcd_2<<std::endl;
+			}	
 			}
+			
+		
+		}
+			
+	}
+
+
+
+	//Compares connected components in different regions
+
+	std::cout<<"Collections from consequent regions"<<std::endl;
+
+	for (int iterate_colection = 0; iterate_colection < Nr_bins - 1; iterate_colection++)
+	{
+		for(int iterate_pcd=Array_nr_components_in_region[iterate_colection];iterate_pcd<Array_nr_components_in_region[iterate_colection+1] -1 ;iterate_pcd++)
+		{
+			for(int iterate_pcd_2=Array_nr_components_in_region[iterate_colection+1] ;iterate_pcd_2<Array_nr_components_in_region[iterate_colection+2];iterate_pcd_2++)
+			{
+
+				float dist_minimum = 123425;
+				bool is_connected = 0;
+
+
+				for(int iterate_pcd_points=0;iterate_pcd_points< Array_bin_clouds[iterate_pcd]->size();iterate_pcd_points++)
+				{
+					for(int iterate_pcd_points_2=0;iterate_pcd_points_2< Array_bin_clouds[iterate_pcd_2]->size();iterate_pcd_points_2++)
+					{
+						float comp_x_bin_element = Array_bin_clouds[iterate_colection]->points[iterate_pcd].x - Array_bin_clouds[iterate_colection]->points[iterate_pcd].x;
+						float comp_y_bin_element = Array_bin_clouds[iterate_colection]->points[iterate_pcd].y - Array_bin_clouds[iterate_colection]->points[iterate_pcd].y;
+						float comp_z_bin_element = Array_bin_clouds[iterate_colection]->points[iterate_pcd].z - Array_bin_clouds[iterate_colection]->points[iterate_pcd].z;
+
+						float dist_colection = sqrt(comp_x_bin_element * comp_x_bin_element + comp_y_bin_element * comp_y_bin_element + comp_z_bin_element * comp_z_bin_element);
+
+					if (dist_minimum > dist_colection)
+					{
+						dist_minimum = dist_colection;
+					}
+
+					////////Dist min for collections is double dist min for connect points
+
+					if (dist_minimum < dist_min_connect_parts*2)
+					{
+						is_connected = 1;
+					}
+					}
+				}
+
+				if (is_connected)
+			{
+				Weight[iterate_pcd][iterate_pcd_2] = 1;
+				Weight[iterate_pcd_2][iterate_pcd] = 1;
+
+				std::cout<<iterate_pcd<<" "<<iterate_pcd_2<<std::endl;
+			}	
+			}
+			
+		
+		}
+			
+	}
+
+	/////
+	for(int i=0;i<nr_connected_parts;i++)
+	{
+		bool element_check=0;
+		for(int j=0; (j<nr_connected_parts) &&  (element_check==0)  ;j++)
+		{
+			if(Weight[i][j]!=0)
+			{
+				element_check=1;
+			}
+		}
+		if(element_check)
+		{
+
+			pcl::PointXYZ point_Reeb_final;
+			point_Reeb_final.x = cloud_Reeb->points[i].x;
+			point_Reeb_final.y = cloud_Reeb->points[i].y;
+			point_Reeb_final.z = cloud_Reeb->points[i].z;
+
+			cloud_Reeb_final->points.push_back(point_Reeb_final);
+
+			cloud_Reeb_final->width = cloud_Reeb_final->points.size();
+			cloud_Reeb_final->height = 1;
+			cloud_Reeb_final->points.resize(cloud_Reeb_final->width * cloud_Reeb_final->height);
+			cloud_Reeb_final->is_dense = false;
 		}
 	}
 
-	for (int i = 0; i < nr_connected_parts; i++)
-	{
-		for (int j = 0; j < nr_connected_parts; j++)
-		{
-			std::cout << Weight[i][j] << " ";
-		}
-		std::cout << std::endl;
-	}
+	std::cout<<"cloud Reeb final has "<<cloud_Reeb_final->size()<<" points"<<std::endl;
+
+
+	/////////////////////////////////////////////
+
+
+	// for (int i = 0; i < nr_connected_parts; i++)
+	// {
+	// 	for (int j = 0; j < nr_connected_parts; j++)
+	// 	{
+	// 		std::cout << Weight[i][j] << " ";
+	// 	}
+	// 	std::cout << std::endl;
+	// }
 
 	std::cout << "Number of connected parts:" << nr_connected_parts << std::endl;
 
@@ -795,6 +947,9 @@ int main()
 
 	pcl::io::savePCDFileASCII("Reeb_pcd.pcd", *cloud_Reeb);
 	std::cerr << "Saved Reeb pcd" << std::endl;
+
+	pcl::io::savePCDFileASCII("Reeb_pcd_final.pcd", *cloud_Reeb_final);
+	std::cerr << "Saved Reeb pcd final" << std::endl;
 
 	return (0);
 }
