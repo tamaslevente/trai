@@ -21,8 +21,11 @@ void Recursive_region_growing(pcl::PointCloud<pcl::PointXYZ>::Ptr &bin_cloud,
 							  int K,
 							  float tau,
 							  pcl::PointCloud<pcl::PointXYZ>::Ptr &pcd_conect_comp,
-							  int iteration_number)
+							  int iteration_number,
+							  float &tau_final
+							  )
 {
+	
 	if (front_cloud->size() != 0)
 	{
 		for (int i = 0; i < front_cloud->size(); i++)
@@ -38,10 +41,12 @@ void Recursive_region_growing(pcl::PointCloud<pcl::PointXYZ>::Ptr &bin_cloud,
 
 			if (bin_cloud->size() != 0)
 			{
+				float dist_max_K_points = -561262;
 				for (int j = 0; j < K; j++)
 				{
 					float dist_min = 12345634;
-					float dist_max_K_points = -561262;
+					
+
 					int pos_front_point = -1;
 					for (int t = 0; t < bin_cloud->size(); t++)
 					{
@@ -51,17 +56,18 @@ void Recursive_region_growing(pcl::PointCloud<pcl::PointXYZ>::Ptr &bin_cloud,
 
 						dist = sqrt(comp_x * comp_x + comp_y * comp_y + comp_z * comp_z);
 
-						if (dist_min > dist)
+						if  ( (dist_min > dist) && (dist<tau) )
 						{
 							dist_min = dist;
 							pos_front_point = t;
-
-							if (dist_max_K_points < dist)
-							{
-								dist_max_K_points = dist;
-							}
 						}
 					}
+
+					if  (dist_max_K_points < dist_min) 
+						{
+						 dist_max_K_points = dist_min;
+						}	
+
 					pcl::PointCloud<pcl::PointXYZ>::Ptr front_cloud_2(new pcl::PointCloud<pcl::PointXYZ>);
 					if (pos_front_point != -1)
 					{
@@ -115,16 +121,32 @@ void Recursive_region_growing(pcl::PointCloud<pcl::PointXYZ>::Ptr &bin_cloud,
 
 					if (front_cloud_2->size() != 0)
 					{
-
-						float alpha = dist_max_K_points;
+						if(dist_max_K_points>0)
+						{
+							float alpha = dist_max_K_points;
 
 						if (front_cloud_2->size() == K)
 						{
+							//std::cout<<"cloud_front size"<<front_cloud_2->size() <<" is equal to"<<K<<std::endl;
+
 							tau2 = (alpha + iteration_number * tau) / (iteration_number + 1);
+
+							//std::cout<<"("<<alpha<<"+"<<iteration_number<<"*"<<tau<<") / ("<<(iteration_number+1)<<") ="<<tau2<<std::endl;
+
+							
 						}
 						else
 						{
+							//std::cout<<"cloud_front size"<<front_cloud_2->size() <<" is less than"<<K<<std::endl;
 							tau2 = (2 * alpha + iteration_number * tau) / (iteration_number + 1);
+
+							//std::cout<<"(2*"<<alpha<<"+"<<iteration_number<<"*"<<tau<<") / ("<<(iteration_number+1)<<") ="<<tau2<<std::endl;
+						}
+
+						if(tau2>tau_final)
+						{
+							tau_final=tau2;
+							//std::cout<<"Tau_nivel_urmator:"<<tau_final<<std::endl;
 						}
 
 						//Add validated front 2 cloud to region cloud
@@ -150,8 +172,10 @@ void Recursive_region_growing(pcl::PointCloud<pcl::PointXYZ>::Ptr &bin_cloud,
 
 						if (bin_cloud->size() != 0)
 						{
-							Recursive_region_growing(bin_cloud, front_cloud_2, K, tau2, pcd_conect_comp, new_iteration);
+							Recursive_region_growing(bin_cloud, front_cloud_2, K, tau2, pcd_conect_comp, new_iteration,tau_final);
 						}
+						}	
+						
 					}
 				}
 			}
@@ -163,8 +187,20 @@ int main()
 {
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>), cloud_f(new pcl::PointCloud<pcl::PointXYZ>);
 
+	std::string cloud_selection;
+
+	std::cout<<"input_cloud name:";
+	std::cin>>cloud_selection;
+
+	std::stringstream ss;
+
+	ss<<"/home/alex-pop/Desktop/Doctorat/Side_projects/trai/trai/PC-NBV/Alex_pop_work/data_in/"<<cloud_selection;
+
+	
+
 	//if (pcl::io::loadPCDFile<pcl::PointXYZ> ("/home/alex-pop/Desktop/BAckups/Alex_pop_work/data_in/test_single.pcd", *cloud) == -1) //* load the file
-	if (pcl::io::loadPCDFile<pcl::PointXYZ>("/home/alex-pop/Desktop/Doctorat/Side_projects/trai/trai/PC-NBV/Alex_pop_work/data_in/chair_0983.pcd", *cloud) == -1) //* load the file
+	//if (pcl::io::loadPCDFile<pcl::PointXYZ>("/home/alex-pop/Desktop/Doctorat/Side_projects/trai/trai/PC-NBV/Alex_pop_work/data_in/chair_0983.pcd", *cloud) == -1) //* load the file
+	if (pcl::io::loadPCDFile<pcl::PointXYZ>(ss.str(), *cloud) == -1) //* load the file
 	{
 		PCL_ERROR("Couldn't read file test_pcd.pcd \n");
 		return (-1);
@@ -380,13 +416,13 @@ int main()
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_conex_parts(new pcl::PointCloud<pcl::PointXYZ>);
 
 	float dist_min_connect_points;
-	float dist_min_connect_parts;
+	float dist_min_connect_parts=-977235;
 
 	std::cout << "Dist min connex points=";
 	std::cin >> dist_min_connect_points;
 
-	std::cout << "Dist min connected parts=";
-	std::cin >> dist_min_connect_parts;
+	// std::cout << "Dist min connected parts=";
+	// std::cin >> dist_min_connect_parts;
 
 	//pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered_copy(new pcl::PointCloud<pcl::PointXYZ>);
 	//copyPointCloud(*cloud_filtered, *cloud_filtered_copy);
@@ -652,10 +688,17 @@ int main()
 			//////////////////////////////////////////////////////////////////////////////////////////////////
 			int nr_points = cloud_random_point_bin->size();
 			
+			float dist_min_region=-612327;
 			
-			Recursive_region_growing(cloud_bin_actual,cloud_front,Nr_neighbors,dist_min_connect_points,cloud_random_point_bin,1);
+			Recursive_region_growing(cloud_bin_actual,cloud_front,Nr_neighbors,dist_min_connect_points,cloud_random_point_bin,1,dist_min_region);
 
-				
+			//std::cout<<"Distance in final iteration="<<dist_min_region<<std::endl;	
+
+			if (dist_min_region> dist_min_connect_parts)
+			{
+				dist_min_connect_parts= dist_min_region;
+			}
+			
 
 			//std::cout << "Dimension of new region is " << cloud_random_point_bin->size() << std::endl;
 
@@ -677,6 +720,8 @@ int main()
 		//std::cout << "Nr_points safety check bins:" << sum_check_bins << std::endl;
 		//std::cout << "Nr points in point cloud " << cloud_filtered->size() << std::endl;
 	}
+
+	std::cout<<"Chosen distance between connected components:"<<dist_min_connect_parts*2<<std::endl;
 
 	float Weight[500][500];
 
@@ -716,7 +761,7 @@ int main()
 
 					////////Dist min for collections is double dist min for connect points
 
-					if (dist_minimum < dist_min_connect_parts)
+					if (dist_minimum < dist_min_connect_parts*2)
 					{
 						is_connected = 1;
 					}
