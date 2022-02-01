@@ -1,0 +1,9 @@
+/home/alex-pop/Desktop/Doctorat/Side_projects/trai/trai/PC-NBV/Alex_pop_work/data_in/
+chair_0983.pcd
+0
+20
+30
+2
+/home/alex-pop/Desktop/Doctorat/Side_projects/trai/trai/PC-NBV/Alex_pop_work/build/Test_folder
+Reeb_pcd
+incid_matrix.txt
