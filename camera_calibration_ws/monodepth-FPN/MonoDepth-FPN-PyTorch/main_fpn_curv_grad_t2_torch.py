@@ -245,7 +245,7 @@ class DDDDepthDiff(nn.Module):
         torch_fake_plane_dist_below = torch_fake_plane[:,2] - torch_fake_plane[:,2].max()
         plane_mean_distance_below_XY = torch.mean(abs(torch_fake_plane_dist_below))
 
-        #########
+        ##############
         # ABOVE #
         #########
 
@@ -257,7 +257,7 @@ class DDDDepthDiff(nn.Module):
         
 
 
-        loss_curv = loss17 + plane_mean_dist_grad
+        loss_curv = loss17 + plane_mean_dist_grad/loss17
         delta = [RMSE_log, lossX, lossY, lossZ, plane_mean_dist_grad, loss17]
 
 
@@ -496,7 +496,7 @@ def parse_args():
                         default=10, type=int)
     parser.add_argument('--output_dir', dest='output_dir',
                         help='output directory',
-                        default='saved_models_t5', type=str)
+                        default='saved_models_t2', type=str)
 
 # config optimization
     parser.add_argument('--o', dest='optimizer',
@@ -664,7 +664,7 @@ if __name__ == '__main__':
         train_data_iter = iter(train_dataloader)
         show_image = True
         # saving results in a txt file
-        save_dir = '/home/marian/workspace/monodepth_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_t5/'
+        save_dir = '/home/marian/workspace/monodepth_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_t2/'
 
         
         for step in range(iters_per_epoch):
@@ -840,7 +840,7 @@ if __name__ == '__main__':
             val_loss_arr.append(val_loss)
             print('Epoch: {} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}'.format(epoch, train_loss, val_loss))
 
-            file_object = open("/home/marian/workspace/monodepth_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/results_t5.txt", 'a')
+            file_object = open("/home/marian/workspace/monodepth_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/results_t2.txt", 'a')
             # print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f"# grad_loss: %.4f"# normal_loss: %.4f"
             #         % (epoch, step, loss, depth_loss))#, grad_loss))#, normal_loss))
             # print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f"

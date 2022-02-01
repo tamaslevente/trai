@@ -1,7 +1,6 @@
 import torch.utils.data as data
 import numpy as np
 from PIL import Image
-from scipy.misc import imread
 from path import Path
 from constants import *
 from torchvision.transforms import Resize, Compose, ToPILImage, ToTensor, RandomHorizontalFlip, CenterCrop, ColorJitter
@@ -125,19 +124,19 @@ class RandomHorizontalFlip(object):
 
 
 class MyCustomDataset(data.Dataset):
-    def __init__(self, root='/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/multiP_training_data/main_multiP/', seed=None, train=True):
+    def __init__(self, root='/home/marian/workspace/monodepth_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/', seed=None, train=True):
 
         np.random.seed(seed)
         self.root = Path(root)
         self.train = train
         if train:
-            self.rgb_paths = [root+'input_irdd_data/train/' +
-                              d for d in os.listdir(root+'input_irdd_data/train/')]
+            self.rgb_paths = [root+'combined_ddd/train/' +
+                              d for d in os.listdir(root+'combined_ddd/train/')]
             # Randomly choose 50k images without replacement
             # self.rgb_paths = np.random.choice(self.rgb_paths, 600, False)
         else:
-            self.rgb_paths = [root+'input_irdd_data/test/' +
-                              d for d in os.listdir(root+'input_irdd_data/test/')]
+            self.rgb_paths = [root+'combined_ddd/test/' +
+                              d for d in os.listdir(root+'combined_ddd/test/')]
 
         if train != train:  # vis
             self.train = True
@@ -170,7 +169,7 @@ class MyCustomDataset(data.Dataset):
         #         rgb[i][j][1] = rgb_mono[i][j]
         #         rgb[i][j][2] = rgb_mono[i][j]
 
-        depth = cv2.imread(path.replace('input_irdd_data', 'depth_gt_filled_data'),-1)
+        depth = cv2.imread(path.replace('combined_ddd', 'depth_gt'),-1)
         # rgb = np.array(rgb,np.float32)
         # depth = np.array(depth,np.float32)
         rgb = cv2.resize(rgb,(640,360))

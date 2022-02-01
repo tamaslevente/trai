@@ -14,6 +14,11 @@ A simple end-to-end model that achieves state-of-the-art performance in depth pr
 
 ## To Run
 
+Once you are in `.venv_mono_depth`, run this to train the network:
+```
+python main_fpn_curv_grad.py --cuda --epochs 20
+```
+
 ```
 python3 main_fpn.py --cuda --bs 6
 ```

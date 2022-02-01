@@ -33,7 +33,7 @@
 
 # Folders
 training_data/
-saved_models/
+saved_models*/
 .venv_mono_depth/
 .venv_measure_curva/
 build/
