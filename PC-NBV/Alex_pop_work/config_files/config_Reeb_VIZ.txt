@@ -1,0 +1,8 @@
+/home/alex-pop/Desktop/Doctorat/Side_projects/trai/trai/PC-NBV/Alex_pop_work/build/Test_folder/
+Reeb_pcd.pcd
+incid_matrix.txt
+/home/alex-pop/Desktop/Doctorat/Side_projects/trai/trai/PC-NBV/Alex_pop_work/build/Test_folder/
+Reeb_viz.pcd
+3
+
+

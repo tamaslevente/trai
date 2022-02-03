@@ -14,8 +14,6 @@
 
 #include <vector>
 
-
-
 #define PI 3.14159265
 
 void Recursive_region_growing(pcl::PointCloud<pcl::PointXYZ>::Ptr &bin_cloud,
@@ -182,13 +180,7 @@ int main()
 
 	std::ifstream input_parameters("../config_files/config_Reeb.txt");
 
-
-
-
-	
-
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>), cloud_f(new pcl::PointCloud<pcl::PointXYZ>);
-
 
 	std::string input_cloud_name;
 	std::string input_cloud_location;
@@ -196,53 +188,49 @@ int main()
 	std::cout << "input_cloud location:";
 	//std::cin >> input_cloud_location;
 	std::getline(input_parameters, input_cloud_location);
-	std::cout<<input_cloud_location<<std::endl;
-
+	std::cout << input_cloud_location << std::endl;
 
 	std::cout << "input_cloud name:";
 	//std::cin >> cloud_selection;
 	std::getline(input_parameters, input_cloud_name);
-	std::cout<<input_cloud_name<<std::endl;
+	std::cout << input_cloud_name << std::endl;
 
 	std::stringstream ss;
 
 	//ss << "/home/alex-pop/Desktop/Doctorat/Side_projects/trai/trai/PC-NBV/Alex_pop_work/data_in/" << cloud_selection;
-	ss<<input_cloud_location<<input_cloud_name;
+	ss << input_cloud_location << input_cloud_name;
 	////////////////////////////////////////////////////////////////////
 
 	std::string output_folder_location;
 	std::string output_Reeb_pcd_name;
 	std::string output_inc_matrix_name;
-	
-	
-	
+
 	std::cout << "Output folder location:";
 	//std::cin >> input_cloud_location;
 	std::getline(input_parameters, output_folder_location);
-	std::cout<<output_folder_location<<std::endl;
-
+	std::cout << output_folder_location << std::endl;
 
 	std::cout << "Reeb pcd name:";
 	//std::cin >> cloud_selection;
 	std::getline(input_parameters, output_Reeb_pcd_name);
-	std::cout<<output_Reeb_pcd_name<<std::endl;
+	std::cout << output_Reeb_pcd_name << std::endl;
 
 	std::cout << "Incidence matrix file name:";
 	//std::cin >> cloud_selection;
 	std::getline(input_parameters, output_inc_matrix_name);
-	std::cout<<output_inc_matrix_name<<std::endl;
+	std::cout << output_inc_matrix_name << std::endl;
 
 	std::stringstream ss_out_pcd;
 	std::stringstream ss_out_pcd_final;
 
 	std::stringstream ss_out_matrix;
 
-	
-	ss_out_pcd<<output_folder_location<<output_Reeb_pcd_name<<".pcd";
-	ss_out_pcd_final<<output_folder_location<<output_Reeb_pcd_name<<"_final"<<".pcd";
-	ss_out_matrix<<output_folder_location<<output_inc_matrix_name;
+	ss_out_pcd << output_folder_location << output_Reeb_pcd_name << ".pcd";
+	ss_out_pcd_final << output_folder_location << output_Reeb_pcd_name << "_final"
+					 << ".pcd";
+	ss_out_matrix << output_folder_location << output_inc_matrix_name;
 
-//////////////////////////////////////////////////
+	//////////////////////////////////////////////////
 
 	//if (pcl::io::loadPCDFile<pcl::PointXYZ> ("/home/alex-pop/Desktop/BAckups/Alex_pop_work/data_in/test_single.pcd", *cloud) == -1) //* load the file
 	//if (pcl::io::loadPCDFile<pcl::PointXYZ>("/home/alex-pop/Desktop/Doctorat/Side_projects/trai/trai/PC-NBV/Alex_pop_work/data_in/chair_0983.pcd", *cloud) == -1) //* load the file
@@ -267,11 +255,11 @@ int main()
 	std::cout << "Remove floor?(0/1)" << std::endl;
 	//std::cin >> choice_floor;
 
-	input_parameters>>choice_floor;
+	input_parameters >> choice_floor;
 
 	if (choice_floor == 1)
 	{
-		std::cout<<"Removing floor"<<std::endl;
+		std::cout << "Removing floor" << std::endl;
 		// Create the filtering object: downsample the dataset using a leaf size of 1cm
 
 		vg.setInputCloud(cloud);
@@ -335,7 +323,7 @@ int main()
 
 	else
 	{
-		std::cout<<"No floor removal"<<std::endl;
+		std::cout << "No floor removal" << std::endl;
 		copyPointCloud(*cloud, *cloud_filtered);
 	}
 
@@ -434,19 +422,15 @@ int main()
 
 	std::cout << "Nr_bins=";
 	//std::cin >> Nr_bins;
-	input_parameters>>Nr_bins;
+	input_parameters >> Nr_bins;
 
 	std::cout << Nr_bins << std::endl;
 
 	std::cout << "Nr_neighbors=";
 	//std::cin >> Nr_neighbors;
-	input_parameters>>Nr_neighbors;
+	input_parameters >> Nr_neighbors;
 
 	std::cout << Nr_neighbors << std::endl;
-
-	
-
-	
 
 	float lim_inf;
 	float lim_sup;
@@ -472,7 +456,7 @@ int main()
 
 	std::cout << "Dist min connex points=";
 	//std::cin >> dist_min_connect_points;
-	input_parameters>>dist_min_connect_points;
+	input_parameters >> dist_min_connect_points;
 	std::cout << dist_min_connect_points << std::endl;
 
 	// std::cout << "Dist min connected parts=";
@@ -977,18 +961,10 @@ int main()
 	std::cout << "cloud Reeb final has " << cloud_Reeb_final->size() << " points" << std::endl;
 
 	/////////////////////////////////////////////
-	
 
-
-	
-	
-	
-
-	
-	
 	std::ofstream incid_matrix(ss_out_matrix.str());
 
-	incid_matrix<<nr_connected_parts<<"\n";
+	incid_matrix << nr_connected_parts << "\n";
 
 	for (int i = 0; i < nr_connected_parts; i++)
 	{
@@ -997,12 +973,12 @@ int main()
 			//std::cout << Weight[i][j] << " ";
 			incid_matrix << Weight[i][j] << " ";
 		}
-		incid_matrix <<"\n";
+		incid_matrix << "\n";
 		//std::cout << std::endl;
 	}
 	incid_matrix.close();
 
-	std::cout<<"Incidence matrix written to file"<<std::endl;
+	std::cout << "Incidence matrix written to file" << std::endl;
 
 	std::cout << "Number of connected parts:" << nr_connected_parts << std::endl;
 

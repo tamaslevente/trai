@@ -54,6 +54,9 @@ target_link_libraries(batch_voxel_passthrough_double_iterator_same_name ${PCL_LI
 add_executable(Reeb_graph Reeb_graph.cpp)
 target_link_libraries(Reeb_graph ${PCL_LIBRARIES} stdc++fs)
 
+add_executable(Reeb_viz_graph Reeb_viz_graph.cpp)
+target_link_libraries(Reeb_viz_graph ${PCL_LIBRARIES} stdc++fs)
+
 
 
 

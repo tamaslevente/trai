@@ -5,6 +5,6 @@ Reeb_pcd
 incid_matrix.txt
 0
 20
-30
+20
 2
 

@@ -8,6 +8,12 @@ from mpl_toolkits.mplot3d import Axes3D
 from scipy.spatial import distance_matrix
 from sklearn.metrics import pairwise_distances_argmin
 
+
+# Added by Alex pop
+import open3d as o3d
+
+
+
 # knn = 10
 # ns = 20
 # now fix tau
@@ -156,15 +162,26 @@ def expand(x, k, visited, nbrs, valid_idxs, scc, tau, knn, cnt=0):
     # marked[indices[0, distances[0] < tau]] = True
 
 
-def extract_reeb_graph(point_cloud, knn, ns, para):
+#def extract_reeb_graph(point_cloud, knn, ns, para):  # Original version
+
+def extract_reeb_graph(point_cloud, knn, ns, reeb_nodes_num, reeb_sim_margin,pointNumber):  
 
     nbrs = NearestNeighbors(n_neighbors=knn + 1, algorithm='kd_tree').fit(point_cloud)
-    # distances, indices = nbrs.kneighbors(x)
+    distances, indices = nbrs.kneighbors(point_cloud)
 
     marked = np.zeros([point_cloud.shape[0]], np.bool)
     # calculate f
-    r = point_cloud[:, 1]
-    # r = np.linalg.norm(point_cloud, axis=-1)
+    r = point_cloud[:, 2]
+
+    mean_x=np.mean(point_cloud[:,0])
+    mean_y=np.mean(point_cloud[:,1])
+    mean_z=np.mean(point_cloud[:,2])
+
+    r=np.sqrt( (point_cloud[:, 0]-mean_x)*(point_cloud[:, 0]-mean_x) + (point_cloud[:, 1]-mean_y)*(point_cloud[:, 1]-mean_y) +(point_cloud[:, 2]-mean_z)*(point_cloud[:, 2]-mean_z) )
+
+    r_min=np.amin(r)
+    r_max=np.amax(r)
+    #r = np.linalg.norm(point_cloud, axis=-1)
     sccs = []
     scc2idx = dict()
     vertices = []
@@ -172,8 +189,10 @@ def extract_reeb_graph(point_cloud, knn, ns, para):
     # np.random.seed(0)
     for i in range(ns):
         scc_level = []
-        idx = (-1 + i * 2. / ns < r) & (r <= -1 + (i + 1) * 2. / ns)
-        # print(i)
+
+        #idx = (-1 + i * 2. / ns < r) & (r <= -1 + (i + 1) * 2. / ns)
+        idx = ( r_min+(r_max-r_min)*(i* 1./(ns+1) ) < r) & (r<= r_min+(r_max-r_min)*((i+1)* 1./(ns+1) ))
+        #print(i)
 
         while not np.all(marked[idx]):
             scc = []
@@ -211,7 +230,7 @@ def extract_reeb_graph(point_cloud, knn, ns, para):
             scc2idx[id(scc)] = len(vertices)
             vertices.append(np.mean(point_cloud[scc], axis=0))
 
-            # print(tau[0])
+            #print(tau)
             # connect edges
             if i > 0:
                 for prev_scc in sccs[-1]:
@@ -226,35 +245,71 @@ def extract_reeb_graph(point_cloud, knn, ns, para):
         sccs = [sccs[0][:len(sccs[0]) // 2], sccs[0][len(sccs[0]) // 2:]]
         vertices = np.stack([np.mean(point_cloud[sccs[0]], 0), np.mean(point_cloud[sccs[1]], 0)])
         edges.append([0, 1])
-    vertices, edges, sccs = filter_out(np.asarray(vertices), edges, sccs)
-    vertices, edges, sccs = normalize_reeb(np.asarray(vertices), edges, sccs, point_cloud, para.reeb_nodes_num)
-    vertices, edges, laplacian, sccs = adjacency_reeb(vertices, edges, sccs, point_cloud, para.reeb_sim_margin)
-    # laplacian = np.delete(laplacian, idx2remove, 0)
-    # laplacian = np.delete(laplacian, idx2remove, 1)
-    # sccs = np.delete(sccs, idx2remove, 0)
-    while vertices.shape[0] != para.reeb_nodes_num:
-        # print(vertices.shape[0])
-        vertices, edges, sccs = normalize_reeb(np.asarray(vertices), edges, sccs, point_cloud, para.reeb_nodes_num)
-        vertices, edges, laplacian, sccs = adjacency_reeb(vertices, edges, sccs, point_cloud, para.reeb_sim_margin)
-        # laplacian = np.delete(laplacian, idx2remove, 0)
-        # laplacian = np.delete(laplacian, idx2remove, 1)
-        # sccs = np.delete(sccs, idx2remove, 0)
-    # print(laplacian)
+    # vertices, edges, sccs = filter_out(np.asarray(vertices), edges, sccs)
+    # vertices, edges, sccs = normalize_reeb(np.asarray(vertices), edges, sccs, point_cloud, reeb_nodes_num)
+    # vertices, edges, laplacian, sccs = adjacency_reeb(vertices, edges, sccs, point_cloud, reeb_sim_margin)
+    # # laplacian = np.delete(laplacian, idx2remove, 0)
+    # # laplacian = np.delete(laplacian, idx2remove, 1)
+    # # sccs = np.delete(sccs, idx2remove, 0)
+    # while vertices.shape[0] != reeb_nodes_num:
+    #     # print(vertices.shape[0])
+    #     vertices, edges, sccs = normalize_reeb(np.asarray(vertices), edges, sccs, point_cloud, reeb_nodes_num)
+    #     vertices, edges, laplacian, sccs = adjacency_reeb(vertices, edges, sccs, point_cloud, reeb_sim_margin)
+    #     # laplacian = np.delete(laplacian, idx2remove, 0)
+    #     # laplacian = np.delete(laplacian, idx2remove, 1)
+    #     # sccs = np.delete(sccs, idx2remove, 0)
+    # # print(laplacian)
     # pad
     largest_dim = max([len(x) for x in sccs])
-    # largest_dim = para.pointNumber
+    # largest_dim = pointNumber
     sccs = np.asarray([np.pad(x, (0, largest_dim - len(x)), 'edge') for x in sccs])
-    assert np.all(np.isfinite(laplacian)) and np.all(np.isfinite(sccs))
+    # assert np.all(np.isfinite(laplacian)) and np.all(np.isfinite(sccs))
     # print(vertices.shape, laplacian.shape)
-    return vertices, laplacian, list(sccs)
+    print(np.shape(vertices))
+    #return vertices, laplacian, list(sccs), edges
+    return vertices, list(sccs), edges
 
 
 if __name__ == '__main__':
-    fig = matplotlib.pyplot.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.set_axis_off()
+    # fig = matplotlib.pyplot.figure()
+    # ax = fig.add_subplot(111, projection='3d')
+    # ax.set_axis_off()
     # for e in edges:
     #     ax.plot([vertices[e[0]][0], vertices[e[1]][0]], [vertices[e[0]][1], vertices[e[1]][1]], [vertices[e[0]][2], vertices[e[1]][2]], color='b')
     # ax.scatter(x[:, 0], x[:, 1], x[:, 2], s=1, color='r')
     # matplotlib.pyplot.show()
+
+    pcd_load= o3d.io.read_point_cloud("/home/alex-pop/Desktop/Doctorat/Side_projects/trai/trai/PC-NBV/Alex_pop_work/build/Test_folder/chair_0983.pcd")
+    point_cloud=np.asarray(pcd_load.points)
+
+    print(point_cloud.shape)
+
+    
+    knn = 20
+    ns = 20
+    tau = 2
+    reeb_nodes_num=20
+    reeb_sim_margin=20
+    pointNumber=200
+    vertices, sccs, edges = extract_reeb_graph(point_cloud, knn, ns, reeb_nodes_num, reeb_sim_margin,pointNumber)
+
+
+    for line in vertices:
+        print ('  '.join(map(str, line)))
+
+    
+    
+    
+    fig = matplotlib.pyplot.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.set_axis_off()
+    for e in edges:
+        ax.plot([vertices[e[0]][0], vertices[e[1]][0]], [vertices[e[0]][1], vertices[e[1]][1]], [vertices[e[0]][2], vertices[e[1]][2]], color='b')
+    ax.scatter(point_cloud[:, 0], point_cloud[:, 1], point_cloud[:, 2], s=1, color='r')
+    matplotlib.pyplot.show()
+
+
+
+
+
 
