@@ -1,0 +1,6 @@
+
+Epoch: 0 	Training Loss: 455.858706 	Validation Loss: 135.775951
+Epoch: 1 	Training Loss: 138.851942 	Validation Loss: 98.913086
+Epoch: 2 	Training Loss: 117.347308 	Validation Loss: 83.160144
+Epoch: 3 	Training Loss: 112.452000 	Validation Loss: 85.729391
+Epoch: 4 	Training Loss: 88.202461 	Validation Loss: 97.979042

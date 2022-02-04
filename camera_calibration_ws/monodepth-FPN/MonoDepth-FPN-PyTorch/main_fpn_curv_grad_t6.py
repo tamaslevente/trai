@@ -3,8 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import sys
-import random
-random.seed(10)
 
 from zmq import device
 from constants import *
@@ -70,14 +68,15 @@ class DDDDepthDiff(nn.Module):
         # real1[real1==0] = eps
         # fake1[fake1==0] = eps
 
+        # for calculating the loss on all the images in the batch size (Thanks Szilard for telling me about this!!!)
+        
+        if epoch > 23:
+            all_real_pcd = self.point_cloud(fake1[0]).clone() * 1000.0
+        else:    
+            all_real_pcd = self.point_cloud(real1[0]).clone() * 1000.0
 
-
-        # if epoch > 24:
-        #     all_real_pcd = self.point_cloud(fake1[0]).clone() * 1000.0
-        # else:    
-
-        all_real_pcd = self.point_cloud(real1[0]).clone() * 1000.0
         all_fake_pcd = self.point_cloud(fake1[0]).clone() * 1000.0
+
 
         all_real_pcd[all_real_pcd==0] = eps
         all_fake_pcd[all_fake_pcd==0] = eps
@@ -137,45 +136,39 @@ class DDDDepthDiff(nn.Module):
         nan_cloud[torch.isnan(nan_cloud)] = 0
 
         norm_all_fake_pcd = nan_cloud/nan_cloud.max()
-        # norm_o3d_pcd_fake = o3d.geometry.PointCloud()
-        # norm_o3d_pcd_fake.points = o3d.utility.Vector3dVector(norm_all_fake_pcd.cpu().detach().numpy())
-        
-        
+        norm_o3d_pcd_fake = o3d.geometry.PointCloud()
+        # torch_pcd = o3d.geometry.PointCloud()
+        norm_o3d_pcd_fake.points = o3d.utility.Vector3dVector(norm_all_fake_pcd.cpu().detach().numpy())
+        # just for debugging
+        # o3d_pcd_fake = o3d.io.read_point_cloud("/home/marian/workspace/monodepth_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process/pred_cloud9.pcd")
+        # pcd_fake_np = np.asarray(o3d_pcd_fake.points)
+        # norm_fake = pcd_fake_np/pcd_fake_np[2].max()
+        # norm_o3d_pcd = o3d.geometry.PointCloud()
+        # norm_o3d_pcd.points =  o3d.utility.Vector3dVector(norm_fake)
+
         # o3d.io.write_point_cloud("fake_norm_cloud"+str(epoch)+".pcd", norm_o3d_pcd_fake)
 
-        # ################# with Open3d
-        # fake_plane_model, fake_inliers = norm_o3d_pcd_fake.segment_plane(distance_threshold=0.025,
-        #                                     ransac_n=3,
-        #                                     num_iterations=500)
-        # [a, b, c, d] = fake_plane_model
-        # a_torch = torch.from_numpy(np.array(a)).cuda()
-        # b_torch = torch.from_numpy(np.array(b)).cuda()
-        # c_torch = torch.from_numpy(np.array(c)).cuda()
-        # d_torch = torch.from_numpy(np.array(d)).cuda()
+        fake_plane_model, fake_inliers = norm_o3d_pcd_fake.segment_plane(distance_threshold=0.025,
+                                            ransac_n=3,
+                                            num_iterations=1000)
+        [a, b, c, d] = fake_plane_model
+        a_torch = torch.from_numpy(np.array(a)).cuda()
+        b_torch = torch.from_numpy(np.array(b)).cuda()
+        c_torch = torch.from_numpy(np.array(c)).cuda()
+        d_torch = torch.from_numpy(np.array(d)).cuda()
 
-        # fake_plane_pcd = norm_o3d_pcd_fake.select_by_index(fake_inliers)
-        # fake_plane_pcd.paint_uniform_color([1.0, 0, 0])
-        # ################################
+        fake_plane_pcd = norm_o3d_pcd_fake.select_by_index(fake_inliers)
+        fake_plane_pcd.paint_uniform_color([1.0, 0, 0])
 
-        # if loss17<400:
-        #     np_plane_model, np_plane_inliers = self.oh_numpy_RANSAC_give_me_a_plane(np.asarray(norm_o3d_pcd_fake.points),thresh=0.025,
-        #                                                                             minPoints=5000,
-        #                                                                             maxIteration=1000)
-
-        torch_plane_model, torch_plane_inliers = self.oh_torch_RANSAC_give_me_a_plane(norm_all_fake_pcd,thresh=0.025,
-                                                                                    minPoints=5000,
-                                                                                    maxIteration=1000)
         # o3d.io.write_point_cloud("fake_plane_o3d"+str(epoch)+".pcd", fake_plane_pcd)
-        # fake_plane_pcd = norm_o3d_pcd_fake.select_by_index(torch_plane_inliers.cpu().detach().numpy())
-        # o3d.io.write_point_cloud("plane_torch"+str(epoch)+".pcd", fake_plane_pcd)
 
         # torch_pcd.points = o3d.utility.Vector3dVector(norm_all_fake_pcd[fake_inliers].cpu().detach().numpy())
         # o3d.io.write_point_cloud("fake_plane_torch_"+str(epoch)+".pcd", torch_pcd)
         
         # Open3D translation and rotation
         ################# removable stuff, just for testing
-        # fake_plane_pcd = fake_plane_pcd.translate((0,0,d/c))
-        # # o3d.io.write_point_cloud("fake_plane_o3d_trans_"+str(epoch)+".pcd", fake_plane_pcd)
+        fake_plane_pcd = fake_plane_pcd.translate((0,0,d/c))
+        # o3d.io.write_point_cloud("fake_plane_o3d_trans_"+str(epoch)+".pcd", fake_plane_pcd)
 
         # cos_theta = c / math.sqrt(a**2 + b**2 + c**2)
         # sin_theta = math.sqrt((a**2+b**2)/(a**2 + b**2 + c**2))
@@ -185,9 +178,8 @@ class DDDDepthDiff(nn.Module):
         #                         [u_1*u_2*(1-cos_theta), cos_theta + u_2**2*(1- cos_theta), -u_1*sin_theta],
         #                         [-u_2*sin_theta, u_1*sin_theta, cos_theta]])
 
-        # center_before_rot = fake_plane_pcd.get_center()
+        center_before_rot = fake_plane_pcd.get_center()
         # fake_plane_pcd.rotate(pred_rotation_matrix)
-        # ###############################
         # center_after_rot = fake_plane_pcd.get_center()
 
         # o3d.io.write_point_cloud("fake_plane_o3d_rot_"+str(epoch)+".pcd", fake_plane_pcd)
@@ -201,13 +193,9 @@ class DDDDepthDiff(nn.Module):
         ######
         
         ###################
-        a_torch = torch_plane_model[0]
-        b_torch = torch_plane_model[1]
-        c_torch = torch_plane_model[2]
-        d_torch = torch_plane_model[3]
 
         # torch translation and rotation
-        torch_fake_plane = norm_all_fake_pcd[torch_plane_inliers]
+        torch_fake_plane = norm_all_fake_pcd[fake_inliers]
         torch_translation = torch.tensor([0, 0, d_torch/c_torch]).cuda()
         torch_fake_plane += torch_translation
 
@@ -222,16 +210,15 @@ class DDDDepthDiff(nn.Module):
         pred_rotation_matrix_torch = torch.tensor([[cos_theta_torch + u_1_torch**2 * (1-cos_theta_torch), u_1_torch*u_2_torch*(1-cos_theta_torch), u_2_torch*sin_theta_torch],
                                 [u_1_torch*u_2_torch*(1-cos_theta_torch), cos_theta_torch + u_2_torch**2*(1- cos_theta_torch), -u_1_torch*sin_theta_torch],
                                 [-u_2_torch*sin_theta_torch, u_1_torch*sin_theta_torch, cos_theta_torch]]).cuda()
-        # torch_plane_center = torch.tensor([center_before_rot[0],center_before_rot[1],center_before_rot[2]]).cuda()
-        # torch_fake_plane = torch_fake_plane - torch_plane_center
+
+        torch_plane_center = torch.tensor([center_before_rot[0],center_before_rot[1],center_before_rot[2]]).cuda()
+        torch_fake_plane = torch_fake_plane - torch_plane_center
         pred_rotation_matrix_torch = pred_rotation_matrix_torch.transpose(0,1)
         torch_fake_plane = torch.matmul(torch_fake_plane,pred_rotation_matrix_torch)
-        # torch_fake_plane += torch_plane_center
+        torch_fake_plane += torch_plane_center
 
-        # if loss17 < 400:
-        #     torch_pcd = o3d.geometry.PointCloud()
-        #     torch_pcd.points = o3d.utility.Vector3dVector(torch_fake_plane.cpu().detach().numpy())
-        #     o3d.io.write_point_cloud("fake_plane_torch_rot_"+str(epoch)+".pcd", torch_pcd)
+        # torch_pcd.points = o3d.utility.Vector3dVector(torch_fake_plane.cpu().detach().numpy())
+        # o3d.io.write_point_cloud("fake_plane_torch_rot_"+str(epoch)+".pcd", torch_pcd)
 
         #########
         # BELOW #
@@ -249,129 +236,22 @@ class DDDDepthDiff(nn.Module):
         # ABOVE #
         #########
 
-        # torch_fake_plane_dist_above = torch_fake_plane[:,2] - torch_fake_plane[:,2].min()
-        # plane_mean_distance_above_XY = torch.mean(abs(torch_fake_plane_dist_above))
+        torch_fake_plane_dist_above = torch_fake_plane[:,2] - torch_fake_plane[:,2].min()
+        plane_mean_distance_above_XY = torch.mean(abs(torch_fake_plane_dist_above))
         
-        if plane_mean_distance_below_XY == 0: plane_mean_distance_below_XY = torch.tensor(0.00001).cuda()
-        plane_mean_dist_grad = 1000* plane_mean_distance_below_XY
+        if plane_mean_distance_below_XY + plane_mean_distance_above_XY == 0.0: plane_mean_distance_above_XY = torch.tensor(0.0000001).cuda()
+        plane_mean_dist_grad = 1000* (plane_mean_distance_below_XY + plane_mean_distance_above_XY)
         
-
+        # if(epoch > 23):
+        #     loss17 = 0.001 * loss17
+        # else:
+        #     plane_mean_dist_grad = plane_mean_dist_grad * 0.000001
 
         loss_curv = loss17 + plane_mean_dist_grad
         delta = [RMSE_log, lossX, lossY, lossZ, plane_mean_dist_grad, loss17]
 
 
         return delta, loss_curv
-
-    def oh_numpy_RANSAC_give_me_a_plane(self, pts, thresh=0.05, minPoints=100, maxIteration=1000):
-        """
-        Find the best equation for a plane.
-        :param pts: 3D point cloud as a `np.array (N,3)`.
-        :param thresh: Threshold distance from the plane which is considered inlier.
-        :param maxIteration: Number of maximum iteration which RANSAC will loop over.
-        :returns:
-        - `self.equation`:  Parameters of the plane using Ax+By+Cy+D `np.array (1, 4)`
-        - `self.inliers`: points from the dataset considered inliers
-        ---
-        """
-        n_points = pts.shape[0]
-        best_eq = []
-        best_inliers = []
-
-        for it in range(maxIteration):
-
-            # Samples 3 random points
-            id_samples = random.sample(range(0, n_points), 3)
-            pt_samples = pts[id_samples]
-
-            # We have to find the plane equation described by those 3 points
-            # We find first 2 vectors that are part of this plane
-            # A = pt2 - pt1
-            # B = pt3 - pt1
-
-            vecA = pt_samples[1, :] - pt_samples[0, :]
-            vecB = pt_samples[2, :] - pt_samples[0, :]
-
-            # Now we compute the cross product of vecA and vecB to get vecC which is normal to the plane
-            vecC = np.cross(vecA, vecB)
-
-            # The plane equation will be vecC[0]*x + vecC[1]*y + vecC[0]*z = -k
-            # We have to use a point to find k
-            vecC = vecC / np.linalg.norm(vecC)
-            k = -np.sum(np.multiply(vecC, pt_samples[1, :]))
-            plane_eq = [vecC[0], vecC[1], vecC[2], k]
-
-            # Distance from a point to a plane
-            # https://mathworld.wolfram.com/Point-PlaneDistance.html
-            pt_id_inliers = []  # list of inliers ids
-            dist_pt = (
-                plane_eq[0] * pts[:, 0] + plane_eq[1] * pts[:, 1] + plane_eq[2] * pts[:, 2] + plane_eq[3]
-            ) / np.sqrt(plane_eq[0] ** 2 + plane_eq[1] ** 2 + plane_eq[2] ** 2)
-
-            # Select indexes where distance is biggers than the threshold
-            pt_id_inliers = np.where(np.abs(dist_pt) <= thresh)[0]
-            if len(pt_id_inliers) > len(best_inliers) & (len(pt_id_inliers) > minPoints):
-                best_eq = plane_eq
-                best_inliers = pt_id_inliers
-            self.inliers = best_inliers
-            self.equation = best_eq
-
-        return self.equation, self.inliers
-
-    def oh_torch_RANSAC_give_me_a_plane(self, pts, thresh=0.05, minPoints=100, maxIteration=1000):
-        """
-        Find the best equation for a plane.
-        :param pts: 3D point cloud as a `torch.tensor (N,3)`.
-        :param thresh: Threshold distance from the plane which is considered inlier.
-        :param maxIteration: Number of maximum iteration which RANSAC will loop over.
-        :returns:
-        - `self.equation`:  Parameters of the plane using Ax+By+Cy+D `torch.tensor (1, 4)`
-        - `self.inliers`: points from the dataset considered inliers
-        ---
-        """
-        n_points = pts.shape[0]
-        best_eq = []
-        best_inliers = []
-
-        for it in range(maxIteration):
-
-            # Samples 3 random points
-            id_samples = random.sample(range(0, n_points), 3)
-            pt_samples = pts[id_samples]
-
-            # We have to find the plane equation described by those 3 points
-            # We find first 2 vectors that are part of this plane
-            # A = pt2 - pt1
-            # B = pt3 - pt1
-
-            vecA = pt_samples[1, :] - pt_samples[0, :]
-            vecB = pt_samples[2, :] - pt_samples[0, :]
-
-            # Now we compute the cross product of vecA and vecB to get vecC which is normal to the plane
-            vecC = torch.cross(vecA, vecB)
-
-            # The plane equation will be vecC[0]*x + vecC[1]*y + vecC[0]*z = -k
-            # We have to use a point to find k
-            vecC = vecC / torch.linalg.norm(vecC)
-            k = -torch.sum(torch.multiply(vecC, pt_samples[1, :]))
-            plane_eq = [vecC[0], vecC[1], vecC[2], k]
-
-            # Distance from a point to a plane
-            # https://mathworld.wolfram.com/Point-PlaneDistance.html
-            pt_id_inliers = []  # list of inliers ids
-            dist_pt = (
-                plane_eq[0] * pts[:, 0] + plane_eq[1] * pts[:, 1] + plane_eq[2] * pts[:, 2] + plane_eq[3]
-            ) / torch.sqrt(plane_eq[0] ** 2 + plane_eq[1] ** 2 + plane_eq[2] ** 2)
-
-            # Select indexes where distance is biggers than the threshold
-            pt_id_inliers = torch.where(torch.abs(dist_pt) <= thresh)[0]
-            if (len(pt_id_inliers) > len(best_inliers)) & (len(pt_id_inliers) > minPoints):
-                best_eq = plane_eq
-                best_inliers = pt_id_inliers
-            self.inliers = best_inliers
-            self.equation = best_eq
-
-        return self.equation, self.inliers
 
     def point_cloud(self, depth1):
         """Transform a depth image into a point cloud with one point for each
@@ -496,7 +376,7 @@ def parse_args():
                         default=10, type=int)
     parser.add_argument('--output_dir', dest='output_dir',
                         help='output directory',
-                        default='saved_models_t2', type=str)
+                        default='saved_models_t6', type=str)
 
 # config optimization
     parser.add_argument('--o', dest='optimizer',
@@ -507,7 +387,7 @@ def parse_args():
                         default=1e-3, type=float)
     parser.add_argument('--lr_decay_step', dest='lr_decay_step',
                         help='step to do learning rate decay, unit is epoch',
-                        default=5, type=int)
+                        default=10, type=int)
     parser.add_argument('--lr_decay_gamma', dest='lr_decay_gamma',
                         help='learning rate decay ratio',
                         default=0.1, type=float)
@@ -664,8 +544,7 @@ if __name__ == '__main__':
         train_data_iter = iter(train_dataloader)
         show_image = True
         # saving results in a txt file
-        save_dir = '/home/marian/workspace/monodepth_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_t2/'
-
+        save_dir = '/home/marian/workspace/monodepth_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_t6/'
         
         for step in range(iters_per_epoch):
             start = time.time()
@@ -840,7 +719,7 @@ if __name__ == '__main__':
             val_loss_arr.append(val_loss)
             print('Epoch: {} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}'.format(epoch, train_loss, val_loss))
 
-            file_object = open("/home/marian/workspace/monodepth_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/results_t2.txt", 'a')
+            file_object = open("/home/marian/workspace/monodepth_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/results_t6.txt", 'a')
             # print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f"# grad_loss: %.4f"# normal_loss: %.4f"
             #         % (epoch, step, loss, depth_loss))#, grad_loss))#, normal_loss))
             # print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f"

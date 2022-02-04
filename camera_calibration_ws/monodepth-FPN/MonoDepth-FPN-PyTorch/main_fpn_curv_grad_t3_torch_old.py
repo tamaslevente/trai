@@ -70,13 +70,13 @@ class DDDDepthDiff(nn.Module):
         # real1[real1==0] = eps
         # fake1[fake1==0] = eps
 
+        # for calculating the loss on all the images in the batch size (Thanks Szilard for telling me about this!!!)
 
+        if epoch > 24:
+            all_real_pcd = self.point_cloud(fake1[0]).clone() * 1000.0
+        else:    
+            all_real_pcd = self.point_cloud(real1[0]).clone() * 1000.0
 
-        # if epoch > 24:
-        #     all_real_pcd = self.point_cloud(fake1[0]).clone() * 1000.0
-        # else:    
-
-        all_real_pcd = self.point_cloud(real1[0]).clone() * 1000.0
         all_fake_pcd = self.point_cloud(fake1[0]).clone() * 1000.0
 
         all_real_pcd[all_real_pcd==0] = eps
@@ -124,7 +124,7 @@ class DDDDepthDiff(nn.Module):
         lossY = torch.sqrt(torch.mean(torch.abs(y_real-y_fake)**2))
         
        
-        RMSE_log = 1000* torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(z_real))-torch.log(torch.abs(z_fake)))**2))
+        RMSE_log = 10000* torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(z_real))-torch.log(torch.abs(z_fake)))**2))
 
         loss17 = RMSE_log * torch.abs(10*(3-torch.exp(1*lossX)-torch.exp(1*lossY)-torch.exp(1*lossZ)))
         
@@ -249,11 +249,11 @@ class DDDDepthDiff(nn.Module):
         # ABOVE #
         #########
 
-        # torch_fake_plane_dist_above = torch_fake_plane[:,2] - torch_fake_plane[:,2].min()
-        # plane_mean_distance_above_XY = torch.mean(abs(torch_fake_plane_dist_above))
+        torch_fake_plane_dist_above = torch_fake_plane[:,2] - torch_fake_plane[:,2].min()
+        plane_mean_distance_above_XY = torch.mean(abs(torch_fake_plane_dist_above))
         
-        if plane_mean_distance_below_XY == 0: plane_mean_distance_below_XY = torch.tensor(0.00001).cuda()
-        plane_mean_dist_grad = 1000* plane_mean_distance_below_XY
+        if plane_mean_distance_below_XY + plane_mean_distance_above_XY == 0.0: plane_mean_distance_below_XY = torch.tensor(0.001).cuda()
+        plane_mean_dist_grad = 1000* plane_mean_distance_above_XY/(plane_mean_distance_below_XY + plane_mean_distance_above_XY)
         
 
 
@@ -496,7 +496,7 @@ def parse_args():
                         default=10, type=int)
     parser.add_argument('--output_dir', dest='output_dir',
                         help='output directory',
-                        default='saved_models_t2', type=str)
+                        default='saved_models_t3', type=str)
 
 # config optimization
     parser.add_argument('--o', dest='optimizer',
@@ -664,7 +664,7 @@ if __name__ == '__main__':
         train_data_iter = iter(train_dataloader)
         show_image = True
         # saving results in a txt file
-        save_dir = '/home/marian/workspace/monodepth_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_t2/'
+        save_dir = '/home/marian/workspace/monodepth_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_t3/'
 
         
         for step in range(iters_per_epoch):
@@ -840,7 +840,7 @@ if __name__ == '__main__':
             val_loss_arr.append(val_loss)
             print('Epoch: {} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}'.format(epoch, train_loss, val_loss))
 
-            file_object = open("/home/marian/workspace/monodepth_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/results_t2.txt", 'a')
+            file_object = open("/home/marian/workspace/monodepth_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/results_t3.txt", 'a')
             # print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f"# grad_loss: %.4f"# normal_loss: %.4f"
             #         % (epoch, step, loss, depth_loss))#, grad_loss))#, normal_loss))
             # print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f"

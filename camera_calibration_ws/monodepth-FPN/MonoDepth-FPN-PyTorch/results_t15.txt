@@ -1,0 +1,2 @@
+
+Epoch: 0 	Training Loss: 442.533984 	Validation Loss: 283.956018

@@ -30,6 +30,7 @@ matplotlib.use('Agg')
 from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter()
 
+torch.cuda.set_device(1)
 
 class DDDDepthDiff(nn.Module):
     def __init__(self):
@@ -124,7 +125,7 @@ class DDDDepthDiff(nn.Module):
         lossY = torch.sqrt(torch.mean(torch.abs(y_real-y_fake)**2))
         
        
-        RMSE_log = 1000* torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(z_real))-torch.log(torch.abs(z_fake)))**2))
+        RMSE_log = 100* torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(z_real))-torch.log(torch.abs(z_fake)))**2))
 
         loss17 = RMSE_log * torch.abs(10*(3-torch.exp(1*lossX)-torch.exp(1*lossY)-torch.exp(1*lossZ)))
         
@@ -161,8 +162,9 @@ class DDDDepthDiff(nn.Module):
         #     np_plane_model, np_plane_inliers = self.oh_numpy_RANSAC_give_me_a_plane(np.asarray(norm_o3d_pcd_fake.points),thresh=0.025,
         #                                                                             minPoints=5000,
         #                                                                             maxIteration=1000)
-
-        torch_plane_model, torch_plane_inliers = self.oh_torch_RANSAC_give_me_a_plane(norm_all_fake_pcd,thresh=0.025,
+        thresh = torch.tensor(0.025 - 0.001*epoch).cuda()
+        if thresh <= 0.005: thresh = torch.tensor(0.005).cuda()
+        torch_plane_model, torch_plane_inliers = self.oh_torch_RANSAC_give_me_a_plane(norm_all_fake_pcd,thresh=thresh,
                                                                                     minPoints=5000,
                                                                                     maxIteration=1000)
         # o3d.io.write_point_cloud("fake_plane_o3d"+str(epoch)+".pcd", fake_plane_pcd)
@@ -249,15 +251,15 @@ class DDDDepthDiff(nn.Module):
         # ABOVE #
         #########
 
-        # torch_fake_plane_dist_above = torch_fake_plane[:,2] - torch_fake_plane[:,2].min()
-        # plane_mean_distance_above_XY = torch.mean(abs(torch_fake_plane_dist_above))
+        torch_fake_plane_dist_above = torch_fake_plane[:,2] - torch_fake_plane[:,2].min()
+        plane_mean_distance_above_XY = torch.mean(abs(torch_fake_plane_dist_above))
         
-        if plane_mean_distance_below_XY == 0: plane_mean_distance_below_XY = torch.tensor(0.00001).cuda()
-        plane_mean_dist_grad = 1000* plane_mean_distance_below_XY
+        if plane_mean_distance_above_XY == 0: plane_mean_distance_above_XY = torch.tensor(0.0000001).cuda()
+        plane_mean_dist_grad = 1000* (plane_mean_distance_above_XY + plane_mean_distance_below_XY)
         
 
 
-        loss_curv = loss17 + plane_mean_dist_grad
+        loss_curv = loss17 + plane_mean_dist_grad/loss17
         delta = [RMSE_log, lossX, lossY, lossZ, plane_mean_dist_grad, loss17]
 
 
@@ -496,7 +498,7 @@ def parse_args():
                         default=10, type=int)
     parser.add_argument('--output_dir', dest='output_dir',
                         help='output directory',
-                        default='saved_models_t2', type=str)
+                        default='saved_models_t11', type=str)
 
 # config optimization
     parser.add_argument('--o', dest='optimizer',
@@ -664,7 +666,7 @@ if __name__ == '__main__':
         train_data_iter = iter(train_dataloader)
         show_image = True
         # saving results in a txt file
-        save_dir = '/home/marian/workspace/monodepth_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_t2/'
+        save_dir = '/home/marian/workspace/monodepth_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/training_process_t11/'
 
         
         for step in range(iters_per_epoch):
@@ -840,7 +842,7 @@ if __name__ == '__main__':
             val_loss_arr.append(val_loss)
             print('Epoch: {} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}'.format(epoch, train_loss, val_loss))
 
-            file_object = open("/home/marian/workspace/monodepth_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/results_t2.txt", 'a')
+            file_object = open("/home/marian/workspace/monodepth_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/results_t11.txt", 'a')
             # print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f"# grad_loss: %.4f"# normal_loss: %.4f"
             #         % (epoch, step, loss, depth_loss))#, grad_loss))#, normal_loss))
             # print("[epoch %2d][iter %4d] loss: %.4f RMSElog: %.4f"

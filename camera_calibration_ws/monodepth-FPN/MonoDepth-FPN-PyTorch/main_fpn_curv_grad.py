@@ -30,6 +30,7 @@ matplotlib.use('Agg')
 from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter()
 
+torch.cuda.set_device(1)
 
 class DDDDepthDiff(nn.Module):
     def __init__(self):
@@ -124,7 +125,7 @@ class DDDDepthDiff(nn.Module):
         lossY = torch.sqrt(torch.mean(torch.abs(y_real-y_fake)**2))
         
        
-        RMSE_log = 10000* torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(z_real))-torch.log(torch.abs(z_fake)))**2))
+        RMSE_log = 1000* torch.sqrt(torch.mean(torch.abs(torch.log(torch.abs(z_real))-torch.log(torch.abs(z_fake)))**2))
 
         loss17 = RMSE_log * torch.abs(10*(3-torch.exp(1*lossX)-torch.exp(1*lossY)-torch.exp(1*lossZ)))
         
@@ -253,7 +254,7 @@ class DDDDepthDiff(nn.Module):
         plane_mean_distance_above_XY = torch.mean(abs(torch_fake_plane_dist_above))
         
         if plane_mean_distance_below_XY + plane_mean_distance_above_XY == 0.0: plane_mean_distance_above_XY = torch.tensor(0.001).cuda()
-        plane_mean_dist_grad = 1000* plane_mean_distance_below_XY/(plane_mean_distance_below_XY + plane_mean_distance_above_XY)
+        plane_mean_dist_grad = 100* plane_mean_distance_below_XY/(plane_mean_distance_below_XY + plane_mean_distance_above_XY)
         
 
 
