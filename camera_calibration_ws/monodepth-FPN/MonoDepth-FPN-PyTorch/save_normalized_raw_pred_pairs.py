@@ -12,6 +12,13 @@ import torch, time
 from torchvision import transforms
 import open3d as o3d
 
+model_version = "single_plane_i2d_1_24.pth"
+model_version_folder = "final_tests_single_plane"
+raw_PNG_images = "c24_robo.PNG"
+pcd_folder = "c24_robo.PCD"
+pred_pcd_folder = "c24_robo.PCD.pred"
+in_pred_image_pairs = "c24_robo_pairs"
+
 def parse_args():
     """
     Parse input arguments
@@ -27,13 +34,13 @@ def parse_args():
     parser.add_argument('--input_image_path', dest='input_image_path',
                       help='path to a single input image for evaluation',
                     #   default='/media/rambo/ssd2/marian/datasets/monodepth/training_data/depth_synth/', type=str)
-                      default='/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/curvature_grad/verify_network/orig.PNG.train/', type=str)
+                      default='/home/marian/workspace/monodepth_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/dataset/training_data/training_data/curvature_grad/'+ model_version_folder +'/'+raw_PNG_images +'/', type=str)
     parser.add_argument('--eval_folder', dest='eval_folder',
                       help='evaluate only one image or the whole folder',
                       default=True, type=bool)
     parser.add_argument('--model_path', dest='model_path',
                       help='path to the model to use',
-                      default='/home/marian/calibration_ws/monodepth-FPN/good_models/single_plane_i2d_1_24.pth', type=str)
+                      default='/home/marian/workspace/monodepth_ws/monodepth-FPN/good_models/'+ model_version, type=str)
                     #   default='/home/marian/calibration_ws/monodepth-FPN/saved_models/i2d_1_24.pth', type=str)
                     #   default='/home/marian/calibration_ws/monodepth-FPN/MonoDepth-FPN-PyTorch/saved_models/t90_i2d_1_24.pth', type=str)
 
@@ -170,28 +177,31 @@ if __name__ == '__main__':
                 stop = timeit.default_timer()
                 time_sum=time_sum+stop-start
                 counter=counter+1
-                save_path= path.replace("orig.PNG.train", "orig.PCD.train")[:-4]
+                save_path= path.replace(raw_PNG_images, pcd_folder)[:-4]
 
-                #  just for a faire (normalized) compare
-                # plt.imshow(orig_depth/max_depth, vmin=0)
-                # plt.colorbar()
-                # plt.savefig(save_path +'_orig.png',bbox_inches='tight')
-                # plt.close()
                 o3d_pcd = o3d.geometry.PointCloud()
                 z_orig_pcd = point_cloud(torch.unsqueeze(img[0][0],dim=0)).cpu().detach().numpy()
                 o3d_pcd.points = o3d.utility.Vector3dVector(z_orig_pcd)
                 o3d.io.write_point_cloud(save_path +'_orig.pcd', o3d_pcd)
+                
+                save_path_images = path.replace(raw_PNG_images, in_pred_image_pairs)[:-4]
+                #  just for a faire (normalized) compare
+                plt.imshow(orig_depth/max_depth, vmin=0)
+                plt.colorbar()
+                plt.savefig(save_path_images +'_orig.png',bbox_inches='tight')
+                plt.close()
                 # ######################
 
-                save_path= path.replace("orig.PNG.train", "pred.PCD.train")[:-4]
-                # plt.imshow(z_fake[0].cpu().detach().numpy().transpose((1,2,0)), vmin=0)
-                # plt.colorbar()
-                # plt.savefig(save_path +'_pred.png',bbox_inches='tight')
-                # plt.close()
+                save_path= path.replace(raw_PNG_images, pred_pcd_folder)[:-4]
                 o3d_pcd = o3d.geometry.PointCloud()
                 z_fake_pcd = point_cloud(z_fake[0]).cpu().detach().numpy()
                 o3d_pcd.points = o3d.utility.Vector3dVector(z_fake_pcd)
                 o3d.io.write_point_cloud(save_path +'_pred.pcd', o3d_pcd)
+
+                plt.imshow(z_fake[0].cpu().detach().numpy().transpose((1,2,0)), vmin=0)
+                plt.colorbar()
+                plt.savefig(save_path_images +'_pred.png',bbox_inches='tight')
+                plt.close()
                 # npimage=(z_fake[0]/max_depth).squeeze(0).cpu().detach().numpy().astype(np.uint16)
                 # cv2.imwrite(save_path +'_pred.png', npimage)
 

@@ -35,8 +35,8 @@ To visualize the reconstructed data, run the jupyter notebook in vis.ipynb.
 
 
 ### Verify planes curvature
-* Be sure you are in the .venv_mono_depth environment.
-* Starting from a folder with a bunch of depth images combined o 3 channels, e.g: comb_ddd_images.PNG (name of a folder)
+* Be sure you are in the venv_mono_depth (conda or pip) environment.
+* Starting from a folder with a bunch of depth images combined of 3 channels, e.g: comb_ddd_images.PNG (name of a folder)
 
 * Create original point clouds and model estimated point clouds, from the above images, by runnning:
 ```

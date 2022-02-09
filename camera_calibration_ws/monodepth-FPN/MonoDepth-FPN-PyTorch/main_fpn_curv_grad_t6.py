@@ -70,11 +70,11 @@ class DDDDepthDiff(nn.Module):
 
         # for calculating the loss on all the images in the batch size (Thanks Szilard for telling me about this!!!)
         
-        if epoch > 23:
-            all_real_pcd = self.point_cloud(fake1[0]).clone() * 1000.0
-        else:    
-            all_real_pcd = self.point_cloud(real1[0]).clone() * 1000.0
+        # if epoch > 23:
+        #     all_real_pcd = self.point_cloud(fake1[0]).clone() * 1000.0
+        # else:    
 
+        all_real_pcd = self.point_cloud(real1[0]).clone() * 1000.0
         all_fake_pcd = self.point_cloud(fake1[0]).clone() * 1000.0
 
 
