@@ -61,8 +61,9 @@ After you've connected to the camera:
     - `git clone https://github.com/analogdevicesinc/aditof_sdk`
     - `cd aditof_sdk`
     - `mkdir build && cd build`
-    - `cmake -DWITH_EXAMPLES=off -DWITH_ROS=on -DUSE_3D_SMART=1 -DCMAKE_PREFIX_PATH="/opt/glog;/opt/protobuf;/opt/websockets" ..`
+    - `cmake -DWITH_EXAMPLES=off -DWITH_ROS=on -DCMAKE_PREFIX_PATH="/opt/glog;/opt/protobuf;/opt/websockets" ..`
     - `sudo cmake --build . --target install`
+    - `cmake --build . --target aditof_ros_package`
   - **Usage**
     - I recommend you taking a look here: https://github.com/analogdevicesinc/aditof_sdk/tree/master/bindings/ros#usage 
     - `cd workspace/aditof_sdk/build/catkin_ws`
