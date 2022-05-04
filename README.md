@@ -72,3 +72,34 @@ After you've connected to the camera:
     - `roscore`
     - `rosrun aditof_roscpp aditof_camera_node your.cam.era.ip`
   - **After that you should be able to see all the camera topics in any terminal from your machine. Good luck!**
+
+#### Set a static IP on Jetson Nano (aka 3D smart camera) 
+
+
+1. Edit _/etc/default/networking_ (e.g. `sudo vim /etc/default/networking`)
+   and change the following line:
+
+`# CONFIGURE_INTERFACES=yes`
+
+to
+
+`CONFIGURE_INTERFACES=no`
+
+2. Edit _/etc/network/interfaces_ and add the following lines:
+```
+auto eth0
+iface eth0 inet static
+   address 192.168.1.100
+   netmask 255.255.255.0
+   gateway 192.168.1.1
+```
+
+3. Reboot the board, e.g. reboot.
+
+3. Depending on what IP you choose above you might need to also
+   set a static IP on your machine, e.g. for the IP above it should
+   be something like this:
+   Address: 192.168.1.99
+   Netmask 255.255.255.0
+   Gateway 192.168.1.1
+   I rely on you, on accomplishing this task, as it depends on the OS of your machine. Cheers!
