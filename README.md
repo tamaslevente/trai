@@ -4,10 +4,11 @@ ADI depth perception with AI
 ## Config for ADI ToF-3D-Smart-Camera
 
 ### How to connect
+More details can be found here: https://wiki.analog.com/resources/eval/user-guides/ad-3dsmartcam1-prz/ug_system_setup
 1. Wi-Fi
 - camera has a built-in wifi module accessible, usually  on **ADI_Smart_Camera**
 - password: ADI_Smart_Camera
-- `ssh -X analog@172.72.1.1`
+- `ssh -X analog@172.16.1.1` (if this doesn't work you can always check your IP with `ifconfig` command an replace _172.16._ with your first two IP numbers)
 - password: analog
 2. Ethernet
 - you can connect an ethernet cable directly to the camera
@@ -56,7 +57,7 @@ After you've connected to the camera:
     - `cmake -Dprotobuf_BUILD_TESTS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX=/opt/protobuf ../cmake`
     - `sudo make -j4 && sudo make install`
     - `cd ../..`
-    - **ADITof SDK**
+    - **ADIToF SDK**
     - `git clone https://github.com/analogdevicesinc/aditof_sdk`
     - `cd aditof_sdk`
     - `mkdir build && cd build`
