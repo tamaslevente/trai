@@ -72,6 +72,7 @@ After you've connected to the camera:
     - **Or as node:** 
     - `roscore`
     - `rosrun aditof_roscpp aditof_camera_node your.cam.era.ip`
+  - ** WARNING: PROBLEMS may appear if the two aditof_sdk packages are not the same version (both on camera and on your machine).**
   - **After that you should be able to see all the camera topics in any terminal from your machine. Good luck!**
 
 #### Set a static IP on Jetson Nano (aka 3D smart camera) 
