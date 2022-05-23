@@ -34,3 +34,6 @@
 [submodule "3d-gnn-segmentation"]
 	path = 3d-gnn-segmentation
 	url = https://github.com/Funderburger/3d-gnn-segmentation.git
+[submodule "mpi-planar-correction"]
+	path = mpi-planar-correction
+	url = https://github.com/Funderburger/mpi-planar-correction
